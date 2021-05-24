@@ -1,0 +1,12 @@
+{
+    "component": "r2artifact",
+    "repoName": "insurance-cancelation-trx11",
+    "uuaa": "rbvd",
+    "slave_label": "apx",
+    "extra_properties": null,
+    "apxrepoBranch": "master",
+    "componentPaaSId": "insurance-cancelation-trx11",
+    "appPaaSId": "rbvd",
+    "proyectPaaSId": "pe.rbvd.app-id-105529.dsg",
+    "resource_type": "du_online"
+}
