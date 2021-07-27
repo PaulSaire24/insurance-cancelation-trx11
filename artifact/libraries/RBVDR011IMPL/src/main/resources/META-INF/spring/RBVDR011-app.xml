@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+	<bean id="rbvdR011" class="com.bbva.rbvd.lib.r011.impl.RBVDR011Impl" parent="rbvdR011Abstract">
+		<property name="pisdR100" ref="pisdR100"/>
+		<property name="rbvdR012" ref="rbvdR012"/>
+		<property name="rbvdR003" ref="rbvdR003"/>
+	</bean>
+</beans>

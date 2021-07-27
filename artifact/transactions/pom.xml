@@ -4,13 +4,15 @@
 	<parent>
 		<artifactId>insurance-cancelation-trx11</artifactId>
 		<groupId>com.bbva.rbvd</groupId>
-		<version>0.1.0-SNAPSHOT</version>
+		<version>0.1.1-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>TRANSACTIONS-insurance-cancelation-trx11</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>TRANSACTIONS-insurance-cancelation-trx11</name>
-	<modules/>
+	<modules>
+		<module>RBVDT011-01-PE</module>
+	</modules>
 </project>
