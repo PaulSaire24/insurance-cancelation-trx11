@@ -134,6 +134,13 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 			}
 		} catch(RestClientException e) {
 			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception: {}", e.getMessage());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception - getCause: {}", e.getCause());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception - getMostSpecificCause: {}", e.getMostSpecificCause());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception - getMostSpecificCause.getMessage: {}", e.getMostSpecificCause().getMessage());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception - getRootCause: {}", e.getRootCause());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception - getLocalizedMessage: {}", e.getLocalizedMessage());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception - getStackTrace: {}", e.getStackTrace());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception - getSuppressed: {}", e.getSuppressed());
 			this .addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_ASO.getAdviceCode());
 		}
 
