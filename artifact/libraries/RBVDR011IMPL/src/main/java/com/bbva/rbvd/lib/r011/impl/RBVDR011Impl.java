@@ -36,6 +36,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		
 		String xcontractNumber = this.rbvdR003.executeCypherService(new CypherASO(input.getContractId(), CypherASO.KINDAPXCYPHER_CONTRACTID));
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation xcontractNumber: {} *****", xcontractNumber);
+		
 		EntityOutPolicyCancellationDTO out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
 				, input.getCancellationDate()
 				, input.getReason()
@@ -55,7 +56,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
 		
-		DateTimeFormatter formatter = DateTimeFormat.forPattern(RBVDConstants.DATEFORMAT_ISO8601).withZone(DateTimeZone.UTC);
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(RBVDConstants.DATEFORMAT_YYYYMMDDHHMMSS_SSSSS).withZone(DateTimeZone.UTC);
 		Date creationDate = formatter.parseDateTime(strCreationDate).toDate();
 		Long diffdays = RBVDUtils.getDifferenceDays(creationDate, new Date());
 		String statusId = RBVDConstants.TAG_BAJ;

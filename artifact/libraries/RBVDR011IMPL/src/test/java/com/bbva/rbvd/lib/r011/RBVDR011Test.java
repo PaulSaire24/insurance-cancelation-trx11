@@ -98,7 +98,7 @@ public class RBVDR011Test {
 		
 		policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
-		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-07-14T11:11:11:111");
+		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(false);
 		validation = rbvdR011.executePolicyCancellation(input);
@@ -132,7 +132,7 @@ public class RBVDR011Test {
 		input.setContractId("11111111111111111111");
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
-		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-07-14T11:11:11:111");
+		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Date.class), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
