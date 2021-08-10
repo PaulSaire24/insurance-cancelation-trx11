@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r011.impl;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,9 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +50,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}		
 		String policyid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
 		String productid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
-		String strCreationDate= java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue()), "0");
+		String strCreationDate= java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue()), null);
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
 		
-		DateTimeFormatter formatter = DateTimeFormat.forPattern(RBVDConstants.DATEFORMAT_YYYYMMDDHHMMSS_SSSSS).withZone(DateTimeZone.UTC);
-		Date creationDate = formatter.parseDateTime(strCreationDate).toDate();
+		Date creationDate = Timestamp.valueOf(strCreationDate);
 		Long diffdays = RBVDUtils.getDifferenceDays(creationDate, new Date());
 		String statusId = RBVDConstants.TAG_BAJ;
 		String movementType = RBVDConstants.MOV_BAJ;

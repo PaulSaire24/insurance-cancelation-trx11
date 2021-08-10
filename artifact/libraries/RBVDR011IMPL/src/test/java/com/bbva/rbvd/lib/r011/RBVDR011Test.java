@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -146,4 +147,5 @@ public class RBVDR011Test {
 		assertNotNull(validation);
 		
 	}
+	
 }
