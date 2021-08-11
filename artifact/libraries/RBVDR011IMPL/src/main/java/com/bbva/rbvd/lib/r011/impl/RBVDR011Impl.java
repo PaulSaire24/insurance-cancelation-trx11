@@ -1,6 +1,5 @@
 package com.bbva.rbvd.lib.r011.impl;
 
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -50,19 +49,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}		
 		String policyid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
 		String productid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
-		String strCreationDate= java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue()), null);
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
 		
-		Date creationDate = Timestamp.valueOf(strCreationDate);
-		Long diffdays = RBVDUtils.getDifferenceDays(creationDate, new Date());
 		String statusId = RBVDConstants.TAG_BAJ;
 		String movementType = RBVDConstants.MOV_BAJ;
 		String email = "";
-		if (diffdays <= 15) {
-			statusId = RBVDConstants.TAG_ANU;
-			movementType = RBVDConstants.MOV_ANU;
-		}
 		
 		Map<String, Object> mapContract = RBVDUtils.getMapContractNumber(input.getContractId());
 		mapContract.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
@@ -97,14 +89,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
 		Integer ucs = this.pisdR100.executeUpdateContractStatus(arguments);
 		if (ucs == null) { return null; }
-		
-		if (RBVDConstants.TAG_ANU.equals(statusId)) {
-			arguments.clear();
-			arguments.putAll(mapContract);
-			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RECEIPT_STATUS_TYPE.getValue(), statusId);
-			Integer urs = this.pisdR100.executeUpdateReceiptsStatus(arguments);
-			if (urs == null) { return null; }
-		}
 		
 		InputRimacBO inputrimac = new InputRimacBO();
 		inputrimac.setTraceId(input.getTraceId());
