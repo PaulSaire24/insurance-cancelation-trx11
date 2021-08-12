@@ -15,7 +15,6 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.ContratanteBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolizaBO;
-import com.bbva.rbvd.dto.insurancecancelation.mock.MockDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellation;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
@@ -35,11 +34,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		String xcontractNumber = this.rbvdR003.executeCypherService(new CypherASO(input.getContractId(), CypherASO.KINDAPXCYPHER_CONTRACTID));
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation xcontractNumber: {} *****", xcontractNumber);
 		
-		EntityOutPolicyCancellationDTO out = MockDTO.getInstance().getPolicyCancellationHostMockResponse().getData();
-		/*EntityOutPolicyCancellationDTO out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
+		EntityOutPolicyCancellationDTO out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
 				, input.getCancellationDate()
 				, input.getReason()
-				, input.getNotifications());*/
+				, input.getNotifications());
 		if (out == null) { return null; }
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
 		if (policy == null) { return null; }
@@ -107,7 +105,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		poliza.setFechaAnulacion(strDate);
 		poliza.setCodigoMotivo("001");
 		ContratanteBO contratante = new ContratanteBO();
-		contratante.setCorreo(strDate);
+		contratante.setCorreo(email);
 		contratante.setEnvioElectronico("N");
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
