@@ -29,6 +29,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.rbvd.lib.r012.impl.util.JsonHelper;
+import com.bbva.rbvd.lib.r012.impl.util.MockService;
 
 public class RBVDR012Impl extends RBVDR012Abstract {
 
@@ -85,7 +86,6 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 			output = response.getBody().getPayload();
 		} catch(RestClientException e) {
 			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyRimac ***** Exception: {}", e.getMessage());
-			this.addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_RIMAC.getAdviceCode());
 		}
 
 		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyRimac ***** Response: {}", output);
@@ -112,6 +112,13 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 			return null; 
 		}
 		
+		if(this.mockService.isEnabled(MockService.MOCKER_ASOCANCELLATION)) {
+			LOGGER.info("***** RBVDR012Impl - MockService executeCancelPolicyHost Invokation *****");
+			EntityOutPolicyCancellationDTO mockresp = this.mockService.getAsoCancellationMock();
+			LOGGER.info("***** RBVDR012Impl - MockService executeCancelPolicyHost Invokation ***** mockresp: {} ", mockresp);
+			return mockresp;
+		}
+		
 		EntityOutPolicyCancellationDTO body = new EntityOutPolicyCancellationDTO();
 		body.setCancellationDate(cancellationDate);
 		body.setReason(reason);
@@ -134,7 +141,7 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 			}
 		} catch(RestClientException e) {
 			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception: {}", e.getMessage());
-			this .addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_ASO.getAdviceCode());
+			this.addAdvice(this.policyCancellationAsoErrorHandler.handler(e));
 		}
 
 		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Response: {}", output);

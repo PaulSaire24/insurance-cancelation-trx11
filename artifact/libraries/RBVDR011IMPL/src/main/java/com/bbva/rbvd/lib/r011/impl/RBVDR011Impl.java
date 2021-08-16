@@ -63,7 +63,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_ORIGIN_BRANCH.getValue() , input.getBranchId());
 		arguments.put(RBVDProperties.KEY_REQUEST_MOVEMENT_TYPE.getValue()               , movementType);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()         , statusId);
-		if (!this.pisdR100.executeSaveContractMovement(arguments)) { return null; }
+		
+		this.pisdR100.executeSaveContractMovement(arguments);
 		
 		if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
 				&& input.getNotifications().getContactDetails().get(0).getContact() != null) {
@@ -82,13 +83,14 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_TOTAL_DEBT_AMOUNT.getValue(), totalDebt);
 		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue(), pendingAmount);
 		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_TRANSACTION.getValue(), input.getTransactionId());
-		if (!this.pisdR100.executeSaveContractCancellation(arguments)) { return null; }
+		
+		this.pisdR100.executeSaveContractCancellation(arguments);
 		
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
-		Integer ucs = this.pisdR100.executeUpdateContractStatus(arguments);
-		if (ucs == null) { return null; }
+		
+		this.pisdR100.executeUpdateContractStatus(arguments);
 		
 		InputRimacBO inputrimac = new InputRimacBO();
 		inputrimac.setTraceId(input.getTraceId());
@@ -106,11 +108,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		poliza.setCodigoMotivo("001");
 		ContratanteBO contratante = new ContratanteBO();
 		contratante.setCorreo(email);
-		contratante.setEnvioElectronico("N");
+		contratante.setEnvioElectronico("S");
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
-		PolicyCancellationPayloadBO rimacCanellation = this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
-		if (rimacCanellation == null) { return null; }
+		this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
 		
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");

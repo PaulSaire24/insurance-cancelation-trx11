@@ -6,6 +6,8 @@ import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.elara.utility.api.connector.APIConnectorBuilder;
 import com.bbva.pisd.lib.r014.PISDR014;
 import com.bbva.rbvd.lib.r012.RBVDR012;
+import com.bbva.rbvd.lib.r012.impl.error.PolicyCancellationAsoErrorHandler;
+import com.bbva.rbvd.lib.r012.impl.util.MockService;
 
 public abstract class RBVDR012Abstract extends AbstractLibrary implements RBVDR012 {
 
@@ -18,8 +20,11 @@ public abstract class RBVDR012Abstract extends AbstractLibrary implements RBVDR0
 	protected APIConnector internalApiConnector;
 
 	protected PISDR014 pisdR014;
+	
+	protected PolicyCancellationAsoErrorHandler policyCancellationAsoErrorHandler;
 
-
+	protected MockService mockService;
+	
 	/**
 	* @param applicationConfigurationService the this.applicationConfigurationService to set
 	*/
@@ -54,5 +59,9 @@ public abstract class RBVDR012Abstract extends AbstractLibrary implements RBVDR0
 	public void setPisdR014(PISDR014 pisdR014) {
 		this.pisdR014 = pisdR014;
 	}
+
+	public void setMockService(MockService mockService) { this.mockService = mockService; }
+
+	public void setPolicyCancellationAsoErrorHandler(PolicyCancellationAsoErrorHandler policyCancellationAsoErrorHandler) { this.policyCancellationAsoErrorHandler = policyCancellationAsoErrorHandler; }
 
 }

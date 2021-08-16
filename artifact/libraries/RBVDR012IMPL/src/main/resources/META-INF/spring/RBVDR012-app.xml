@@ -3,5 +3,11 @@
 		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 	<bean id="rbvdR012" class="com.bbva.rbvd.lib.r012.impl.RBVDR012Impl" parent="rbvdR012Abstract">
 		<property name="pisdR014" ref="pisdR014"/>
+		<property name="mockService" ref="mockService"/>
+		<property name="policyCancellationAsoErrorHandler" ref="policyCancellationAsoErrorHandler"/>
 	</bean>
+	<bean id="mockService" class="com.bbva.rbvd.lib.r012.impl.util.MockService">
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+	</bean>
+	<bean id="policyCancellationAsoErrorHandler" class="com.bbva.rbvd.lib.r012.impl.error.PolicyCancellationAsoErrorHandler"/>
 </beans>

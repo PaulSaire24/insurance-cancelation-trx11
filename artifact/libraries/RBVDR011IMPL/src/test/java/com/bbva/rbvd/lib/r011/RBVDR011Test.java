@@ -96,34 +96,6 @@ public class RBVDR011Test {
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
-		
-		policy = new HashMap<>();
-		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
-		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
-		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
-		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(false);
-		validation = rbvdR011.executePolicyCancellation(input);
-		assertNull(validation);
-		
-		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
-		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(false);
-		validation = rbvdR011.executePolicyCancellation(input);
-		assertNull(validation);
-		
-		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
-		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(null);
-		validation = rbvdR011.executePolicyCancellation(input);
-		assertNull(validation);
-		
-		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
-		when(pisdr100.executeUpdateReceiptsStatus(anyMap())).thenReturn(null);
-		validation = rbvdR011.executePolicyCancellation(input);
-		assertNull(validation);
-		
-		when(pisdr100.executeUpdateReceiptsStatus(anyMap())).thenReturn(1);
-		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(null);
-		validation = rbvdR011.executePolicyCancellation(input);
-		assertNull(validation);
 	}
 	
 	@Test
