@@ -13,6 +13,7 @@ public class PolicyCancellationAsoErrorHandler extends AbstractErrorHandler {
 	public static final String ICE9230 = "ICE9230";//LA POLIZA YA FUE CANCELADA ANTERIORMENTE
 	public static final String ICER163 = "ICER163";//CAMPO FECHA DE CANCELACIÓN DEL CLIENTE ES MAYOR Al FIN DE COBERTURA
 	public static final String ICE9114 = "ICE9114";//PRODUCTO NO OPERATIVO PARA ESTA TRANSACCION
+	public static final String ICE9212 = "ICE9212";//LA POLIZA NO SE PUEDE ANULAR
 
 	@Override
 	protected String getAdviceCode(HttpClientErrorException hcee) {
@@ -27,6 +28,8 @@ public class PolicyCancellationAsoErrorHandler extends AbstractErrorHandler {
 			return RBVDErrors.ERROR_CANCELLATIONDATE_EXCEEDS_COVERAGE.getAdviceCode();
 		case ICE9114:
 			return RBVDErrors.ERROR_UNCANCELLABLE_PRODUCT.getAdviceCode();
+		case ICE9212:
+			return RBVDErrors.ERROR_POLICY_CANCELLATION_UNABLE.getAdviceCode();
 		default:
 			return RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_ASO.getAdviceCode();
 		}

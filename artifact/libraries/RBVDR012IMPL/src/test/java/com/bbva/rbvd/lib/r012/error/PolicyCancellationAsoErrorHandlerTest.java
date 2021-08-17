@@ -49,6 +49,10 @@ public class PolicyCancellationAsoErrorHandlerTest {
         validation = policyCancellationAsoErrorHandler.handler(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", body.getBytes(), StandardCharsets.UTF_8));
         assertEquals(RBVDErrors.ERROR_UNCANCELLABLE_PRODUCT.getAdviceCode(), validation);
         
+        body = bodyError.replace("CODE", PolicyCancellationAsoErrorHandler.ICE9212);
+        validation = policyCancellationAsoErrorHandler.handler(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", body.getBytes(), StandardCharsets.UTF_8));
+        assertEquals(RBVDErrors.ERROR_POLICY_CANCELLATION_UNABLE.getAdviceCode(), validation);
+        
         body = bodyError.replace("CODE", "ABC");
         validation = policyCancellationAsoErrorHandler.handler(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", body.getBytes(), StandardCharsets.UTF_8));
         assertEquals(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_ASO.getAdviceCode(), validation);
