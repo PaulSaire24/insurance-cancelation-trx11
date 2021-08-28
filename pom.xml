@@ -13,7 +13,7 @@
 	<name>insurance-cancelation-trx11</name>
 	<description>Deployment unit insurance-cancelation-trx11 of uuaa rbvd</description>
 	<properties>
-		<apx.core.online.version>7.3.1-RELEASE</apx.core.online.version>
+		<apx.core.online.version>7.4.4-RELEASE</apx.core.online.version>
 		<outputDirectoryDTOs>../../../target/dtos</outputDirectoryDTOs>
 		<outputDirectoryLibraries>../../../target/libraries</outputDirectoryLibraries>
 		<outputDirectoryTransactions>../../../target/transactions</outputDirectoryTransactions>
