@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>elara-project</artifactId>
 		<groupId>com.bbva.elara</groupId>
-		<version>7.3.1-RELEASE</version>
+		<version>7.4.4-RELEASE</version>
 	</parent>
 	<artifactId>insurance-cancelation-trx11</artifactId>
 	<groupId>com.bbva.rbvd</groupId>
