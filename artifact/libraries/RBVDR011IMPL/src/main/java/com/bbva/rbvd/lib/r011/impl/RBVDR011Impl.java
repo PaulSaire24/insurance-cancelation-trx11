@@ -21,6 +21,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
+import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 
 public class RBVDR011Impl extends RBVDR011Abstract {
 
@@ -40,8 +41,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 				, input.getNotifications());
 		if (out == null) { return null; }
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
-		if (policy == null) { return null; }
-		LOGGER.info("***** RBVDR010Impl - executeSimulateCancelation: policy = {} *****", policy);
+		if (policy == null) {
+			if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
+					&& this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
+				LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO NO ROYAL - Response = {} *****", out);
+				this.getAdviceList().clear();
+				return out;
+			}
+			return null; 
+		}
+		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: policy = {} *****", policy);
 		String statusid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()), "0");
 		if (RBVDConstants.TAG_ANU.equals(statusid) || RBVDConstants.TAG_BAJ.equals(statusid)) {
 			this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
@@ -105,7 +114,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);  
 		String strDate = dateFormat.format(date);  
 		poliza.setFechaAnulacion(strDate);
-		poliza.setCodigoMotivo("001");
+		poliza.setCodigoMotivo(input.getReason().getId());
 		ContratanteBO contratante = new ContratanteBO();
 		contratante.setCorreo(email);
 		contratante.setEnvioElectronico("S");
@@ -113,7 +122,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		inputPayload.setContratante(contratante);
 		this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
 		
-		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation ***** Response: {}", out);
+		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
 	}
