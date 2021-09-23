@@ -7,6 +7,7 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.annotation.Resource;
@@ -80,7 +81,7 @@ public class RBVDT01101PETransactionTest {
     public void executeTestOK() {
 		LOGGER.info("Execution of RBVDT01101PETransactionTest - executeTestOK *********");
 		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
-		output.setCancellationDate(new Date());
+		output.setCancellationDate(Calendar.getInstance());
         when(rbvdr011.executePolicyCancellation(anyObject())).thenReturn(output);
         this.transaction.execute();
         assertTrue(this.transaction.getAdviceList().isEmpty());

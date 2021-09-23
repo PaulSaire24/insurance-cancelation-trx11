@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.mock.MockDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellation;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r003.RBVDR003;
@@ -80,18 +81,18 @@ public class RBVDR011Test {
 	@Test
 	public void executePolicyCancellationTestNull(){
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestNull...");
-		InputParametersPolicyCancellation input = new InputParametersPolicyCancellation();
+		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 		
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Date.class), anyObject(), anyObject())).thenReturn(null);
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(null);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 		
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Date.class), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
@@ -112,7 +113,7 @@ public class RBVDR011Test {
 	@Test
 	public void executePolicyCancellationTestOK() throws IOException{
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestOK...");
-		InputParametersPolicyCancellation input = new InputParametersPolicyCancellation();
+		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();
 		reason.setId("01");
@@ -121,7 +122,7 @@ public class RBVDR011Test {
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
 		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Date.class), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
@@ -137,7 +138,7 @@ public class RBVDR011Test {
 	@Test
 	public void executePolicyCancellationTestBDEmptyResult(){
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestBDEmptyResult...");
-		InputParametersPolicyCancellation input = new InputParametersPolicyCancellation();
+		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
 		List<Advice> advices = new ArrayList<>();
@@ -146,7 +147,7 @@ public class RBVDR011Test {
 		advice.setCode(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 		when(spyRbvdR011.getAdviceList()).thenReturn(advices);
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Date.class), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 	}
