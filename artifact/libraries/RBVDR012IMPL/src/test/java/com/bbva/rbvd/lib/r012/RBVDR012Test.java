@@ -202,6 +202,7 @@ public class RBVDR012Test {
 		validation = rbvdR012.executeCancelPolicyHost("11111111111111111111", null, reason, null);
 		assertNotNull(validation);
 		
+		when(mockService.isEnabled(anyString())).thenReturn(false);
 		validation = rbvdR012.executeCancelPolicyHost("11111111111111111111", Calendar.getInstance(), reason, null);
 		assertNotNull(validation);
 	}
