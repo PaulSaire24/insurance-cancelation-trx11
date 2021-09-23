@@ -1,6 +1,7 @@
 package com.bbva.rbvd.lib.r012.impl;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,10 +95,13 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 	}
 
 	@Override
-	public EntityOutPolicyCancellationDTO executeCancelPolicyHost(String contractId, Date cancellationDate, GenericIndicatorDTO reason,
+	public EntityOutPolicyCancellationDTO executeCancelPolicyHost(String contractId, Calendar cancellationDate, GenericIndicatorDTO reason,
 			NotificationsDTO notifications) {
 		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost START *****");
 		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** contractId: {}", contractId);
+		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** cancellationDate: {}", cancellationDate);
+		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** reason: {}", reason);
+		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** notifications: {}", notifications);
 
 		EntityOutPolicyCancellationDTO output = null;
 		if (contractId == null || contractId.length() < 20) {
@@ -130,6 +134,7 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 		HttpHeaders headers = createHttpMediaType();
 		headers.set(RBVDConstants.BCS_OPERATION_TRACER, "ICF3");
 		HttpEntity<EntityOutPolicyCancellationDTO> entity = new HttpEntity<>(body, headers);
+		LOGGER.info("***** RBVDR012Impl - MockService executeCancelPolicyHost ***** body: {} ", entity.getBody());
 		
 		ResponseEntity<PolicyCancellationASO> response = null;
 		

@@ -1,6 +1,6 @@
 package com.bbva.rbvd.lib.r012;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
@@ -11,5 +11,5 @@ import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicy
 public interface RBVDR012 {
 
 	public PolicyCancellationPayloadBO executeCancelPolicyRimac(InputRimacBO input, PolicyCancellationPayloadBO inputPayload);
-	public EntityOutPolicyCancellationDTO executeCancelPolicyHost(String contractId, Date cancellationDate, GenericIndicatorDTO reason, NotificationsDTO notifications);
+	public EntityOutPolicyCancellationDTO executeCancelPolicyHost(String contractId, Calendar cancellationDate, GenericIndicatorDTO reason, NotificationsDTO notifications);
 }
