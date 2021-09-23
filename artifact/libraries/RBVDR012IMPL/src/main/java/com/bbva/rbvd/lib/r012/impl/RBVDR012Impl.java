@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
@@ -156,6 +157,7 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 			}
 		} catch(RestClientException e) {
 			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception: {}", e.getMessage());
+			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost ***** Exception body: {}", ((HttpStatusCodeException) e).getResponseBodyAsString());
 			this.addAdvice(this.policyCancellationAsoErrorHandler.handler(e));
 		}
 
