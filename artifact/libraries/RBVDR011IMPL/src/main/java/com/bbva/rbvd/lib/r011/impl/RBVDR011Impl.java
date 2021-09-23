@@ -2,6 +2,7 @@ package com.bbva.rbvd.lib.r011.impl;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolizaBO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellation;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
@@ -28,7 +29,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR011Impl.class);
 
 	@Override
-	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellation input) {
+	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation START *****");
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation Params: {} *****", input);
 		
@@ -108,9 +109,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		PolicyCancellationPayloadBO inputPayload = new PolicyCancellationPayloadBO();
 		PolizaBO poliza = new PolizaBO();
 		if (input.getCancellationDate() == null) {
-			input.setCancellationDate(new Date());
+			input.setCancellationDate(Calendar.getInstance());
 		}
-		Date date = input.getCancellationDate();  
+		Date date = input.getCancellationDate().getTime();  
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);  
 		String strDate = dateFormat.format(date);  
 		poliza.setFechaAnulacion(strDate);
