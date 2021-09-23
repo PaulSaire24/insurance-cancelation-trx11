@@ -1,6 +1,8 @@
 package com.bbva.rbvd.lib.r012.impl;
 
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -8,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -124,16 +127,23 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 		}
 		
 		EntityOutPolicyCancellationDTO body = new EntityOutPolicyCancellationDTO();
-		body.setCancellationDate(cancellationDate);
 		body.setReason(reason);
 		body.setNotifications(notifications);
+		
+		JSONObject requestJson = new JSONObject(body);
+		if (cancellationDate != null) {
+			Date date = cancellationDate.getTime();  
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");  
+			String strDate = dateFormat.format(date);  
+			requestJson.put("cancellationDate", strDate);
+		}
 		
 		Map<String, String> map = new HashMap<>();
 		map.put(TAG_CONTRCTID, contractId);
 		
 		HttpHeaders headers = createHttpMediaType();
 		headers.set(RBVDConstants.BCS_OPERATION_TRACER, "ICF3");
-		HttpEntity<EntityOutPolicyCancellationDTO> entity = new HttpEntity<>(body, headers);
+		HttpEntity<String> entity = new HttpEntity<>(requestJson.toString(), headers);
 		LOGGER.info("***** RBVDR012Impl - MockService executeCancelPolicyHost ***** body: {} ", entity.getBody());
 		
 		ResponseEntity<PolicyCancellationASO> response = null;
