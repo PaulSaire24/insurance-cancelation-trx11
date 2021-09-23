@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.Calendar;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -199,6 +200,9 @@ public class RBVDR012Test {
 		when(mockService.isEnabled(anyString())).thenReturn(true);
 		when(mockService.getAsoCancellationMock()).thenReturn(MockDTO.getInstance().getPolicyCancellationHostMockResponse().getData());
 		validation = rbvdR012.executeCancelPolicyHost("11111111111111111111", null, reason, null);
+		assertNotNull(validation);
+		
+		validation = rbvdR012.executeCancelPolicyHost("11111111111111111111", Calendar.getInstance(), reason, null);
 		assertNotNull(validation);
 	}
 	
