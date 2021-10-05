@@ -139,6 +139,6 @@ EntityOutPolicyCancellationDTO out = RBVDR012.executeCancelPolicyHost(String con
 > Este código de error es devuelto cuando la póliza no se puede anular.
 
 ### 4.  Versiones:
-#### 4.1  Versión 0.4.1
+#### 4.1  Versión 0.4.2
 
-+ Versión 0.4.1: Esta versión permite realizar consultas a servicios internos y externos relevantes para ejecutar una cancelación de póliza.
++ Versión 0.4.2: Esta versión permite realizar consultas a servicios internos y externos relevantes para ejecutar una cancelación de póliza.
