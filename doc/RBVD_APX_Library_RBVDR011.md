@@ -83,6 +83,6 @@ EntityOutPolicyCancellationDTO out = RBVDR011.executePolicyCancellation(InputPar
 No se requieren mensajes.
 
 ### 4.  Versiones:
-#### 4.1  Versión 0.4.1
+#### 4.1  Versión 0.4.2
 
-+ Versión 0.4.1: Esta versión permite realizar la lógica de negocio para cumplir con el proceso deseado de la transaccion RBVDT011.
++ Versión 0.4.2: Esta versión permite realizar la lógica de negocio para cumplir con el proceso deseado de la transaccion RBVDT011.
