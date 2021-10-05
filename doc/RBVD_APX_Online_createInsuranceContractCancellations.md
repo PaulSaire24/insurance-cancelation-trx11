@@ -6,7 +6,7 @@
 ## 1. Transacciones:
 > En este apartado se detallan todas las transacciones implementadas.
 
-### 1.1. Transaccion RBVDT011
+### 1.1. Transaccion RBVDT011-01-PE
   - Descripcion: Transacción que permite ejecutar una cancelación de póliza
   - Tipo de Origen: Servicio de Negocio
   - API de Negocio: [createInsuranceContractCancellations](https://catalogs.platform.bbva.com/apicatalog/business/apis/apis-insurances-insurancescontracts/versions/global-1.20.0/resources/insurancescontractsapiinsurancescontractsinsurancecontractidcancellationsv1/)
@@ -107,4 +107,4 @@
 ## 6. Versiones del Componente:
 > En este apartado se detalla un historial de cambios o *changelog* por cada version implementada del recurso.
 
-- **Versión 0.4.1**: Esta versión le permite al cliente ejecutar la cancelación de su póliza.
+- **Versión 0.4.2**: Esta versión le permite al cliente ejecutar la cancelación de su póliza.
