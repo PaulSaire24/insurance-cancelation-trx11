@@ -1,6 +1,5 @@
 package com.bbva.rbvd;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
