@@ -106,4 +106,4 @@ En este apartado se grafican todos los componentes involucrados en el funcionami
 ## 6. Versiones del Componente
 En este apartado se detalla un historial de cambios o *changelog* por cada version implementada del recurso.
 
-- **Versión 0.5.0**: Esta versión le permite al cliente ejecutar la cancelación de su póliza.
+- **Versión 0.5.1**: Esta versión le permite al cliente ejecutar la cancelación de su póliza.
