@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Calendar;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -108,6 +107,8 @@ public class RBVDR012Test {
 		rbvdR012.setPisdR014(pisdR014);
 		when(pisdR014.executeSignatureConstruction(anyString(), anyString(), anyString(), anyString(), anyString()))
 			.thenReturn(new SignatureAWS("", "", "", ""));
+		
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("abc");
 		
 		bodyError = "{\"messages\": [{\"code\": \"functionalError\",\"message\": \"CODE#ERROR.\",\"parameters\": [],\"type\": \"FATAL\"}]}";
 		
