@@ -17,49 +17,9 @@
 	</properties>
 	<dependencies>
 		<dependency>
-			<groupId>com.bbva.elara</groupId>
-			<artifactId>elara-aspect</artifactId>
-			<version>${apx.core.online.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bbva.elara</groupId>
-			<artifactId>elara-library</artifactId>
-			<version>${apx.core.online.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.gemini</groupId>
-			<artifactId>org.eclipse.gemini.blueprint.core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.framework</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.bbva.elara</groupId>
-			<artifactId>elara-configuration-manager-application</artifactId>
-			<version>${apx.core.online.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bbva.elara</groupId>
-			<artifactId>elara-utility-log</artifactId>
-			<version>${apx.core.online.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.bbva.rbvd.dto.insurancecancelation</groupId>
 			<artifactId>RBVDC001</artifactId>
-			<version>0.8.1</version>
+			<version>0.9.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -75,13 +35,6 @@
 						<Bundle-Category>library</Bundle-Category>
 						<Import-Package>
 							com.bbva.rbvd.dto.insurancecancelation.*;version="${osgi.version.manifest}",
-							com.bbva.elara.*;version="${osgi.version.manifest}",
-							org.osgi.framework;version="${osgi.version.manifest}",
-							com.bbva.elara.aspect;version="${osgi.version.manifest}",
-							spring;version="${osgi.version.manifest}",
-							org.springframework.aop;version="${osgi.version.manifest}",
-							org.springframework.aop.framework;version="${osgi.version.manifest}",
-							org.aopalliance.aop;version="${osgi.version.manifest}",
 							*;version="${osgi.version.manifest}"</Import-Package>
 					</instructions>
 				</configuration>
