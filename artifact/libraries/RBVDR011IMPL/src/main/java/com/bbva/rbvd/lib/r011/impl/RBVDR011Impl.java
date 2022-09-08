@@ -10,7 +10,6 @@ import java.util.Map;
 
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.google.common.base.Strings;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +107,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		String listCancellation = this.applicationConfigurationService.getProperty("cancellation.list.endoso");
 
-		String channelCancelation[] = listCancellation.split(",");
+		String[] channelCancelation = listCancellation.split(",");
 
 		String channelCode = input.getChannelId();
 		String isChannelEndoso = Arrays.stream(channelCancelation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
