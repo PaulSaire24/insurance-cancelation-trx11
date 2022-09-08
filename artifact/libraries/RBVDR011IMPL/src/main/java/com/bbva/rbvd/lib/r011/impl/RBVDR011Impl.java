@@ -2,11 +2,14 @@ package com.bbva.rbvd.lib.r011.impl;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
+import com.google.common.base.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +104,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
 		
 		this.pisdR100.executeUpdateContractStatus(arguments);
-		
+
+		String listCancellation = this.applicationConfigurationService.getProperty("cancellation.list.endoso");
+
+		String[] channelCancelation = listCancellation.split(",");
+
+		String channelCode = input.getChannelId();
+		String isChannelEndoso = Arrays.stream(channelCancelation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
+		String userCode = input.getUserId();
+
+
 		InputRimacBO inputrimac = new InputRimacBO();
 		inputrimac.setTraceId(input.getTraceId());
 		inputrimac.setNumeroPoliza(Integer.parseInt(policyid));
@@ -111,6 +123,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if (input.getCancellationDate() == null) {
 			input.setCancellationDate(Calendar.getInstance());
 		}
+
+		if(!Strings.isNullOrEmpty(isChannelEndoso)){
+			LOGGER.info("***** RBVDR011Impl - CANAL: {} ACCEPTED  *****", isChannelEndoso);
+			AutorizadorDTO autorizadorDTO = new AutorizadorDTO();
+			autorizadorDTO.setFlagAutorizador("S");
+			autorizadorDTO.setAutorizador(userCode);
+			inputPayload.setAutorizador(autorizadorDTO);
+			LOGGER.info("***** RBVDR011Impl - isChannelEndoso END  *****");
+		}
+
 		Date date = input.getCancellationDate().getTime();  
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);  
 		String strDate = dateFormat.format(date);  

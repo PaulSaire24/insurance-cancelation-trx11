@@ -115,6 +115,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}-${project.version}</Bundle-SymbolicName>
 						<Bundle-Category>library</Bundle-Category>
+						<Export-Package>
+							!*;version="${osgi.version.manifest}"
+						</Export-Package>
 						<Import-Package>
 							com.bbva.rbvd.lib.r003.*;version="${osgi.version.manifest}",
 							com.bbva.rbvd.lib.r012.*;version="${osgi.version.manifest}",

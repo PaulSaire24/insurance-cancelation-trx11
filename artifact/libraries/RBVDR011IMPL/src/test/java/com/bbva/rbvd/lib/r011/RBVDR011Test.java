@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,7 @@ public class RBVDR011Test {
 	private RBVDR012 RBVDR012;
 	private RBVDR003 rbvdr003;
 	private PISDR100 pisdr100;
+	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Before
 	public void setUp() throws Exception {
@@ -71,6 +73,9 @@ public class RBVDR011Test {
 		rbvdr003 = mock(RBVDR003.class);
 		rbvdR011.setRbvdR003(rbvdr003);
 		spyRbvdR011.setRbvdR003(rbvdr003);
+
+		applicationConfigurationService = mock(ApplicationConfigurationService.class);
+		rbvdR011.setApplicationConfigurationService(applicationConfigurationService);
 
 		pisdr100 = mock(PISDR100.class);
 		rbvdR011.setPisdR100(pisdr100);
@@ -129,10 +134,14 @@ public class RBVDR011Test {
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatus(anyMap())).thenReturn(1);
 		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
-		
+
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
-		
+		input.setChannelId("PC");
+		input.setUserId("UI");
+		validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
 	}
 	
 	@Test
@@ -151,5 +160,4 @@ public class RBVDR011Test {
 		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 	}
-	
 }

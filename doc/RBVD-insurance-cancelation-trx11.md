@@ -75,11 +75,11 @@ También consume el servicio externo de Rimac "cancelar".
 ### 3.2. Librerías Externas
 En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
-- **Librería PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md)
+- **Librería PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
   - Metodos reutilizados: executeSignatureConstruction().
-- **Librería PISDR100**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib100/browse/doc/PISD_APX_Library_PISDR100.md)
+- **Librería PISDR100**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib100/browse/doc/PISD_APX_Library_PISDR100.md?at=refs%2Fheads%2Frelease%2F0.5)
   - Metodos reutilizados: executeGetPolicyNumber(), executeSaveContractMovement(), executeSaveContractCancellation(), executeUpdateContractStatus().
-- **Librería RBVDR003**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_RBVD_APP-ID-105529_DSG/repos/insurance-cancelation-lib3/browse/doc/RBVD_APX_Library_RBVDR003.md)
+- **Librería RBVDR003**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_RBVD_APP-ID-105529_DSG/repos/insurance-cancelation-lib3/browse/doc/RBVD_APX_Library_RBVDR003.md?at=refs%2Fheads%2Frelease%2F0.2)
   -  Metodos reutilizados: executeCypherService().
 
 ## 4. Mensajes de Error y Avisos
@@ -107,3 +107,4 @@ En este apartado se grafican todos los componentes involucrados en el funcionami
 En este apartado se detalla un historial de cambios o *changelog* por cada version implementada del recurso.
 
 - **Versión 0.5.1**: Esta versión le permite al cliente ejecutar la cancelación de su póliza.
+- **Versión 0.6.0**: Esta versión le permite al cliente ejecutar la cancelación de su póliza con endoso activo.
