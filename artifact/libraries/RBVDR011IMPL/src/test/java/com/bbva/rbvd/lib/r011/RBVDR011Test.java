@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -140,6 +141,49 @@ public class RBVDR011Test {
 		assertNotNull(validation);
 		input.setChannelId("PC");
 		input.setUserId("UI");
+		validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+	}
+
+	@Test
+	public void executePolicyCancellationWithRefundTestOK() throws IOException{
+		LOGGER.info("PISDR011Test - Executing executePolicyCancellationWithRefundTestOK...");
+		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+		input.setContractId("11111111111111111111");
+		GenericIndicatorDTO reason = new GenericIndicatorDTO();
+		reason.setId("01");
+		input.setReason(reason);
+		Map<String, Object> policy = new HashMap<>();
+		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
+		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
+		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
+		EntityOutPolicyCancellationDTO outHost = new EntityOutPolicyCancellationDTO();
+		GenericStatusDTO genericStatusDTO = new GenericStatusDTO();
+		outHost.setStatus(genericStatusDTO);
+		outHost.getStatus().setDescription("REFUND");
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(outHost);
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
+		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
+		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
+		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
+		when(pisdr100.executeUpdateReceiptsStatus(anyMap())).thenReturn(1);
+		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+		input.setChannelId("PC");
+		input.setUserId("UI");
+		validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+
+		outHost.getStatus().setDescription("NULL");
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(outHost);
+		validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+
+		outHost.setStatus(null);
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(outHost);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 	}
