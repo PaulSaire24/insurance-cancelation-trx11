@@ -107,4 +107,4 @@ En este apartado se grafican todos los componentes involucrados en el funcionami
 En este apartado se detalla un historial de cambios o *changelog* por cada version implementada del recurso.
 
 - **Versión 0.5.1**: Esta versión le permite al cliente ejecutar la cancelación de su póliza.
-- **Versión 0.6.0**: Esta versión le permite al cliente ejecutar la cancelación de su póliza con endoso activo.
+- **Versión 0.7.0**: Esta versión le permite al cliente ejecutar la cancelación de su póliza con endoso activo.

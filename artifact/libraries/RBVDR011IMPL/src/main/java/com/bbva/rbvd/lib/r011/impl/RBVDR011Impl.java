@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.google.common.base.Strings;
@@ -30,6 +31,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 public class RBVDR011Impl extends RBVDR011Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR011Impl.class);
+	private static final String CODE_REFUND = "REFUND";
 
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
@@ -64,9 +66,13 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		String productid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
-		
 		String statusId = RBVDConstants.TAG_BAJ;
 		String movementType = RBVDConstants.MOV_BAJ;
+
+		if(Objects.nonNull(out.getStatus()) && CODE_REFUND.equals(out.getStatus().getDescription())) {
+			statusId = RBVDConstants.TAG_ANU;
+			movementType = RBVDConstants.MOV_ANU;
+		}
 		String email = "";
 		
 		Map<String, Object> mapContract = RBVDUtils.getMapContractNumber(input.getContractId());
@@ -133,7 +139,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			LOGGER.info("***** RBVDR011Impl - isChannelEndoso END  *****");
 		}
 
-		Date date = input.getCancellationDate().getTime();  
+		Date date = input.getCancellationDate().getTime();
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);  
 		String strDate = dateFormat.format(date);  
 		poliza.setFechaAnulacion(strDate);
