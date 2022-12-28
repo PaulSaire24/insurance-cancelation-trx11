@@ -2,7 +2,12 @@ package com.bbva.rbvd.lib.r011.impl;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.google.common.base.Strings;
@@ -134,7 +139,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			LOGGER.info("***** RBVDR011Impl - isChannelEndoso END  *****");
 		}
 
-		Date date = input.getCancellationDate().getTime();  
+		Date date = input.getCancellationDate().getTime();
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);  
 		String strDate = dateFormat.format(date);  
 		poliza.setFechaAnulacion(strDate);
