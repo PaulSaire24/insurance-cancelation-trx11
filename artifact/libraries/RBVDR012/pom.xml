@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>com.bbva.rbvd</groupId>
 		<artifactId>LIBRARIES-insurance-cancelation-trx11</artifactId>
-		<version>0.7.0</version>
+		<version>0.7.1</version>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>RBVDR012</artifactId>
 	<name>RBVDR012</name>
-	<version>0.7.0</version>
+	<version>0.7.1</version>
 	<packaging>bundle</packaging>
 	<description>Library of access to external and internal resources</description>
 	<properties>
