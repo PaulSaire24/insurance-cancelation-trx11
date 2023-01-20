@@ -2,10 +2,12 @@ package com.bbva.rbvd.lib.r011.impl;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,6 +34,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR011Impl.class);
 	private static final String CODE_REFUND = "REFUND";
+	private static final String RECEIPT_STATUS_TYPE_LIST = "RECEIPT_STATUS_TYPE_LIST";
 
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
@@ -68,8 +71,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
 		String statusId = RBVDConstants.TAG_BAJ;
 		String movementType = RBVDConstants.MOV_BAJ;
+		List<String> receiptStatusList = new ArrayList<>();
+		receiptStatusList.add("INC");
 
 		if(Objects.nonNull(out.getStatus()) && CODE_REFUND.equals(out.getStatus().getDescription())) {
+			receiptStatusList.add("COB");
 			statusId = RBVDConstants.TAG_ANU;
 			movementType = RBVDConstants.MOV_ANU;
 		}
@@ -110,6 +116,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
 		
 		this.pisdR100.executeUpdateContractStatus(arguments);
+
+		arguments.clear();
+		arguments.putAll(mapContract);
+		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RECEIPT_STATUS_TYPE.getValue(), statusId);
+		arguments.put(RECEIPT_STATUS_TYPE_LIST, receiptStatusList);
+		this.pisdR100.executeUpdateReceiptsStatusV2(arguments);
 
 		String listCancellation = this.applicationConfigurationService.getProperty("cancellation.list.endoso");
 
