@@ -133,7 +133,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
-		when(pisdr100.executeUpdateReceiptsStatus(anyMap())).thenReturn(1);
+		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
 		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
@@ -166,7 +166,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
-		when(pisdr100.executeUpdateReceiptsStatus(anyMap())).thenReturn(1);
+		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
 		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
