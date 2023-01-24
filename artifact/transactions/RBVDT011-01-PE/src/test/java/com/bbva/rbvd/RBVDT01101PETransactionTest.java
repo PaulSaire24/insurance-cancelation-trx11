@@ -92,7 +92,7 @@ public class RBVDT01101PETransactionTest {
 		LOGGER.info("Execution of RBVDT01101PETransactionTest - executeTestNull *********");
 		when(rbvdr011.executePolicyCancellation(anyObject())).thenReturn(null);
 		this.transaction.execute();
-		assertEquals(Severity.EWR.getValue(), this.transaction.getSeverity().getValue());
+		assertEquals(Severity.ENR.getValue(), this.transaction.getSeverity().getValue());
 	}
 
 	@Test
