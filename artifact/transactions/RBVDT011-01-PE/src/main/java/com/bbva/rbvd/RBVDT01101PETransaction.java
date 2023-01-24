@@ -34,7 +34,7 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 		LOGGER.info("input: {}", input);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		if (validation == null) {
-			setSeverity(Severity.EWR);
+			setSeverity(Severity.ENR);
 		} else {
 			this.setCancellationdate(validation.getCancellationDate());
 			this.setId(validation.getId());
