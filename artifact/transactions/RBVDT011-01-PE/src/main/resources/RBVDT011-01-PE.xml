@@ -18,6 +18,7 @@
 				</dto>
 			</list>
 		</dto>
+		<parameter order="5" name="requestBranch" mandatory="0" type="String" size="4"/>
 	</paramsIn>
 	<paramsOut>
 		<parameter order="1" name="id" mandatory="1" type="String" size="32"/>

@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
+import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationRequestASO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONObject;
@@ -166,6 +168,34 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 		LOGGER.info("***** RBVDR012Impl - executeCancelPolicyHost END *****");
 
 		return output;
+	}
+
+	@Override
+	public CancelationSimulationASO executeSimulateInsuranceContractCancellations(String contractId) {
+		LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations START *****");
+		LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** contractId: {}", contractId);
+
+		Map<String, String> queryString = new HashMap<>();
+		queryString.put(RBVDProperties.PARAM_INSURANCE_CONTRACT_ID.getValue(), contractId);
+
+		HttpHeaders headers = createHttpMediaType();
+
+		CancelationSimulationRequestASO cancelationSimulationRequestASO = new CancelationSimulationRequestASO();
+		String requestJson = JsonHelper.getInstance().toJsonString(cancelationSimulationRequestASO);
+
+		HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
+		LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** body: {}", entity.getBody());
+		LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** headers: {}", entity.getHeaders());
+
+		try {
+			CancelationSimulationASO response = this.internalApiConnector.postForObject("simulateInsuranceCancellations.aso", entity, CancelationSimulationASO.class, queryString);
+			LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** Response: {}", getRequestJson(response));
+			LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations END *****");
+			return response;
+		} catch(RestClientException ex) {
+			LOGGER.debug("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** Exception: {}", ex.getMessage());
+			return null;
+		}
 	}
 
 	private HttpHeaders createHttpHeadersAWS(SignatureAWS signature) {

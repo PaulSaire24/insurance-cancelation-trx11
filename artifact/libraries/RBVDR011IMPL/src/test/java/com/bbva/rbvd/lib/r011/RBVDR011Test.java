@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,6 +78,7 @@ public class RBVDR011Test {
 
 		applicationConfigurationService = mock(ApplicationConfigurationService.class);
 		rbvdR011.setApplicationConfigurationService(applicationConfigurationService);
+		spyRbvdR011.setApplicationConfigurationService(applicationConfigurationService);
 
 		pisdr100 = mock(PISDR100.class);
 		rbvdR011.setPisdR100(pisdr100);
@@ -89,8 +91,11 @@ public class RBVDR011Test {
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestNull...");
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
+		input.setChannelId("PC");
 		
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 		
@@ -105,12 +110,14 @@ public class RBVDR011Test {
 		
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_ANU);
+		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 		
 		policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_BAJ);
+		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
@@ -121,12 +128,14 @@ public class RBVDR011Test {
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestOK...");
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
+		input.setChannelId("PC");
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();
 		reason.setId("01");
 		input.setReason(reason);
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
 		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
+		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
@@ -137,6 +146,7 @@ public class RBVDR011Test {
 		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 		input.setChannelId("PC");
@@ -150,12 +160,14 @@ public class RBVDR011Test {
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationWithRefundTestOK...");
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
+		input.setChannelId("PC");
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();
 		reason.setId("01");
 		input.setReason(reason);
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
 		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
+		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		EntityOutPolicyCancellationDTO outHost = new EntityOutPolicyCancellationDTO();
 		GenericStatusDTO genericStatusDTO = new GenericStatusDTO();
@@ -170,6 +182,7 @@ public class RBVDR011Test {
 		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 		input.setChannelId("PC");
@@ -193,6 +206,7 @@ public class RBVDR011Test {
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestBDEmptyResult...");
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
+		input.setChannelId("PC");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
 		List<Advice> advices = new ArrayList<>();
 		Advice advice = new Advice();
@@ -201,6 +215,7 @@ public class RBVDR011Test {
 		when(spyRbvdR011.getAdviceList()).thenReturn(advices);
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 	}

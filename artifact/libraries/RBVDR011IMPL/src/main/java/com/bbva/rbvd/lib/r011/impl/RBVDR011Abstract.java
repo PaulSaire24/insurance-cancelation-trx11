@@ -3,10 +3,14 @@ package com.bbva.rbvd.lib.r011.impl;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.pisd.lib.r100.PISDR100;
+import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.rbvd.lib.r003.RBVDR003;
 import com.bbva.rbvd.lib.r011.RBVDR011;
 import com.bbva.rbvd.lib.r012.RBVDR012;
 
+/**
+ * This class automatically defines the libraries and utilities that it will use.
+ */
 public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR011 {
 
 	protected ApplicationConfigurationService applicationConfigurationService;
@@ -16,6 +20,8 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	protected RBVDR012 rbvdR012;
 
 	protected RBVDR003 rbvdR003;
+
+	protected PISDR103 pisdR103;
 
 
 	/**
@@ -44,6 +50,13 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	*/
 	public void setRbvdR003(RBVDR003 rbvdR003) {
 		this.rbvdR003 = rbvdR003;
+	}
+
+	/**
+	* @param pisdR103 the this.pisdR103 to set
+	*/
+	public void setPisdR103(PISDR103 pisdR103) {
+		this.pisdR103 = pisdR103;
 	}
 
 }

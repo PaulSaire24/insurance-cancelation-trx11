@@ -8,6 +8,9 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import java.util.Calendar;
 
+/**
+ * In this class, the input and output data is defined automatically through the setters and getters.
+ */
 public abstract class AbstractRBVDT01101PETransaction extends AbstractTransaction {
 
 	public AbstractRBVDT01101PETransaction(){
@@ -40,6 +43,13 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	 */
 	protected NotificationsDTO getNotifications(){
 		return (NotificationsDTO)this.getParameter("notifications");
+	}
+
+	/**
+	 * Return value for input parameter requestBranch
+	 */
+	protected String getRequestbranch(){
+		return (String)this.getParameter("requestBranch");
 	}
 
 	/**
