@@ -58,12 +58,17 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if (isCancellationRequest) {
 			CancelationSimulationASO cancelationSimulationASO = this.rbvdR012.executeSimulateInsuranceContractCancellations(xcontractNumber);
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - cancelationSimulationASO: {}", cancelationSimulationASO);
+			if (cancelationSimulationASO == null) {
+				this.addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_CANCELATIONSIMULATION_RIMAC.getAdviceCode());
+				return null;
+			}
 			Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
 			BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
 			Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellation(requestCancellationId, input, cancelationSimulationASO);
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
-			this.pisdR103.executeSaveInsuranceRequestCancellation(argumentsForSaveRequestCancellation);
+			int isInserted = this.pisdR103.executeSaveInsuranceRequestCancellation(argumentsForSaveRequestCancellation);
+			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - isInserted: {}", isInserted);
 			return mapRetentionResponse(input, cancelationSimulationASO);
 		}
 		
