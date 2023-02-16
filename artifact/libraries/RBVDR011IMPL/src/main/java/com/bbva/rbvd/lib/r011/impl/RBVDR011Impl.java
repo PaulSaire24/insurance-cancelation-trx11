@@ -3,14 +3,7 @@ package com.bbva.rbvd.lib.r011.impl;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
@@ -59,7 +52,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			 productid = java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
 		}
 
-		boolean isCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty("cancellation.request.".concat(StringUtils.defaultString(productid)).concat(".").concat(input.getChannelId())));
+		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - property: {}", "cancellation.request.".concat(StringUtils.defaultString(productid)).concat(".").concat(input.getChannelId().toLowerCase()));
+		boolean isCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty("cancellation.request.".concat(StringUtils.defaultString(productid)).concat(".").concat(input.getChannelId().toLowerCase())));
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - isCancellationRequest: {}", isCancellationRequest);
 		if (isCancellationRequest) {
 			CancelationSimulationASO cancelationSimulationASO = this.rbvdR012.executeSimulateInsuranceContractCancellations(xcontractNumber);
