@@ -70,7 +70,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellation(requestCancellationId, input, cancelationSimulationASO);
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
 			this.pisdR103.executeSaveInsuranceRequestCancellation(argumentsForSaveRequestCancellation);
-			return mapRetentionResponse(input, Calendar.getInstance());
+			return mapRetentionResponse(input, cancelationSimulationASO);
 		}
 		
 		EntityOutPolicyCancellationDTO out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
@@ -235,10 +235,13 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return arguments;
 	}
 
-	private EntityOutPolicyCancellationDTO mapRetentionResponse(InputParametersPolicyCancellationDTO input, Calendar cancellationRequestDate) {
+	private EntityOutPolicyCancellationDTO mapRetentionResponse(InputParametersPolicyCancellationDTO input, CancelationSimulationASO cancelationSimulationASO) {
+		Calendar cancellationDate = Calendar.getInstance();
+		cancellationDate.setTime(cancelationSimulationASO.getData().getCancelationDate());
+
 		EntityOutPolicyCancellationDTO entityOutPolicyCancellationDTO = new EntityOutPolicyCancellationDTO();
 		entityOutPolicyCancellationDTO.setId("ID");
-		entityOutPolicyCancellationDTO.setCancellationDate(cancellationRequestDate);
+		entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
 		entityOutPolicyCancellationDTO.setReason(new GenericIndicatorDTO());
 		entityOutPolicyCancellationDTO.getReason().setId(input.getReason().getId());
 		entityOutPolicyCancellationDTO.setStatus(new GenericStatusDTO());

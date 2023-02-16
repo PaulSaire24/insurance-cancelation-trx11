@@ -1,7 +1,7 @@
 package com.bbva.rbvd.lib.r011;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyObject;
@@ -11,6 +11,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,6 +21,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.pisd.lib.r103.PISDR103;
+import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationHostBO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -61,6 +66,7 @@ public class RBVDR011Test {
 	private RBVDR012 RBVDR012;
 	private RBVDR003 rbvdr003;
 	private PISDR100 pisdr100;
+	private PISDR103 pisdr103;
 	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Before
@@ -83,7 +89,10 @@ public class RBVDR011Test {
 		pisdr100 = mock(PISDR100.class);
 		rbvdR011.setPisdR100(pisdr100);
 		spyRbvdR011.setPisdR100(pisdr100);
-		
+
+		pisdr103 = mock(PISDR103.class);
+		rbvdR011.setPisdR103(pisdr103);
+		spyRbvdR011.setPisdR103(pisdr103);
 	}
 	
 	@Test
@@ -218,5 +227,39 @@ public class RBVDR011Test {
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
+	}
+
+	@Test
+	public void executePolicyCancellationIsCancellationRequestTestOK() {
+		LOGGER.info("PISDR011Test - Executing executePolicyCancellationIsCancellationRequestTestOK...");
+		Map<String, Object> policy = new HashMap<>();
+		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
+
+		Date cancellationDate = new Date();
+		CancelationSimulationASO cancelationSimulationASO = new CancelationSimulationASO();
+		cancelationSimulationASO.setData(new CancelationSimulationHostBO());
+		cancelationSimulationASO.getData().setCancelationDate(cancellationDate);
+		cancelationSimulationASO.getData().setCustomerRefund(new GenericAmountDTO());
+		cancelationSimulationASO.getData().getCustomerRefund().setAmount(Double.valueOf(123));
+		cancelationSimulationASO.getData().getCustomerRefund().setCurrency("USD");
+
+		Map<String, Object> responseGetRequestCancellationId = new HashMap<>();
+		responseGetRequestCancellationId.put(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue(), new BigDecimal("123"));
+
+		when(rbvdr003.executeCypherService(anyObject())).thenReturn("");
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
+		when(RBVDR012.executeSimulateInsuranceContractCancellations(anyString())).thenReturn(cancelationSimulationASO);
+		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
+		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
+
+		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+		input.setContractId("00110840020012345678");
+		input.setChannelId("PC");
+		input.setReason(new GenericIndicatorDTO());
+		input.getReason().setId("01");
+		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+		assertEquals(cancellationDate, validation.getCancellationDate().getTime());
 	}
 }
