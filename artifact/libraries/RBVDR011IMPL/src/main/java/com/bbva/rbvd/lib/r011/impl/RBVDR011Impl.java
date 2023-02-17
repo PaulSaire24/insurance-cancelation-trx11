@@ -72,7 +72,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 				, input.getNotifications());
 		if (out == null) { return null; }
 
-		if (out == null || policy == null) {
+		if (policy == null) {
 			if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
 					&& this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
 				LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO NO ROYAL - Response = {} *****", out);
