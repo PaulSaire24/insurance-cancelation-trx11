@@ -119,14 +119,14 @@ public class RBVDR011Test {
 		
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_ANU);
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
+		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 		
 		policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_BAJ);
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
+		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
@@ -144,7 +144,7 @@ public class RBVDR011Test {
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
 		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
+		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
@@ -176,7 +176,7 @@ public class RBVDR011Test {
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
 		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
+		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		EntityOutPolicyCancellationDTO outHost = new EntityOutPolicyCancellationDTO();
 		GenericStatusDTO genericStatusDTO = new GenericStatusDTO();
@@ -233,7 +233,7 @@ public class RBVDR011Test {
 	public void executePolicyCancellationIsCancellationRequestTestOK() {
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationIsCancellationRequestTestOK...");
 		Map<String, Object> policy = new HashMap<>();
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), "1");
+		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
 
 		Date cancellationDate = new Date();
 		CancelationSimulationASO cancelationSimulationASO = new CancelationSimulationASO();
@@ -252,6 +252,7 @@ public class RBVDR011Test {
 		when(RBVDR012.executeSimulateInsuranceContractCancellations(anyString())).thenReturn(cancelationSimulationASO);
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
+		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
 
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("00110840020012345678");
@@ -261,5 +262,39 @@ public class RBVDR011Test {
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 		assertEquals(cancellationDate, validation.getCancellationDate().getTime());
+	}
+
+	@Test
+	public void executePolicyCancellationIsCancellationRequestTestError() {
+		LOGGER.info("PISDR011Test - Executing executePolicyCancellationIsCancellationRequestTestOK...");
+		Map<String, Object> policy = new HashMap<>();
+		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
+
+		Date cancellationDate = new Date();
+		CancelationSimulationASO cancelationSimulationASO = new CancelationSimulationASO();
+		cancelationSimulationASO.setData(new CancelationSimulationHostBO());
+		cancelationSimulationASO.getData().setCancelationDate(cancellationDate);
+		cancelationSimulationASO.getData().setCustomerRefund(new GenericAmountDTO());
+		cancelationSimulationASO.getData().getCustomerRefund().setAmount(Double.valueOf(123));
+		cancelationSimulationASO.getData().getCustomerRefund().setCurrency("USD");
+
+		Map<String, Object> responseGetRequestCancellationId = new HashMap<>();
+		responseGetRequestCancellationId.put(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue(), new BigDecimal("123"));
+
+		when(rbvdr003.executeCypherService(anyObject())).thenReturn("");
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
+		when(RBVDR012.executeSimulateInsuranceContractCancellations(anyString())).thenReturn(null);
+		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
+		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
+		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
+
+		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+		input.setContractId("00110840020012345678");
+		input.setChannelId("PC");
+		input.setReason(new GenericIndicatorDTO());
+		input.getReason().setId("01");
+		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
+		assertNull(validation);
 	}
 }
