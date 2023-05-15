@@ -73,7 +73,8 @@ public class RBVDT01101PETransactionTest {
 		this.transactionRequest.setBody(commonRequestBody);
 		this.transactionRequest.setHeader(header);
 		this.transaction.getContext().setTransactionRequest(transactionRequest);
-		
+		this.transaction.setIsrefund(true);
+		this.transaction.setCancellationtype("APPLICATION_DATE");
 		mockDTO = MockDTO.getInstance();
 	}
 
@@ -99,5 +100,7 @@ public class RBVDT01101PETransactionTest {
 	public void testNotNull(){
 		Assert.assertNotNull(this.transaction);
 		this.transaction.execute();
+		assertTrue(this.transaction.getIsrefund());
+		assertEquals(this.transaction.getCancellationtype(),"APPLICATION_DATE");
 	}
 }
