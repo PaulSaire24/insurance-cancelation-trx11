@@ -19,6 +19,8 @@
 			</list>
 		</dto>
 		<parameter order="5" name="requestBranch" mandatory="0" type="String" size="4"/>
+		<parameter order="6" name="isRefund" mandatory="0" type="Boolean" size="0"/>
+		<parameter order="7" name="cancellationType" mandatory="0" type="String" size="20"/>
 	</paramsIn>
 	<paramsOut>
 		<parameter order="1" name="id" mandatory="1" type="String" size="32"/>
@@ -57,6 +59,8 @@
 			<parameter order="3" name="targetCurrency" mandatory="1" type="String" size="5"/>
 			<parameter order="4" name="calculationDate" mandatory="1" type="Date (YYYY-MM-DD)" size="0"/>
 		</dto>
+		<parameter order="9" name="isRefund" mandatory="0" type="Boolean" size="0"/>
+		<parameter order="10" name="cancellationType" mandatory="0" type="String" size="20"/>
 	</paramsOut>
 	<description>Transaction of policy cancelation</description>
 </transaction>
