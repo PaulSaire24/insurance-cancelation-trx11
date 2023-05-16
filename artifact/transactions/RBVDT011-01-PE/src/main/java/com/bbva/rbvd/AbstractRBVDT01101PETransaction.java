@@ -53,6 +53,20 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	}
 
 	/**
+	 * Return value for input parameter isRefund
+	 */
+	protected Boolean getIsrefund(){
+		return (Boolean)this.getParameter("isRefund");
+	}
+
+	/**
+	 * Return value for input parameter cancellationType
+	 */
+	protected String getCancellationtype(){
+		return (String)this.getParameter("cancellationType");
+	}
+
+	/**
 	 * Set value for String output parameter id
 	 */
 	protected void setId(final String field){
@@ -106,5 +120,19 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	 */
 	protected void setExchangerate(final ExchangeRateDTO field){
 		this.addParameter("exchangeRate", field);
+	}
+
+	/**
+	 * Set value for Boolean output parameter isRefund
+	 */
+	protected void setIsrefund(final Boolean field){
+		this.addParameter("isRefund", field);
+	}
+
+	/**
+	 * Set value for String output parameter cancellationType
+	 */
+	protected void setCancellationtype(final String field){
+		this.addParameter("cancellationType", field);
 	}
 }
