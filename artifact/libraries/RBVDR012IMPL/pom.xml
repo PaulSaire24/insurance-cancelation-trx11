@@ -93,6 +93,11 @@
 			<artifactId>PISDR014</artifactId>
 			<version>0.10.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.bbva.pisd.dto.insurance</groupId>
+			<artifactId>PISDC011</artifactId>
+			<version>0.18.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
