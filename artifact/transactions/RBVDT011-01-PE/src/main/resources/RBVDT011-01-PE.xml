@@ -18,9 +18,8 @@
 				</dto>
 			</list>
 		</dto>
-		<parameter order="5" name="requestBranch" mandatory="0" type="String" size="4"/>
-		<parameter order="6" name="isRefund" mandatory="0" type="Boolean" size="0"/>
-		<parameter order="7" name="cancellationType" mandatory="0" type="String" size="20"/>
+		<parameter order="5" name="isRefund" mandatory="0" type="Boolean" size="0"/>
+		<parameter order="6" name="cancellationType" mandatory="0" type="String" size="20"/>
 	</paramsIn>
 	<paramsOut>
 		<parameter order="1" name="id" mandatory="1" type="String" size="32"/>
