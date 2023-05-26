@@ -13,4 +13,7 @@
 	<bean id="pisdR103" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r103.PISDR103"/>
 	</bean>
+	<bean id="rbvdR042" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r042.RBVDR042"/>
+	</bean>
 </beans>

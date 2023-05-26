@@ -7,6 +7,7 @@ import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.rbvd.lib.r003.RBVDR003;
 import com.bbva.rbvd.lib.r011.RBVDR011;
 import com.bbva.rbvd.lib.r012.RBVDR012;
+import com.bbva.rbvd.lib.r042.RBVDR042;
 
 /**
  * This class automatically defines the libraries and utilities that it will use.
@@ -22,6 +23,8 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	protected RBVDR003 rbvdR003;
 
 	protected PISDR103 pisdR103;
+
+	protected RBVDR042 rbvdR042;
 
 
 	/**
@@ -57,6 +60,13 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	*/
 	public void setPisdR103(PISDR103 pisdR103) {
 		this.pisdR103 = pisdR103;
+	}
+
+	/**
+	 * @param rbvdR042 the this.rbvdR042 to set
+	 */
+	public void setRbvdR042(RBVDR042 rbvdR042) {
+		this.rbvdR042 = rbvdR042;
 	}
 
 }

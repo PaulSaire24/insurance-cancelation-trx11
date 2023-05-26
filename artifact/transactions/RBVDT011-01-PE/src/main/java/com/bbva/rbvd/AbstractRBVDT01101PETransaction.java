@@ -46,13 +46,6 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	}
 
 	/**
-	 * Return value for input parameter requestBranch
-	 */
-	protected String getRequestbranch(){
-		return (String)this.getParameter("requestBranch");
-	}
-
-	/**
 	 * Return value for input parameter isRefund
 	 */
 	protected Boolean getIsrefund(){
