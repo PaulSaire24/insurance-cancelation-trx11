@@ -15,6 +15,7 @@
 						<parameter order="3" name="address" mandatory="0" type="String" size="80"/>
 						<parameter order="4" name="username" mandatory="0" type="String" size="20"/>
 					</dto>
+					<parameter order="2" name="id" mandatory="0" type="String" size="40"/>
 				</dto>
 			</list>
 		</dto>
@@ -37,6 +38,7 @@
 						<parameter order="3" name="address" mandatory="0" type="String" size="80"/>
 						<parameter order="4" name="username" mandatory="0" type="String" size="20"/>
 					</dto>
+					<parameter order="2" name="id" mandatory="0" type="String" size="40"/>
 				</dto>
 			</list>
 		</dto>
