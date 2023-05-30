@@ -176,7 +176,7 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 		LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** contractId: {}", contractId);
 
 		Map<String, String> queryString = new HashMap<>();
-		queryString.put(RBVDProperties.PARAM_INSURANCE_CONTRACT_ID.getValue(), contractId);
+		queryString.put(RBVDProperties.QUERYSTRING_CONTRACTID.getValue(), contractId);
 
 		HttpHeaders headers = createHttpMediaType();
 
