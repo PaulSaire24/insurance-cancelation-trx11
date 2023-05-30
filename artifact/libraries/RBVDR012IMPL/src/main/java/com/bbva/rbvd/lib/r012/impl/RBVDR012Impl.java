@@ -188,7 +188,7 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 		LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** headers: {}", entity.getHeaders());
 
 		try {
-			CancelationSimulationASO response = this.internalApiConnector.postForObject("simulateInsuranceCancellations.aso", entity, CancelationSimulationASO.class, queryString);
+			CancelationSimulationASO response = this.internalApiConnector.postForObject(RBVDProperties.ID_API_CANCELATION_SIMULATION_ASO.getValue(), entity, CancelationSimulationASO.class, queryString);
 			LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** Response: {}", getRequestJson(response));
 			LOGGER.info("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations END *****");
 			return response;
