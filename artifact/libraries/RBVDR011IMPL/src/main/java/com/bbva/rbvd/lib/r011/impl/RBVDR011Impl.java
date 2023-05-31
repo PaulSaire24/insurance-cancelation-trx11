@@ -39,6 +39,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 
+import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
 import static java.util.Objects.nonNull;
 
 public class RBVDR011Impl extends RBVDR011Abstract {
@@ -62,12 +63,18 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if (validateNewCancellationRequest(policy, input)) {
 			return executeFirstCancellationRequest(xcontractNumber, input, policy);
 		}
-		
-		EntityOutPolicyCancellationDTO out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
-				, input.getCancellationDate()
-				, input.getReason()
-				, input.getNotifications());
-		if (out == null) { return null; }
+
+		EntityOutPolicyCancellationDTO out = null;
+
+		if (!input.getCancellationType().equals(END_OF_VALIDATY.name())) {
+			out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
+					, input.getCancellationDate()
+					, input.getReason()
+					, input.getNotifications());
+			if (out == null) {
+				return null;
+			}
+		}
 
 		if (policy == null) {
 			if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
@@ -136,6 +143,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
+		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), input.getCancellationDate());
+
+		if (input.getCancellationType().equals(END_OF_VALIDATY.name())) {
+			arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
+		}
 		
 		this.pisdR100.executeUpdateContractStatus(arguments);
 

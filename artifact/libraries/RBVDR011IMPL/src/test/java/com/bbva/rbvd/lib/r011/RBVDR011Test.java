@@ -109,6 +109,7 @@ public class RBVDR011Test {
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		input.setChannelId("PC");
+		input.setCancellationType("test");
 		
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
@@ -152,6 +153,7 @@ public class RBVDR011Test {
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();
 		reason.setId("01");
 		input.setReason(reason);
+		input.setCancellationType("test");
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
 		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
@@ -191,6 +193,7 @@ public class RBVDR011Test {
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		input.setChannelId("PC");
+		input.setCancellationType("test");
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();
 		reason.setId("01");
 		input.setReason(reason);
@@ -240,6 +243,7 @@ public class RBVDR011Test {
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		input.setChannelId("PC");
+		input.setCancellationType("test");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
 		List<Advice> advices = new ArrayList<>();
 		Advice advice = new Advice();
@@ -471,6 +475,7 @@ public class RBVDR011Test {
 		input.setChannelId("PC");
 		input.setReason(new GenericIndicatorDTO());
 		input.getReason().setId("01");
+		input.setCancellationType("test");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 		assertEquals(cancellationDate, validation.getCancellationDate().getTime());
@@ -559,6 +564,7 @@ public class RBVDR011Test {
 		input.setChannelId("PC");
 		input.setReason(new GenericIndicatorDTO());
 		input.getReason().setId("01");
+		input.setCancellationType("test");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 	}
