@@ -64,17 +64,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return executeFirstCancellationRequest(xcontractNumber, input, policy);
 		}
 
-		EntityOutPolicyCancellationDTO out = null;
-
-		if (!input.getCancellationType().equals(END_OF_VALIDATY.name())) {
-			out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
-					, input.getCancellationDate()
-					, input.getReason()
-					, input.getNotifications());
-			if (out == null) {
-				return null;
-			}
+		EntityOutPolicyCancellationDTO out = isCancellationTypeValidaty(xcontractNumber, input);
+		if (out == null) {
+			return null;
 		}
+
 
 		if (policy == null) {
 			if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
@@ -145,10 +139,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
 		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), input.getCancellationDate());
 
-		if (input.getCancellationType().equals(END_OF_VALIDATY.name())) {
-			arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
-		}
-		
+		updateContractStatusIfEndOfValidity(input, arguments);
 		this.pisdR100.executeUpdateContractStatus(arguments);
 
 		arguments.clear();
@@ -200,6 +191,28 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
+	}
+
+	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(String xcontractNumber, InputParametersPolicyCancellationDTO input) {
+		if (!input.getCancellationType().equals(END_OF_VALIDATY.name())) {
+			EntityOutPolicyCancellationDTO out = this.rbvdR012.executeCancelPolicyHost(
+					xcontractNumber,
+					input.getCancellationDate(),
+					input.getReason(),
+					input.getNotifications()
+			);
+			if (out == null) {
+				return null;
+			}
+			return out;
+		}
+		return null;
+	}
+
+	private void updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, Map<String, Object> arguments) {
+		if (input.getCancellationType().equals(END_OF_VALIDATY.name())) {
+			arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
+		}
 	}
 
 	private boolean isActiveStatusId(Object statusId) {
