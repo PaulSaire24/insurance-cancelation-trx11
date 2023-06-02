@@ -200,13 +200,13 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 					input.getCancellationDate(),
 					input.getReason(),
 					input.getNotifications()
-			);git
+			);
 		}
 		return null;
 	}
 
 	private void updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, Map<String, Object> arguments) {
-		if (input.getCancellationType().equals(END_OF_VALIDATY.name())) {
+		if (END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
 		}
 	}
