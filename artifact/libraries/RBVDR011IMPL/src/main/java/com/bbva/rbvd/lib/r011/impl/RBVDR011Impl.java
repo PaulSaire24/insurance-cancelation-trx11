@@ -194,13 +194,13 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 
 	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(String xcontractNumber, InputParametersPolicyCancellationDTO input) {
-		if (!input.getCancellationType().equals(END_OF_VALIDATY.name())) {
+		if(!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			return this.rbvdR012.executeCancelPolicyHost(
 					xcontractNumber,
 					input.getCancellationDate(),
 					input.getReason(),
 					input.getNotifications()
-			);
+			);git
 		}
 		return null;
 	}
