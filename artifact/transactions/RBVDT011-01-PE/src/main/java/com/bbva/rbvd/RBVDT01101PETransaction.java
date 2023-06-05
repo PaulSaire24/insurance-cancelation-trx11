@@ -27,6 +27,7 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 		input.setChannelId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.CHANNELCODE));
 		input.setTransactionId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.TRANSACTIONCODE));
 		input.setUserId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE));
+		input.setCancellationType(this.getCancellationtype());
 		input.setContractId(this.getInsuranceContractId());
 		input.setReason(this.getReason());
 		input.setNotifications(this.getNotifications());
