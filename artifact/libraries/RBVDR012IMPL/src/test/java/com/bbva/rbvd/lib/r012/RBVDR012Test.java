@@ -139,18 +139,23 @@ public class RBVDR012Test {
 	@Test
 	public void executeValidateCancelationRulesTestOK() throws IOException {
 		LOGGER.info("RBVDR019Test - Executing executeValidateCancelationRulesTestOK...");
-		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<PolicyCancellationBO>) any(), anyMap()))
-				.thenReturn(new ResponseEntity<>(responseCancelPolicy, HttpStatus.OK));
 
 		InputRimacBO input = new InputRimacBO();
 		input.setCodProducto("001");
 		input.setNumeroPoliza(1000);
+
+		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<PolicyCancellationBO>) any(), anyMap()))
+				.thenReturn(new ResponseEntity<>(responseCancelPolicy, HttpStatus.OK));
+
 		PolicyCancellationPayloadBO validation = rbvdR012.executeCancelPolicyRimac(input, null);
 		assertNotNull(validation);
 
 		input.setCertificado(100);
 		input.setFechaAnulacion(LocalDate.now());
 		input.setTipoFlujo("01");
+
+		when(this.applicationConfigurationService.getProperty("INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES")).thenReturn("001");
+
 		validation = rbvdR012.executeCancelPolicyRimac(input, null);
 		assertNotNull(validation);
 
