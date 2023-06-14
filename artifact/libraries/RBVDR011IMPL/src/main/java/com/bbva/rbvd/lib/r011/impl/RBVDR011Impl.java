@@ -82,11 +82,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: policy = {} *****", policy);
 
-		if(out != null){
-			out.setId((String) policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()));
-
-		}
-
 		String statusid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()), "0");
 		if (RBVDConstants.TAG_ANU.equals(statusid) || RBVDConstants.TAG_BAJ.equals(statusid)) {
 			this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
