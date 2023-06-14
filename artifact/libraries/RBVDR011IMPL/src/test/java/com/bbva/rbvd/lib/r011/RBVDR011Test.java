@@ -110,6 +110,8 @@ public class RBVDR011Test {
 		input.setContractId("11111111111111111111");
 		input.setChannelId("PC");
 		input.setCancellationType("test");
+		input.setReason(new GenericIndicatorDTO());
+		input.getReason().setId("1");
 		
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
@@ -539,6 +541,7 @@ public class RBVDR011Test {
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationIsCancellationRequestTestOK...");
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
+		policy.put(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue(), "123456");
 
 		Date cancellationDate = new Date();
 		CancelationSimulationASO cancelationSimulationASO = new CancelationSimulationASO();
@@ -558,6 +561,7 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
+
 
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("00110840020012345678");

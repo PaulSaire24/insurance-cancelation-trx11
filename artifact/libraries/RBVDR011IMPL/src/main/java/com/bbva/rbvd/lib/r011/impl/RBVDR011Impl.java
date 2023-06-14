@@ -14,6 +14,7 @@ import java.util.Objects;
 
 import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationHostBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
@@ -65,10 +66,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		EntityOutPolicyCancellationDTO out = isCancellationTypeValidaty(xcontractNumber, input);
-		if (out == null) {
+
+		if(out == null){
 			return null;
 		}
-
 
 		if (policy == null) {
 			if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
@@ -80,6 +81,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return null;
 		}
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: policy = {} *****", policy);
+
+		if(out != null){
+			out.setId((String) policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()));
+
+		}
+
 		String statusid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()), "0");
 		if (RBVDConstants.TAG_ANU.equals(statusid) || RBVDConstants.TAG_BAJ.equals(statusid)) {
 			this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
@@ -136,10 +143,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		
 		arguments.clear();
 		arguments.putAll(mapContract);
-		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
+		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), updateContractStatusIfEndOfValidity(input, statusId));
 		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), input.getCancellationDate());
 
-		updateContractStatusIfEndOfValidity(input, arguments);
 		this.pisdR100.executeUpdateContractStatus(arguments);
 
 		arguments.clear();
@@ -192,7 +198,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
 	}
-
 	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(String xcontractNumber, InputParametersPolicyCancellationDTO input) {
 		if(!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			return this.rbvdR012.executeCancelPolicyHost(
@@ -202,13 +207,19 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 					input.getNotifications()
 			);
 		}
-		return null;
+		CancelationSimulationASO cancelationSimulationASO = new CancelationSimulationASO();
+		cancelationSimulationASO.setData(new CancelationSimulationHostBO());
+		if(input.getCancellationDate() != null){
+			cancelationSimulationASO.getData().setCancelationDate(input.getCancellationDate().getTime());
+		}
+		return mapRetentionResponse(null, input, cancelationSimulationASO);
 	}
 
-	private void updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, Map<String, Object> arguments) {
+	private String updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, String statusId) {
 		if (END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-			arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
+			 return  RBVDConstants.TAG_PEN;
 		}
+		return statusId;
 	}
 
 	private boolean isActiveStatusId(Object statusId) {
@@ -366,8 +377,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 	private EntityOutPolicyCancellationDTO mapRetentionResponse(String policyId, InputParametersPolicyCancellationDTO input, CancelationSimulationASO cancelationSimulationASO) {
 		Calendar cancellationDate = Calendar.getInstance();
+		if(cancelationSimulationASO.getData().getCancelationDate() != null){
 		cancellationDate.setTime(cancelationSimulationASO.getData().getCancelationDate());
-
+		}
 		EntityOutPolicyCancellationDTO entityOutPolicyCancellationDTO = new EntityOutPolicyCancellationDTO();
 		entityOutPolicyCancellationDTO.setId(policyId);
 		entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
