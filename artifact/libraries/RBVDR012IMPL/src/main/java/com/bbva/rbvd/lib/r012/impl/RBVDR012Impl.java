@@ -10,6 +10,7 @@ import java.util.Map;
 
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationRequestASO;
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONObject;
@@ -66,7 +67,8 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 			this.addAdvice(RBVDErrors.ERROR_INVALID_INPUT_RIMAC_CHARMAX4_CODPRODUCTO.getAdviceCode());
 			return null; 
 		}
-		
+		Gson obj = new Gson();
+		LOGGER.info(obj.toJson(inputPayload));
 		PolicyCancellationPayloadBO output = null;
 		PolicyCancellationBO bodyRequest = new PolicyCancellationBO();
 		bodyRequest.setPayload(inputPayload);
