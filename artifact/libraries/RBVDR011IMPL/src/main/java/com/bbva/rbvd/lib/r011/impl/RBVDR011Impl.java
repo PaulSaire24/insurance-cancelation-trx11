@@ -82,6 +82,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: policy = {} *****", policy);
 
+
 		String statusid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()), "0");
 		if (RBVDConstants.TAG_ANU.equals(statusid) || RBVDConstants.TAG_BAJ.equals(statusid)) {
 			this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
@@ -91,6 +92,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		executeCancellationRequestMov(input, policy, RBVDConstants.MOV_BAJ);
 
 		String policyid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
+		out.setId(policyid);
 		String productid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
