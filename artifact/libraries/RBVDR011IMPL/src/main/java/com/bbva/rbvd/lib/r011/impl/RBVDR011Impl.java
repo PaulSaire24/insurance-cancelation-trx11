@@ -14,7 +14,6 @@ import java.util.Objects;
 
 import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationHostBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
@@ -47,6 +46,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR011Impl.class);
 	private static final String CODE_REFUND = "REFUND";
+	private static final String CODE_PENDING = "PENDING";
 	private static final String RECEIPT_STATUS_TYPE_LIST = "RECEIPT_STATUS_TYPE_LIST";
 	private static final String OK = "OK";
 	private static final String OK_WARN = "OK_WARN";
@@ -60,14 +60,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation xcontractNumber: {} *****", xcontractNumber);
 
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
-		String insuranceProductId = null;
 		if (validateNewCancellationRequest(policy, input)) {
 			return executeFirstCancellationRequest(xcontractNumber, input, policy);
 		}
 
 		EntityOutPolicyCancellationDTO out = isCancellationTypeValidaty(xcontractNumber, input);
-
-		if(out == null){
+		if (out == null) {
 			return null;
 		}
 
@@ -135,21 +133,22 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_TOTAL_DEBT_AMOUNT.getValue(), totalDebt);
 		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue(), pendingAmount);
 		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_TRANSACTION.getValue(), input.getTransactionId());
-		
-		this.pisdR100.executeSaveContractCancellation(arguments);
-		
+
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), updateContractStatusIfEndOfValidity(input, statusId));
 		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), input.getCancellationDate());
-
 		this.pisdR100.executeUpdateContractStatus(arguments);
 
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RECEIPT_STATUS_TYPE.getValue(), statusId);
 		arguments.put(RECEIPT_STATUS_TYPE_LIST, receiptStatusList);
-		this.pisdR100.executeUpdateReceiptsStatusV2(arguments);
+
+		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
+			this.pisdR100.executeSaveContractCancellation(arguments);
+			this.pisdR100.executeUpdateReceiptsStatusV2(arguments);
+		}
 
 		String listCancellation = this.applicationConfigurationService.getProperty("cancellation.list.endoso");
 
@@ -196,7 +195,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return out;
 	}
 	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(String xcontractNumber, InputParametersPolicyCancellationDTO input) {
-		if(!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
+		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			return this.rbvdR012.executeCancelPolicyHost(
 					xcontractNumber,
 					input.getCancellationDate(),
@@ -204,12 +203,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 					input.getNotifications()
 			);
 		}
-		CancelationSimulationASO cancelationSimulationASO = new CancelationSimulationASO();
-		cancelationSimulationASO.setData(new CancelationSimulationHostBO());
-		if(input.getCancellationDate() != null){
-			cancelationSimulationASO.getData().setCancelationDate(input.getCancellationDate().getTime());
-		}
-		return mapRetentionResponse(null, input, cancelationSimulationASO);
+		return mapRetentionResponse(null, input, null, null, null);
 	}
 
 	private String updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, String statusId) {
@@ -300,7 +294,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
 		int isInsertedMov = this.pisdR103.executeSaveInsuranceRequestCancellationMov(argumentsForSaveRequestCancellationMov);
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - isInsertedMov: {}", isInsertedMov);
-		return mapRetentionResponse((String) policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), input, cancelationSimulationASO);
+		return mapRetentionResponse((String) policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), input, cancelationSimulationASO, "01", CODE_PENDING);
 	}
 
 	private EntityOutPolicyCancellationDTO executeCancellationRequestMov(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, String statusId) {
@@ -372,19 +366,22 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return arguments;
 	}
 
-	private EntityOutPolicyCancellationDTO mapRetentionResponse(String policyId, InputParametersPolicyCancellationDTO input, CancelationSimulationASO cancelationSimulationASO) {
-		Calendar cancellationDate = Calendar.getInstance();
-		if(cancelationSimulationASO.getData().getCancelationDate() != null){
-		cancellationDate.setTime(cancelationSimulationASO.getData().getCancelationDate());
-		}
+	private EntityOutPolicyCancellationDTO mapRetentionResponse(String policyId, InputParametersPolicyCancellationDTO input,
+																CancelationSimulationASO cancelationSimulationASO, String statusId, String statusDescription) {
 		EntityOutPolicyCancellationDTO entityOutPolicyCancellationDTO = new EntityOutPolicyCancellationDTO();
 		entityOutPolicyCancellationDTO.setId(policyId);
-		entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
+		if (cancelationSimulationASO != null && cancelationSimulationASO.getData() != null) {
+			Calendar cancellationDate = Calendar.getInstance();
+			cancellationDate.setTime(cancelationSimulationASO.getData().getCancelationDate());
+			entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
+		} else {
+			entityOutPolicyCancellationDTO.setCancellationDate(input.getCancellationDate());
+		}
 		entityOutPolicyCancellationDTO.setReason(new GenericIndicatorDTO());
 		entityOutPolicyCancellationDTO.getReason().setId(input.getReason().getId());
 		entityOutPolicyCancellationDTO.setStatus(new GenericStatusDTO());
-		entityOutPolicyCancellationDTO.getStatus().setId("01");
-		entityOutPolicyCancellationDTO.getStatus().setDescription("PENDING");
+		entityOutPolicyCancellationDTO.getStatus().setId(statusId);
+		entityOutPolicyCancellationDTO.getStatus().setDescription(statusDescription);
 		return entityOutPolicyCancellationDTO;
 	}
 }
