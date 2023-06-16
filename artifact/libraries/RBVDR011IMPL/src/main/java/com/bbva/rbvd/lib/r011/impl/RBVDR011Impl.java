@@ -203,7 +203,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 					input.getNotifications()
 			);
 		}
-		return mapRetentionResponse(null, input, null, null, null);
+		return mapRetentionResponse(null, input, null, input.getCancellationType(), input.getCancellationType());
 	}
 
 	private String updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, String statusId) {
