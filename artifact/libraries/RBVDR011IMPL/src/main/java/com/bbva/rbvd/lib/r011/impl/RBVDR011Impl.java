@@ -70,13 +70,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		if (policy == null) {
-			if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
-					&& this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
-				LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO NO ROYAL - Response = {} *****", out);
-				this.getAdviceList().clear();
-				return out;
-			}
-			return null;
+			return validatePolicy(out);
 		}
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: policy = {} *****", policy);
 
@@ -90,7 +84,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		executeCancellationRequestMov(input, policy, RBVDConstants.MOV_BAJ);
 
 		String policyid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
-		out.setId(policyid);
 		String productid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
@@ -120,35 +113,34 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 				&& input.getNotifications().getContactDetails().get(0).getContact() != null) {
 			email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
 		}
-		
-		arguments.clear();
-		arguments.putAll(mapContract);
-		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_ORIGIN_BRANCH.getValue(), input.getBranchId());
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_SEND_CST_EMAIL_DESC.getValue(), email);
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RETURNED_AMOUNT.getValue(), null);
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RETURNED_CURRENCY.getValue(), null);
-		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_ORIGIN_CHANNEL.getValue(), input.getChannelId());
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_CUSTOMER_RETURNED_AMOUNT.getValue(), null);
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_CUSTOMER_RETURNED_CURRENCY.getValue(), null);
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_TOTAL_DEBT_AMOUNT.getValue(), totalDebt);
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue(), pendingAmount);
-		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_TRANSACTION.getValue(), input.getTransactionId());
+
+		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
+			arguments.clear();
+			arguments.putAll(mapContract);
+			arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_ORIGIN_BRANCH.getValue(), input.getBranchId());
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_SEND_CST_EMAIL_DESC.getValue(), email);
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RETURNED_AMOUNT.getValue(), null);
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RETURNED_CURRENCY.getValue(), null);
+			arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_ORIGIN_CHANNEL.getValue(), input.getChannelId());
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_CUSTOMER_RETURNED_AMOUNT.getValue(), null);
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_CUSTOMER_RETURNED_CURRENCY.getValue(), null);
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_TOTAL_DEBT_AMOUNT.getValue(), totalDebt);
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue(), pendingAmount);
+			arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_TRANSACTION.getValue(), input.getTransactionId());
+			this.pisdR100.executeSaveContractCancellation(arguments);
+
+			arguments.clear();
+			arguments.putAll(mapContract);
+			arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RECEIPT_STATUS_TYPE.getValue(), statusId);
+			arguments.put(RECEIPT_STATUS_TYPE_LIST, receiptStatusList);
+			this.pisdR100.executeUpdateReceiptsStatusV2(arguments);
+		}
 
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), updateContractStatusIfEndOfValidity(input, statusId));
-		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), input.getCancellationDate());
+		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat("dd/MM/yyyy").format(input.getCancellationDate() != null ? input.getCancellationDate().getTime() : Calendar.getInstance().getTime()));
 		this.pisdR100.executeUpdateContractStatus(arguments);
-
-		arguments.clear();
-		arguments.putAll(mapContract);
-		arguments.put(RBVDProperties.KEY_REQUEST_CNCL_RECEIPT_STATUS_TYPE.getValue(), statusId);
-		arguments.put(RECEIPT_STATUS_TYPE_LIST, receiptStatusList);
-
-		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-			this.pisdR100.executeSaveContractCancellation(arguments);
-			this.pisdR100.executeUpdateReceiptsStatusV2(arguments);
-		}
 
 		String listCancellation = this.applicationConfigurationService.getProperty("cancellation.list.endoso");
 
@@ -189,7 +181,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
 		this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
-		
+
+		out = validateResponse(out, policyid);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
@@ -383,5 +376,22 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		entityOutPolicyCancellationDTO.getStatus().setId(statusId);
 		entityOutPolicyCancellationDTO.getStatus().setDescription(statusDescription);
 		return entityOutPolicyCancellationDTO;
+	}
+
+	private EntityOutPolicyCancellationDTO validateResponse(EntityOutPolicyCancellationDTO out, String policyId) {
+		if (out.getId() == null) {
+			out.setId(policyId);
+		}
+		return out;
+	}
+
+	private EntityOutPolicyCancellationDTO validatePolicy(EntityOutPolicyCancellationDTO out) {
+		if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
+				&& this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
+			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO NO ROYAL - Response = {} *****", out);
+			this.getAdviceList().clear();
+			return out;
+		}
+		return null;
 	}
 }
