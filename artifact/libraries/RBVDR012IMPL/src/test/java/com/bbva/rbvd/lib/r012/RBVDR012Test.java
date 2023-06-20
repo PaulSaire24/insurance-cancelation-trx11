@@ -8,16 +8,12 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
 
-import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationBO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationHostBO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -142,7 +138,6 @@ public class RBVDR012Test {
 	@Test
 	public void executeValidateCancelationRulesTestOK() {
 		LOGGER.info("RBVDR019Test - Executing executeValidateCancelationRulesTestOK...");
-
 		InputRimacBO input = new InputRimacBO();
 		input.setCodProducto("001");
 		input.setNumeroPoliza(1000);
@@ -156,7 +151,6 @@ public class RBVDR012Test {
 		input.setCertificado(100);
 		input.setFechaAnulacion(LocalDate.now());
 		input.setTipoFlujo("01");
-
 		when(this.applicationConfigurationService.getProperty("INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES")).thenReturn("001");
 
 		validation = rbvdR012.executeCancelPolicyRimac(input, null);
@@ -295,27 +289,5 @@ public class RBVDR012Test {
 				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "", "".getBytes(), StandardCharsets.UTF_8));
 		EntityOutPolicyCancellationDTO validation = rbvdR012.executeCancelPolicyHost("11111111111111111111", null, reason, null);
 		assertNull(validation);
-	}
-
-	@Test
-	public void executeSimulateInsuranceContractCancellationsTestOK() {
-		LOGGER.info("RBVDR001Test - Executing executeSimulateInsuranceContractCancellationsTestOK...");
-		Date cancellationDate = new Date();
-		CancelationSimulationASO cancelationSimulationASO = new CancelationSimulationASO();
-		cancelationSimulationASO.setData(new CancelationSimulationHostBO());
-		cancelationSimulationASO.getData().setCancelationDate(cancellationDate);
-		when(this.internalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenReturn(cancelationSimulationASO);
-		CancelationSimulationASO response = rbvdR012.executeSimulateInsuranceContractCancellations("00110840020012345678");
-		assertNotNull(response);
-		assertEquals(cancellationDate, response.getData().getCancelationDate());
-	}
-
-	@Test
-	public void executeSimulateInsuranceContractCancellationsTestHttpClientErrorException() {
-		LOGGER.info("RBVDR001Test - Executing executeSimulateInsuranceContractCancellationsTestOK...");
-		when(this.internalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap()))
-				.thenThrow(new RestClientException("ERROR"));
-		CancelationSimulationASO response = rbvdR012.executeSimulateInsuranceContractCancellations("00110840020012345678");
-		assertNull(response);
 	}
 }

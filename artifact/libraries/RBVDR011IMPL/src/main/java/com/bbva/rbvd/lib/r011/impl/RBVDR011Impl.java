@@ -37,6 +37,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
+
 import static java.util.Objects.nonNull;
 
 public class RBVDR011Impl extends RBVDR011Abstract {
@@ -65,32 +66,37 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		String policyId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
 		String insuranceProductId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue()), "0");
 		String productCompanyId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
-
+		String productCode = getProductCode(insuranceProductId, productCompanyId);
 		CancelationSimulationPayloadBO cancellationSimulationResponse;
 
 		if (validateNewCancellationRequest(policy, input)) {
-			InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCompanyId,insuranceProductId);
+			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: New cancellation request");
+			InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCode);
 			cancellationSimulationResponse = rbvdR012.executeSimulateCancelationRimac(rimacSimulationRequest);
 			if (cancellationSimulationResponse == null || !executeFirstCancellationRequest(input, policy, cancellationSimulationResponse)) {
 				return null;
 			}
 		}else{
-			return cancelPolicy( input, policy, policyId,  productCompanyId);
+			return cancelPolicy( input, policy, policyId, productCode);
 		}
 
 		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
 		if(isAPXCancellationRequest(insuranceProductId, input.getChannelId())){
 			return mapRetentionResponse((String) policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), input, cancellationSimulationResponse, "01", CODE_PENDING);
 		}else{ //Seguir el flujo de cancelación
-			return cancelPolicy( input, policy, policyId,  productCompanyId);
+			return cancelPolicy( input, policy, policyId,  productCode);
 		}
 	}
 
 	private EntityOutPolicyCancellationDTO cancelPolicy(InputParametersPolicyCancellationDTO input, Map<String, Object> policy,
-												String policyId, String productCompanyId){
+												String policyId, String productCode){
 		//se recupera de bd los datos guardados de la simulación
+		LOGGER.info("***** RBVDR011Impl - cancelPolicy: Policy cancellation start");
 		EntityOutPolicyCancellationDTO out;
-		Map<String, Object> argumentsRequest = RBVDUtils.getMapContractNumber(input.getContractId());
+		Map<String, Object> argumentsRequest = new HashMap<>();
+		argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), input.getContractId().substring(0, 4));
+		argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), input.getContractId().substring(4, 8));
+		argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), input.getContractId().substring(10));
 		Map<String, Object> cancellationRequest = this.pisdR103.executeGetRequestCancellation(argumentsRequest);
 		out = isCancellationTypeValidaty(input, cancellationRequest);
 		if (out == null) return null;
@@ -168,11 +174,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		String isChannelEndoso = Arrays.stream(channelCancelation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
 		String userCode = input.getUserId();
 
-
 		InputRimacBO inputrimac = new InputRimacBO();
 		inputrimac.setTraceId(input.getTraceId());
 		inputrimac.setNumeroPoliza(Integer.parseInt(policyId));
-		inputrimac.setCodProducto(productCompanyId);
+		inputrimac.setCodProducto(productCode);
 		PolicyCancellationPayloadBO inputPayload = new PolicyCancellationPayloadBO();
 		PolizaBO poliza = new PolizaBO();
 
@@ -195,11 +200,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		contratante.setEnvioElectronico("S");
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
+
 		this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
 
 		validateResponse(out, policyId);
-		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
-		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
+		LOGGER.info("***** RBVDR011Impl - cancelPolicy - PRODUCTO ROYAL ***** Response: {}", out);
+		LOGGER.info("***** RBVDR011Impl - cancelPolicy END *****");
 		return out;
 	}
 	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest){
@@ -306,7 +312,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 
 	private Map<String, Object> executeGetRequestCancellationMovLast(String contractId) {
-		Map<String, Object> argumentsRequest = RBVDUtils.getMapContractNumber(contractId);
+		Map<String, Object> argumentsRequest = new HashMap<>();
+		argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), contractId.substring(0, 4));
+		argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), contractId.substring(4, 8));
+		argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), contractId.substring(10));
 		List<Map<String, Object>> requestCancellationMovLast = this.pisdR103.executeGetRequestCancellationMovLast(argumentsRequest);
 		if (requestCancellationMovLast != null && !requestCancellationMovLast.isEmpty()) {
 			return requestCancellationMovLast.get(requestCancellationMovLast.size()-1);
@@ -338,7 +347,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		icr4Dto.setNUMCON(input.getContractId());
 		icr4Dto.setICSITU("01");
 		String result = this.rbvdR042.executeICR4(icr4Dto);
-		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - result: {}", result);
+		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - ICR4 result: {}", result);
 		if (!result.equals(OK) && !result.equals(OK_WARN)) {
 			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 			return false;//debería terminar la trx
@@ -410,13 +419,18 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
-		arguments.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), null);
+		arguments.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), input.getCancellationDate().getTime());
 		arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), input.getUserId());
 		arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), input.getUserId());
 		if(cancellationSimulationResponse.getExtornoComision() != null){
 			arguments.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), cancellationSimulationResponse.getExtornoComision());
+			arguments.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), cancellationSimulationResponse.getMoneda());
+		}else{
+			arguments.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), null);
+			arguments.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), null);
+
 		}
-		arguments.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), cancellationSimulationResponse.getMoneda());
+
 		return arguments;
 	}
 
@@ -435,6 +449,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private EntityOutPolicyCancellationDTO mapRetentionResponse(String policyId, InputParametersPolicyCancellationDTO input,
 																CancelationSimulationPayloadBO cancellationSimulationResponse,
 																String statusId, String statusDescription) {
+		LOGGER.info("***** RBVDR011Impl - mapRetentionResponse START *****");
 		EntityOutPolicyCancellationDTO entityOutPolicyCancellationDTO = new EntityOutPolicyCancellationDTO();
 		entityOutPolicyCancellationDTO.setId(policyId);
 		if (cancellationSimulationResponse != null && cancellationSimulationResponse.getFechaAnulacion() != null) {
@@ -449,6 +464,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		entityOutPolicyCancellationDTO.setStatus(new GenericStatusDTO());
 		entityOutPolicyCancellationDTO.getStatus().setId(statusId);
 		entityOutPolicyCancellationDTO.getStatus().setDescription(statusDescription);
+		LOGGER.info("***** RBVDR011Impl - mapRetentionResponse END *****");
 		return entityOutPolicyCancellationDTO;
 	}
 
@@ -475,26 +491,29 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 
 	private InputRimacBO buildRimacSimulationRequest(InputParametersPolicyCancellationDTO input, String policyId,
-													 String productCompanyId, String insuranceProductId){
+													 String productCode){
 		InputRimacBO rimacSimulationRequest = new InputRimacBO();
-		Map<String, Object> product = getProductByProductId(insuranceProductId);
-		LOGGER.info("***** RBVDR010Impl - executeSimulateCancelation: product = {} *****", product);
-		String businessName= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME), "");
-		String shortDesc= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC), "");
-		java.time.LocalDate cancellationDate;
 		rimacSimulationRequest.setTraceId(input.getTraceId());
 		ZoneId zone = ZoneId.of("UTC");
-		cancellationDate = input.getCancellationDate().toInstant().atZone(zone).toLocalDate();
+		java.time.LocalDate cancellationDate = input.getCancellationDate().toInstant().atZone(zone).toLocalDate();
 		rimacSimulationRequest.setFechaAnulacion(cancellationDate);
 		rimacSimulationRequest.setNumeroPoliza(Integer.parseInt(policyId));
-		rimacSimulationRequest.setCodProducto(productCompanyId);
-
-		if(Objects.nonNull(businessName) && (
-				businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES)
-		)){
-			rimacSimulationRequest.setCodProducto(shortDesc);
-		}
+		rimacSimulationRequest.setCodProducto(productCode);
 
 		return rimacSimulationRequest;
+	}
+
+	private boolean isLifeProduct(String businessName){
+		return Objects.nonNull(businessName) && (
+				businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES));
+	}
+
+	private String getProductCode(String insuranceProductId, String companyProductCode){
+		Map<String, Object> product = getProductByProductId(insuranceProductId);
+		LOGGER.info("***** RBVDR011Impl - executeSimulateCancelation: product = {} *****", product);
+		String businessName= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME), "");
+		String shortDesc= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC), "");
+		if(isLifeProduct(businessName)) return shortDesc;
+		else return companyProductCode;
 	}
 }
