@@ -145,9 +145,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		inputRimac.setNumeroPoliza(Integer.parseInt(policyId));
 		inputRimac.setCodProducto(productCompanyId);
 
-		if(Objects.nonNull(businessName) && (
-				businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES)
-		)){
+		if(isLifeProduct(businessName)){
 			inputRimac.setCodProducto(shortDesc);
 		}
 
@@ -190,4 +188,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return productById;
 	}
 
+	private boolean isLifeProduct(String businessName){
+		if(Objects.nonNull(businessName) && (
+				businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES)
+		)){
+			return true;
+		}
+		return false;
+	}
 }
