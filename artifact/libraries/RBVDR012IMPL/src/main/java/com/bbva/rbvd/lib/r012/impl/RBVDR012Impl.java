@@ -41,8 +41,6 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR012Impl.class);
 	private static final String TAG_CONTRCTID = "contractId";
 	private static final String URIAWSKEY = "cancelpolicy.rimac.aws.url";
-	private static final String INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES = "INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES";
-	private static final String INSURANCE_PRODUCT_CODE_EASY_YES = "840";
 
 	@Override
 	public PolicyCancellationPayloadBO executeCancelPolicyRimac(InputRimacBO input, PolicyCancellationPayloadBO inputPayload) {
@@ -76,13 +74,11 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 			queryparams.put(RBVDProperties.CANCELATION_QUERYSTRING_CERTIFICATE.getValue(), input.getCertificado().toString());
 		}
 		String paramstr = RBVDUtils.queryParamsToString(queryparams);
-		String codProduct = input.getCodProducto().equals(this.applicationConfigurationService.getProperty(INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES)) ?
-				this.applicationConfigurationService.getProperty(INSURANCE_PRODUCT_CODE_EASY_YES) : input.getCodProducto();
-		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_PRODUCTOCOD.getValue(), codProduct);
+		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_PRODUCTOCOD.getValue(), input.getCodProducto());
 		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_POLICYNUMBER.getValue(), input.getNumeroPoliza().toString());
 		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_QUERYPARAMS.getValue(), StringUtils.defaultString(paramstr));
 		String uri = this.applicationConfigurationService.getProperty(URIAWSKEY);
-		uri = uri.replace("{" + RBVDProperties.CANCELATION_QUERYSTRING_PRODUCTOCOD.getValue() + "}", codProduct);
+		uri = uri.replace("{" + RBVDProperties.CANCELATION_QUERYSTRING_PRODUCTOCOD.getValue() + "}", input.getCodProducto());
 		uri = uri.replace("{" + RBVDProperties.CANCELATION_QUERYSTRING_POLICYNUMBER.getValue() + "}", input.getNumeroPoliza().toString());
 		SignatureAWS signatureAWS = this.pisdR014.executeSignatureConstruction(requestJson, HttpMethod.PATCH.toString(),
 				uri, paramstr, input.getTraceId());
