@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
+import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -64,9 +65,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if (RBVDConstants.TAG_ANU.equals(statusid) || RBVDConstants.TAG_BAJ.equals(statusid)) {
 			this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
 			return null;
-		}		
-		String policyid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
-		String productid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
+		}
+		String policyId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
+		String productCompanyId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
+		String productId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue()), "0");
+
+		Map<String, Object> product = getProductByProductId(productId);
+
+		String businessName= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME), "");
+		String shortDesc= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC), "");
+
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
 		String statusId = RBVDConstants.TAG_BAJ;
@@ -132,10 +140,17 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		String userCode = input.getUserId();
 
 
-		InputRimacBO inputrimac = new InputRimacBO();
-		inputrimac.setTraceId(input.getTraceId());
-		inputrimac.setNumeroPoliza(Integer.parseInt(policyid));
-		inputrimac.setCodProducto(productid);
+		InputRimacBO inputRimac = new InputRimacBO();
+		inputRimac.setTraceId(input.getTraceId());
+		inputRimac.setNumeroPoliza(Integer.parseInt(policyId));
+		inputRimac.setCodProducto(productCompanyId);
+
+		if(Objects.nonNull(businessName) && (
+				businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES)
+		)){
+			inputRimac.setCodProducto(shortDesc);
+		}
+
 		PolicyCancellationPayloadBO inputPayload = new PolicyCancellationPayloadBO();
 		PolizaBO poliza = new PolizaBO();
 		if (input.getCancellationDate() == null) {
@@ -161,11 +176,18 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		contratante.setEnvioElectronico("S");
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
-		this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
+		this.rbvdR012.executeCancelPolicyRimac(inputRimac, inputPayload);
 		
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
+	}
+
+	private Map<String, Object> getProductByProductId(String productId) {
+		Map<String,Object> arguments = new HashMap<>();
+		arguments.put(ConstantsUtil.FIELD_INSURANCE_PRODUCT_ID, productId);
+		Map<String,Object> productById = (Map<String,Object>) this.pisdR401.executeGetProductById(ConstantsUtil.QUERY_GET_PRODUCT_BY_PRODUCT_ID, arguments);
+		return productById;
 	}
 
 }

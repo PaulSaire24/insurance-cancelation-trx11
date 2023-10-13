@@ -20,7 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +62,7 @@ public class RBVDR011Test {
 	private RBVDR012 RBVDR012;
 	private RBVDR003 rbvdr003;
 	private PISDR100 pisdr100;
+	private PISDR401 pisdR401;
 	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Before
@@ -75,6 +78,9 @@ public class RBVDR011Test {
 		rbvdR011.setRbvdR003(rbvdr003);
 		spyRbvdR011.setRbvdR003(rbvdr003);
 
+		pisdR401 = mock(PISDR401.class);
+		rbvdR011.setPisdR401(pisdR401);
+
 		applicationConfigurationService = mock(ApplicationConfigurationService.class);
 		rbvdR011.setApplicationConfigurationService(applicationConfigurationService);
 
@@ -89,6 +95,10 @@ public class RBVDR011Test {
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestNull...");
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
+
+		Map<String,Object> product = new HashMap<>();
+		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
+		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
@@ -119,6 +129,10 @@ public class RBVDR011Test {
 	@Test
 	public void executePolicyCancellationTestOK() throws IOException{
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestOK...");
+
+		Map<String,Object> product = new HashMap<>();
+		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME, ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES);
+		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();
@@ -148,6 +162,9 @@ public class RBVDR011Test {
 	@Test
 	public void executePolicyCancellationWithRefundTestOK() throws IOException{
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationWithRefundTestOK...");
+		Map<String,Object> product = new HashMap<>();
+		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME, ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES);
+		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("11111111111111111111");
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();

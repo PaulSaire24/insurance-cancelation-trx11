@@ -1,4 +1,4 @@
-package com.bbva.rbvd.lib.r009.impl.util;
+package com.bbva.rbvd.lib.r011.impl.util;
 
 public class ConstantsUtil {
 
