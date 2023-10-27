@@ -16,4 +16,7 @@
 	<bean id="rbvdR042" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r042.RBVDR042"/>
 	</bean>
+	<bean id="rbvdR051" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r051.RBVDR051"/>
+	</bean>
 </beans>

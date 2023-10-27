@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
+import com.bbva.rbvd.dto.cicsconnection.utils.ICF3DTO;
 import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
@@ -22,6 +25,7 @@ import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.cxf.tools.validator.internal.model.XInput;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +59,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation START *****");
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation Params: {} *****", input);
-		
+
 		String xcontractNumber = this.rbvdR003.executeCypherService(new CypherASO(input.getContractId(), CypherASO.KINDAPXCYPHER_CONTRACTID));
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation xcontractNumber: {} *****", xcontractNumber);
 
@@ -98,7 +102,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			movementType = RBVDConstants.MOV_ANU;
 		}
 		String email = "";
-		
+
 		Map<String, Object> mapContract = RBVDUtils.getMapContractNumber(input.getContractId());
 		mapContract.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
 		Map<String, Object> arguments = new HashMap<>();
@@ -189,16 +193,46 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(String xcontractNumber, InputParametersPolicyCancellationDTO input) {
 		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-			return this.rbvdR012.executeCancelPolicyHost(
-					xcontractNumber,
-					input.getCancellationDate(),
-					input.getReason(),
-					input.getNotifications()
-			);
+//			return this.rbvdR012.executeCancelPolicyHost(
+//					xcontractNumber,
+//					input.getCancellationDate(),
+//					input.getReason(),
+//					input.getNotifications()
+//			);
+			return executeCancelPolicyHost(input);
 		}
 		return mapRetentionResponse(null, input, null, input.getCancellationType(), input.getCancellationType());
 	}
 
+	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input){
+	EntityOutPolicyCancellationDTO output =  null;
+		ICF3Request icf3DTOReuqest = new ICF3Request();
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Request: {}", icf3DTOReuqest);
+		icf3DTOReuqest.setNUMCER(input.getContractId());
+		String starDate = null;
+		if (input.getCancellationDate() != null){
+			Date date = input.getCancellationDate().getTime();
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		}
+		icf3DTOReuqest.setNUMCER(starDate);
+		icf3DTOReuqest.setCODMOCA(input.getReason().getId());
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - starDate: {}", starDate);
+		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty() &&
+		 input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
+			icf3DTOReuqest.setTIPCONT("001");
+			icf3DTOReuqest.setDESCONT(input.getNotifications().getContactDetails().get(0).getContact().getAddress());
+		}
+		ICF3Response icf3Response = this.rbvdR051.executePolicyCancellation(icf3DTOReuqest);
+		output.getStatus().setDescription(icf3Response.getIcmf3s0().getIDSTCAN());
+		output.getStatus().setDescription(icf3Response.getIcmf3s0().getDESSTCA());
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
+		if (!icf3Response.equals(OK) && !icf3Response.equals(OK_WARN)) {
+			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
+			return null;
+		}
+		return output;
+	}
+	
 	private String updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, String statusId) {
 		if (END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			 return  RBVDConstants.TAG_PEN;
@@ -276,12 +310,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			this.addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_CANCELATIONSIMULATION_RIMAC.getAdviceCode());
 			return null;
 		}
-		Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
+			Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
 		BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
 		Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellation(requestCancellationId, input, policy, cancelationSimulationASO);
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
-		int isInserted = this.pisdR103.executeSaveInsuranceRequestCancellation(argumentsForSaveRequestCancellation);
+			int isInserted = this.pisdR103.executeSaveInsuranceRequestCancellation(argumentsForSaveRequestCancellation);
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - isInserted: {}", isInserted);
 		Map<String, Object> argumentsForSaveRequestCancellationMov = mapInRequestCancellationMov(requestCancellationId, input, "01", 1);
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);

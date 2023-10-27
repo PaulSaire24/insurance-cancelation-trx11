@@ -39,7 +39,9 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.rbvd.lib.r012.impl.util.JsonHelper;
 import com.bbva.rbvd.lib.r012.impl.util.MockService;
 
-public class RBVDR012Impl extends RBVDR012Abstract {
+public class
+
+RBVDR012Impl extends RBVDR012Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR012Impl.class);
 	private static final String TAG_CONTRCTID = "contractId";
@@ -81,7 +83,7 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 		}
 		String paramstr = RBVDUtils.queryParamsToString(queryparams);
 		String codProduct = input.getCodProducto().equals(this.applicationConfigurationService.getProperty(INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES)) ?
-				this.applicationConfigurationService.getProperty(INSURANCE_PRODUCT_CODE_EASY_YES) : input.getCodProducto();
+ 				this.applicationConfigurationService.getProperty(INSURANCE_PRODUCT_CODE_EASY_YES) : input.getCodProducto();
 
 		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_PRODUCTOCOD.getValue(), codProduct);
 		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_POLICYNUMBER.getValue(), input.getNumeroPoliza().toString());
