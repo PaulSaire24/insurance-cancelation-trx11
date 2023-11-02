@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.bbva.apx.dto.AbstractDTO;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.cicsconnection.utils.ICF3DTO;
 import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
@@ -193,40 +195,40 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(String xcontractNumber, InputParametersPolicyCancellationDTO input) {
 		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-//			return this.rbvdR012.executeCancelPolicyHost(
-//					xcontractNumber,
-//					input.getCancellationDate(),
-//					input.getReason(),
-//					input.getNotifications()
-//			);
+
 			return executeCancelPolicyHost(input);
 		}
 		return mapRetentionResponse(null, input, null, input.getCancellationType(), input.getCancellationType());
 	}
 
 	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input){
-	EntityOutPolicyCancellationDTO output =  null;
-		ICF3Request icf3DTOReuqest = new ICF3Request();
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Request: {}", icf3DTOReuqest);
-		icf3DTOReuqest.setNUMCER(input.getContractId());
+    	EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
+		ICF3Request icf3DTORequest = new ICF3Request();
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Request: {}", icf3DTORequest);
+		icf3DTORequest.setNUMCER(input.getContractId());
 		String starDate = null;
 		if (input.getCancellationDate() != null){
 			Date date = input.getCancellationDate().getTime();
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			starDate = dateFormat.format(date);
 		}
-		icf3DTOReuqest.setNUMCER(starDate);
-		icf3DTOReuqest.setCODMOCA(input.getReason().getId());
+		icf3DTORequest.setFECCANC(starDate);
+		icf3DTORequest.setCODMOCA(input.getReason().getId());
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - starDate: {}", starDate);
 		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty() &&
 		 input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
-			icf3DTOReuqest.setTIPCONT("001");
-			icf3DTOReuqest.setDESCONT(input.getNotifications().getContactDetails().get(0).getContact().getAddress());
+			icf3DTORequest.setTIPCONT("001");
+			icf3DTORequest.setDESCONT(input.getNotifications().getContactDetails().get(0).getContact().getAddress());
 		}
-		ICF3Response icf3Response = this.rbvdR051.executePolicyCancellation(icf3DTOReuqest);
-		output.getStatus().setDescription(icf3Response.getIcmf3s0().getIDSTCAN());
-		output.getStatus().setDescription(icf3Response.getIcmf3s0().getDESSTCA());
+		ICF3Response icf3Response = this.rbvdR051.executePolicyCancellation(icf3DTORequest);
+		GenericStatusDTO statusIni = new GenericStatusDTO();
+		statusIni.setId(icf3Response.getIcmf3s0().getIDSTCAN());
+		statusIni.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
+		output.setStatus(statusIni);
+		output.setCancellationDate(input.getCancellationDate());
+
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
-		if (!icf3Response.equals(OK) && !icf3Response.equals(OK_WARN)) {
+		if (!icf3Response.getIcmf3s0().getDESSTCA().equals(OK) && !icf3Response.getIcmf3s0().getDESSTCA().equals(OK_WARN)) {
 			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 			return null;
 		}

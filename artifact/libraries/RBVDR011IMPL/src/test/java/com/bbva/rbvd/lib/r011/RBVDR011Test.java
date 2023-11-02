@@ -24,6 +24,9 @@ import java.util.Map;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationHostBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
@@ -32,6 +35,7 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.lib.r042.RBVDR042;
+import com.bbva.rbvd.lib.r051.RBVDR051;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +76,7 @@ public class RBVDR011Test {
 	private PISDR100 pisdr100;
 	private PISDR103 pisdr103;
 	private RBVDR042 rbvdR042;
+	private RBVDR051 rbvdR051;
 	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Before
@@ -102,6 +107,17 @@ public class RBVDR011Test {
 		rbvdR042 = mock(RBVDR042.class);
 		rbvdR011.setRbvdR042(rbvdR042);
 		spyRbvdR011.setRbvdR042(rbvdR042);
+
+
+		rbvdR051 = mock(RBVDR051.class);
+		rbvdR011.setRbvdR051(rbvdR051);
+		 ICMF3S0 icmf3s0 = new ICMF3S0();
+		 icmf3s0.setIDSTCAN("1");
+		 icmf3s0.setDESSTCA("OK");
+		 ICF3Response  ifc3Response = new ICF3Response();
+		 ifc3Response.setIcmf3s0(icmf3s0);
+		 when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
+		 spyRbvdR011.setRbvdR051(rbvdR051);
 	}
 	
 	@Test
@@ -247,6 +263,11 @@ public class RBVDR011Test {
 		input.setContractId("11111111111111111111");
 		input.setChannelId("PC");
 		input.setCancellationType("test");
+
+		GenericIndicatorDTO genericDTO = new GenericIndicatorDTO();
+		genericDTO.setId("1");
+		input.setReason(genericDTO);
+
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
 		List<Advice> advices = new ArrayList<>();
 		Advice advice = new Advice();
@@ -254,7 +275,7 @@ public class RBVDR011Test {
 		advice.setCode(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 		when(spyRbvdR011.getAdviceList()).thenReturn(advices);
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
+		//when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(null);
 
@@ -458,7 +479,7 @@ public class RBVDR011Test {
 
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(outHost);
+		//when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(outHost);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
 		when(rbvdR042.executeICR4(anyObject())).thenReturn("OK");
 		when(RBVDR012.executeSimulateInsuranceContractCancellations(anyString())).thenReturn(cancelationSimulationASO);
@@ -479,6 +500,17 @@ public class RBVDR011Test {
 		input.setReason(new GenericIndicatorDTO());
 		input.getReason().setId("01");
 		input.setCancellationType("test");
+		input.setCancellationDate(cancellationCalendar);
+		NotificationsDTO notificationsDTO = new NotificationsDTO();
+		List<ContactDetailDTO> listContactDetailDTO = new ArrayList<>();
+		ContactDetailDTO contactDetailDTO = new ContactDetailDTO();
+		GenericContactDTO genericContactDTO = new GenericContactDTO();
+		genericContactDTO.setContactDetailType("EMAIL");
+		contactDetailDTO.setContact(genericContactDTO);
+		listContactDetailDTO.add(contactDetailDTO);
+		notificationsDTO.setContactDetails(listContactDetailDTO);
+
+		input.setNotifications(notificationsDTO);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 		assertEquals(cancellationDate, validation.getCancellationDate().getTime());
@@ -562,7 +594,12 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
-
+		ICMF3S0 icmf3s0 = new ICMF3S0();
+		icmf3s0.setIDSTCAN("2");
+		icmf3s0.setDESSTCA("ERR");
+		ICF3Response  ifc3Response = new ICF3Response();
+		ifc3Response.setIcmf3s0(icmf3s0);
+		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
 
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("00110840020012345678");
