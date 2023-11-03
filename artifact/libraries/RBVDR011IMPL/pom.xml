@@ -86,7 +86,7 @@
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR100</artifactId>
-			<version>0.10.2</version>
+			<version>0.10.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
@@ -101,17 +101,17 @@
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR103</artifactId>
-			<version>0.3.0</version>
+			<version>0.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR042</artifactId>
-			<version>0.1.1</version>
+			<version>0.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR051</artifactId>
-			<version>0.1.0</version>
+			<version>0.1.2</version>
 		</dependency>
 	</dependencies>
 	<build>
