@@ -116,6 +116,7 @@ public class RBVDR011Test {
 		 icmf3s0.setDESSTCA("OK");
 		 ICF3Response  ifc3Response = new ICF3Response();
 		 ifc3Response.setIcmf3s0(icmf3s0);
+		 ifc3Response.setHostAdviceCode("null");
 		 when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
 		 spyRbvdR011.setRbvdR051(rbvdR051);
 	}
@@ -188,7 +189,7 @@ public class RBVDR011Test {
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
 
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
+		//when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
@@ -599,6 +600,7 @@ public class RBVDR011Test {
 		icmf3s0.setDESSTCA("ERR");
 		ICF3Response  ifc3Response = new ICF3Response();
 		ifc3Response.setIcmf3s0(icmf3s0);
+		ifc3Response.setHostAdviceCode("00000169");
 		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
 
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();

@@ -228,7 +228,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		output.setCancellationDate(input.getCancellationDate());
 
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
-		if (icf3Response.getHostAdviceCode().equalsIgnoreCase("null")) {
+		if (!icf3Response.getHostAdviceCode().equalsIgnoreCase("null")) {
 			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 			return null;
 		}
