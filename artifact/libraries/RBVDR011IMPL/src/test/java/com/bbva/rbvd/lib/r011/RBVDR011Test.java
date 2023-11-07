@@ -116,7 +116,7 @@ public class RBVDR011Test {
 		 icmf3s0.setDESSTCA("OK");
 		 ICF3Response  ifc3Response = new ICF3Response();
 		 ifc3Response.setIcmf3s0(icmf3s0);
-		 ifc3Response.setHostAdviceCode("null");
+		 ifc3Response.setHostAdviceCode(null);
 		 when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
 		 spyRbvdR011.setRbvdR051(rbvdR051);
 	}
