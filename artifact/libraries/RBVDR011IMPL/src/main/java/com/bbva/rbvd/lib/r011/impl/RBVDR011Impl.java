@@ -226,6 +226,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		statusIni.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
 		output.setStatus(statusIni);
 		output.setCancellationDate(input.getCancellationDate());
+		output.setReason(input.getReason());
 
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
 		if (icf3Response.getHostAdviceCode() != null) {
