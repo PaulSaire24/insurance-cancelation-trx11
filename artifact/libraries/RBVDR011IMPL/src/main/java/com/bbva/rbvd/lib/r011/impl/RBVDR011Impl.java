@@ -3,6 +3,9 @@ package com.bbva.rbvd.lib.r011.impl;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import org.joda.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -12,23 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.bbva.apx.dto.AbstractDTO;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
-import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
-import com.bbva.rbvd.dto.cicsconnection.utils.ICF3DTO;
 import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.*;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.cxf.tools.validator.internal.model.XInput;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +65,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return executeFirstCancellationRequest(xcontractNumber, input, policy);
 		}
 
-		EntityOutPolicyCancellationDTO out = isCancellationTypeValidaty(xcontractNumber, input);
+		EntityOutPolicyCancellationDTO out = isCancellationTypeValidaty(input);
 		if (out == null) {
 			return null;
 		}
@@ -188,54 +183,91 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		inputPayload.setContratante(contratante);
 		this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
 
-		out = validateResponse(out, policyid);
+		validateResponse(out, policyid);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
 	}
-	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(String xcontractNumber, InputParametersPolicyCancellationDTO input) {
+	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(InputParametersPolicyCancellationDTO input){
 		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-
 			return executeCancelPolicyHost(input);
 		}
 		return mapRetentionResponse(null, input, null, input.getCancellationType(), input.getCancellationType());
 	}
 
 	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input){
-    	EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
-		ICF3Request icf3DTORequest = new ICF3Request();
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - Start");
+		ICF3Request icf3DTORequest = buildICF3Request(input);
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Request: {}", icf3DTORequest);
-		icf3DTORequest.setNUMCER(input.getContractId());
-		String starDate = null;
-		if (input.getCancellationDate() != null){
-			Date date = input.getCancellationDate().getTime();
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-			starDate = dateFormat.format(date);
-		}
-		icf3DTORequest.setFECCANC(starDate);
-		icf3DTORequest.setCODMOCA(input.getReason().getId());
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - starDate: {}", starDate);
-		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty() &&
-		 input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
-			icf3DTORequest.setTIPCONT("001");
-			icf3DTORequest.setDESCONT(input.getNotifications().getContactDetails().get(0).getContact().getAddress());
-		}
 		ICF3Response icf3Response = this.rbvdR051.executePolicyCancellation(icf3DTORequest);
-		GenericStatusDTO statusIni = new GenericStatusDTO();
-		statusIni.setId(icf3Response.getIcmf3s0().getIDSTCAN());
-		statusIni.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
-		output.setStatus(statusIni);
-		output.setCancellationDate(input.getCancellationDate());
-		output.setReason(input.getReason());
-
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
+
 		if (icf3Response.getHostAdviceCode() != null) {
+			LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - Error at icf3 execution - Host advice code: {}", icf3Response.getHostAdviceCode());
 			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 			return null;
 		}
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - End");
+		return mapICF3Response(input, icf3Response);
+	}
+
+	private ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input){
+		ICF3Request icf3DTORequest = new ICF3Request();
+		icf3DTORequest.setNUMCER(input.getContractId());
+		String startDate = null;
+		if (input.getCancellationDate() != null){
+			Date date = input.getCancellationDate().getTime();
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			startDate = dateFormat.format(date);
+		}
+		icf3DTORequest.setFECCANC(startDate);
+		icf3DTORequest.setCODMOCA(input.getReason().getId());
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - starDate: {}", startDate);
+		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
+				&& input.getNotifications().getContactDetails().get(0).getContact() != null
+				&& input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
+			icf3DTORequest.setTIPCONT("001");
+			if(input.getNotifications().getContactDetails().get(0).getContact().getAddress() != null){
+				icf3DTORequest.setDESCONT(input.getNotifications().getContactDetails().get(0).getContact().getAddress());
+			}
+		}
+		return icf3DTORequest;
+	}
+	private EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response){
+		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
+		GenericStatusDTO status = new GenericStatusDTO();
+		status.setId(icf3Response.getIcmf3s0().getDESSTCA());
+		status.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
+		output.setStatus(status);
+		output.setCancellationDate(input.getCancellationDate());
+		GenericIndicatorDTO reason = new GenericIndicatorDTO();
+		reason.setId(icf3Response.getIcmf3s0().getCODMOCA());
+		reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
+		output.setReason(reason);
+		output.setNotifications(input.getNotifications());
+		GenericAmountDTO insurerRefund = new GenericAmountDTO();
+		insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
+		insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
+		output.setInsurerRefund(insurerRefund);
+		GenericAmountDTO customerRefund = new GenericAmountDTO();
+		customerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMPCLIE()));
+		customerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVIMC());
+		output.setCustomerRefund(customerRefund);
+		ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO();
+		exchangeRateDTO.setTargetCurrency(icf3Response.getIcmf3s0().getDIVDEST());
+		exchangeRateDTO.setCalculationDate(convertStringToDate(icf3Response.getIcmf3s0().getFETIPCA()));
+		exchangeRateDTO.setValue(Double.valueOf(icf3Response.getIcmf3s0().getTIPCAMB()));
+		exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
+		output.setExchangeRate(exchangeRateDTO);
 		return output;
 	}
-	
+
+	private Date convertStringToDate(String date){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		java.time.LocalDate localdate = java.time.LocalDate.parse(date, formatter);
+		return Date.from(localdate.atStartOfDay(ZoneId.of("America/Lima")).toInstant());
+	}
+
 	private String updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, String statusId) {
 		if (END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			 return  RBVDConstants.TAG_PEN;
@@ -415,11 +447,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return entityOutPolicyCancellationDTO;
 	}
 
-	private EntityOutPolicyCancellationDTO validateResponse(EntityOutPolicyCancellationDTO out, String policyId) {
+	private void validateResponse(EntityOutPolicyCancellationDTO out, String policyId) {
 		if (out.getId() == null) {
 			out.setId(policyId);
 		}
-		return out;
 	}
 
 	private EntityOutPolicyCancellationDTO validatePolicy(EntityOutPolicyCancellationDTO out) {
