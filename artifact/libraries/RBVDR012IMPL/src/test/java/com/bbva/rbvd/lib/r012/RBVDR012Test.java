@@ -15,6 +15,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationHostBO;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +74,7 @@ public class RBVDR012Test {
 	private ApplicationConfigurationService applicationConfigurationService;
 
 	private PolicyCancellationBO responseCancelPolicy;
+	private CancelationSimulationBO responseCancelSimulation;
 	private PolicyCancellationASO responsePolicyCanelationHost;
 	private String bodyError;
 	private MockService mockService;
@@ -103,6 +106,7 @@ public class RBVDR012Test {
 
 		mockDTO = MockDTO.getInstance();
 		responseCancelPolicy = mockDTO.getCancelPolicyMockResponse();
+		responseCancelSimulation = mockDTO.getCancelationSimulationMockResponse();
 		responsePolicyCanelationHost = mockDTO.getPolicyCancellationHostMockResponse();
 
 		pisdR014 = mock(PISDR014.class);
@@ -113,7 +117,6 @@ public class RBVDR012Test {
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("abc");
 
 		bodyError = "{\"messages\": [{\"code\": \"functionalError\",\"message\": \"CODE#ERROR.\",\"parameters\": [],\"type\": \"FATAL\"}]}";
-
 	}
 
 	@Test
@@ -137,7 +140,7 @@ public class RBVDR012Test {
 	}
 
 	@Test
-	public void executeValidateCancelationRulesTestOK() throws IOException {
+	public void executeValidateCancelationRulesTestOK() {
 		LOGGER.info("RBVDR019Test - Executing executeValidateCancelationRulesTestOK...");
 
 		InputRimacBO input = new InputRimacBO();
@@ -175,6 +178,64 @@ public class RBVDR012Test {
 	}
 
 	@Test
+	public void executeValidateSimulationRulesTestNull() {
+		LOGGER.info("RBVDR019Test - Executing executeValidateSimulationRulesTestNull...");
+		CancelationSimulationPayloadBO validation = rbvdR012.executeSimulateCancelationRimac(null);
+		assertNull(validation);
+
+		InputRimacBO input = new InputRimacBO();
+		input.setNumeroPoliza(12345);
+		validation = rbvdR012.executeSimulateCancelationRimac(input);
+		assertNull(validation);
+
+		input.setCodProducto("00001");
+		validation = rbvdR012.executeSimulateCancelationRimac(input);
+		assertNull(validation);
+
+		input.setCodProducto("ABC");
+		validation = rbvdR012.executeSimulateCancelationRimac(input);
+		assertNull(validation);
+	}
+
+	@Test
+	public void executeValidateSimulationRulesTestOK() {
+		LOGGER.info("RBVDR019Test - Executing executeValidateSimulationRulesTestOK...");
+
+		InputRimacBO input = new InputRimacBO();
+		input.setCodProducto("EASYYES");
+		input.setNumeroPoliza(1300029262);
+		input.setFechaAnulacion(LocalDate.now());
+
+		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<CancelationSimulationBO>) any(), anyMap()))
+				.thenReturn(new ResponseEntity<>(responseCancelSimulation, HttpStatus.OK));
+
+		CancelationSimulationPayloadBO validation = rbvdR012.executeSimulateCancelationRimac(input);
+		assertNotNull(validation);
+
+		input.setCertificado(100);
+
+		when(this.applicationConfigurationService.getProperty("INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES")).thenReturn("001");
+
+		validation = rbvdR012.executeSimulateCancelationRimac(input);
+		assertNotNull(validation);
+
+	}
+
+	@Test
+	public void executeValidateSimulationRulesTestRestClientException() {
+		LOGGER.info("RBVDR019Test - Executing executeValidateSimulationRulesTestRestClientException...");
+		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<CancelationSimulationBO>) any(), anyMap()))
+				.thenThrow(new RestClientException("ERROR"));
+
+		InputRimacBO input = new InputRimacBO();
+		input.setCodProducto("001");
+		input.setNumeroPoliza(1000);
+		input.setFechaAnulacion(LocalDate.now());
+		CancelationSimulationPayloadBO validation = rbvdR012.executeSimulateCancelationRimac(input);
+		assertNull(validation);
+	}
+
+	@Test
 	public void executeCancelPolicyHostTestNull() {
 		LOGGER.info("RBVDR001Test - Executing executeCancelPolicyHostTestNull...");
 		EntityOutPolicyCancellationDTO validation = rbvdR012.executeCancelPolicyHost(null, null, null, null);
@@ -192,7 +253,7 @@ public class RBVDR012Test {
 	}
 
 	@Test
-	public void executeCancelPolicyHostTestOK() throws IOException {
+	public void executeCancelPolicyHostTestOK(){
 		LOGGER.info("RBVDR001Test - Executing executeCancelPolicyHostTestOK...");
 		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<PolicyCancellationASO>) any(), anyMap()))
 				.thenReturn(new ResponseEntity<>(responsePolicyCanelationHost, HttpStatus.OK));

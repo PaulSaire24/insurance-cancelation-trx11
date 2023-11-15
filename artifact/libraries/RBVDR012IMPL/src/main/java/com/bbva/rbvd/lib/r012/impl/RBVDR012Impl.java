@@ -10,6 +10,8 @@ import java.util.Map;
 
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationASO;
 import com.bbva.rbvd.dto.insurancecancelation.aso.cancelationsimulation.CancelationSimulationRequestASO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationBO;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -143,6 +145,7 @@ RBVDR012Impl extends RBVDR012Abstract {
 		body.setReason(reason);
 		body.setNotifications(notifications);
 		
+
 		JSONObject requestJson = new JSONObject(body);
 		if (cancellationDate != null) {
 			Date date = cancellationDate.getTime();  
@@ -205,6 +208,54 @@ RBVDR012Impl extends RBVDR012Abstract {
 			LOGGER.debug("***** RBVDR012Impl - executeSimulateInsuranceContractCancellations ***** Exception: {}", ex.getMessage());
 			return null;
 		}
+	}
+
+	@Override
+	public CancelationSimulationPayloadBO executeSimulateCancelationRimac(InputRimacBO input) {
+		LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac START *****");
+		LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac ***** Params: {}", input);
+
+		if (input == null || input.getCodProducto() == null || input.getNumeroPoliza() == null || input.getFechaAnulacion() == null) {
+			LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac ***** invalid input");
+			this.addAdvice(RBVDErrors.ERROR_INVALID_INPUT_SIMULATECANCELATION.getAdviceCode());
+			return null;
+		}
+
+		CancelationSimulationPayloadBO output = null;
+
+		Map<String, String> uriParams = new HashMap<>();
+		Map<String, String> queryparams = new HashMap<>();
+		if (input.getCertificado() != null) {
+			queryparams.put(RBVDProperties.CANCELATION_QUERYSTRING_CERTIFICATE.getValue(), input.getCertificado().toString());
+		}
+		queryparams.put(RBVDProperties.CANCELATION_QUERYSTRING_CANCELATION_DATE.getValue(), input.getFechaAnulacion().toString());
+
+		String paramstr = RBVDUtils.queryParamsToString(queryparams);
+		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_PRODUCTOCOD.getValue(), input.getCodProducto());
+		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_POLICYNUMBER.getValue(), input.getNumeroPoliza().toString());
+		uriParams.put(RBVDProperties.CANCELATION_QUERYSTRING_QUERYPARAMS.getValue(), StringUtils.defaultString(paramstr));
+		String uri = this.applicationConfigurationService.getProperty(URIAWSKEY);
+		uri = uri.replace("{" + RBVDProperties.CANCELATION_QUERYSTRING_PRODUCTOCOD.getValue() + "}", input.getCodProducto());
+		uri = uri.replace("{" + RBVDProperties.CANCELATION_QUERYSTRING_POLICYNUMBER.getValue() + "}", input.getNumeroPoliza().toString());
+		SignatureAWS signatureAWS = this.pisdR014.executeSignatureConstruction(null, HttpMethod.GET.toString(),
+				uri, paramstr, input.getTraceId());
+		HttpEntity<String> entity = new HttpEntity<>(createHttpHeadersAWS(signatureAWS));
+		LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac ***** awsParams: {}", queryparams);
+		LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac ***** uriParams: {}", uriParams);
+		LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac ***** uri: {}", uri);
+		ResponseEntity<CancelationSimulationBO> response = null;
+		try {
+			response = this.externalApiConnector.exchange(RBVDProperties.ID_API_CANCELATION_SIMULATION_RIMAC.getValue(),
+					org.springframework.http.HttpMethod.GET, entity, CancelationSimulationBO.class, uriParams);
+			output = response.getBody().getPayload();
+		} catch(RestClientException e) {
+			LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac ***** RestClientException: {}", e.getMessage());
+			this.addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_CANCELATIONSIMULATION_RIMAC.getAdviceCode());
+		}
+
+		LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac ***** Response: {}", output);
+		LOGGER.info("***** RBVDR020Impl - executeSimulateCancelationRimac END *****");
+		return output;
 	}
 
 	private HttpHeaders createHttpHeadersAWS(SignatureAWS signature) {
