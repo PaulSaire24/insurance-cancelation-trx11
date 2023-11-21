@@ -2,13 +2,11 @@ package com.bbva.rbvd;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 
 import javax.annotation.Resource;
 
@@ -87,14 +85,6 @@ public class RBVDT01101PETransactionTest {
         this.transaction.execute();
         assertTrue(this.transaction.getAdviceList().isEmpty());
     }
-	
-	@Test
-	public void executeTestNull() {
-		LOGGER.info("Execution of RBVDT01101PETransactionTest - executeTestNull *********");
-		when(rbvdr011.executePolicyCancellation(anyObject())).thenReturn(null);
-		this.transaction.execute();
-		assertEquals(Severity.ENR.getValue(), this.transaction.getSeverity().getValue());
-	}
 
 	@Test
 	public void testNotNull(){
@@ -102,5 +92,13 @@ public class RBVDT01101PETransactionTest {
 		this.transaction.execute();
 		assertTrue(this.transaction.getIsrefund());
 		assertEquals(this.transaction.getCancellationtype(),"APPLICATION_DATE");
+	}
+
+	@Test
+	public void executeTestNull() {
+		LOGGER.info("Execution of RBVDT01101PETransactionTest - executeTestNull *********");
+		when(rbvdr011.executePolicyCancellation(anyObject())).thenReturn(null);
+		this.transaction.execute();
+		assertEquals(Severity.ENR.getValue(), this.transaction.getSeverity().getValue());
 	}
 }

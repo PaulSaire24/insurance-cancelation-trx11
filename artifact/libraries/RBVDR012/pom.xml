@@ -19,7 +19,12 @@
 		<dependency>
 			<groupId>com.bbva.rbvd.dto.insurancecancelation</groupId>
 			<artifactId>RBVDC001</artifactId>
-			<version>0.11.4</version>
+			<version>0.11.8</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bbva.pisd.dto.insurance</groupId>
+			<artifactId>PISDC011</artifactId>
+			<version>0.21.3</version>
 		</dependency>
 	</dependencies>
 	<build>

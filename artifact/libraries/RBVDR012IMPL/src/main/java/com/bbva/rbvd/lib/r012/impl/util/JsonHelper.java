@@ -13,6 +13,5 @@ public class JsonHelper {
                 .create();
     }
     public static JsonHelper getInstance() { return INSTANCE; }
-    public <T> T fromString(String src, Class<T> clazz) { return this.gson.fromJson(src, clazz); }
     public String toJsonString(Object o) { return this.gson.toJson(o); }
 }
