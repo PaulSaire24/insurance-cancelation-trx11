@@ -88,11 +88,6 @@
 			<artifactId>elara-utility-api-connector</artifactId>
 			<version>${apx.api.connector.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.bbva.pisd</groupId>
-			<artifactId>PISDR014</artifactId>
-			<version>0.10.0</version>
-		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -104,7 +99,7 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}-${project.version}</Bundle-SymbolicName>
-						<Bundle-Category>library-extapiconnector-intapiconnector</Bundle-Category>
+						<Bundle-Category>library-intapiconnector</Bundle-Category>
 						<Export-Package>
 							!*;version="${osgi.version.manifest}"
 						</Export-Package>

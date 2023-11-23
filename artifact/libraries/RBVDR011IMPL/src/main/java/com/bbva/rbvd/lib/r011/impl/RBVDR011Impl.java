@@ -72,7 +72,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if (validateNewCancellationRequest(policy, input)) {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: New cancellation request");
 			InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCode);
-			cancellationSimulationResponse = rbvdR012.executeSimulateCancelationRimac(rimacSimulationRequest);
+			cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
 			if (cancellationSimulationResponse == null || !executeFirstCancellationRequest(input, policy, cancellationSimulationResponse)) {
 				return null;
 			}
@@ -201,7 +201,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
 
-		this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
+		rbvdR311.executeCancelPolicyRimac(inputrimac, inputPayload);
 
 		validateResponse(out, policyId);
 		LOGGER.info("***** RBVDR011Impl - cancelPolicy - PRODUCTO ROYAL ***** Response: {}", out);
