@@ -9,11 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.Calendar;
 
-import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationsimulation.CancelationSimulationBO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,13 +31,7 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.elara.utility.api.connector.APIConnector;
-import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
-import com.bbva.pisd.lib.r014.PISDR014;
 import com.bbva.rbvd.dto.insurancecancelation.aso.policycancellation.PolicyCancellationASO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationBO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.cancelationrulesvalidation.CancelationRulesValidationBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.mock.MockDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
@@ -62,29 +53,21 @@ public class RBVDR012Test {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR012Test.class);
 
 	private RBVDR012Impl rbvdR012 = new RBVDR012Impl();
-	private PISDR014 pisdR014;
-
 	private MockDTO mockDTO;
-	private APIConnector externalApiConnector;
 	private APIConnector internalApiConnector;
 	private ApplicationConfigurationService applicationConfigurationService;
-
-	private PolicyCancellationBO responseCancelPolicy;
-	private CancelationSimulationBO responseCancelSimulation;
 	private PolicyCancellationASO responsePolicyCanelationHost;
 	private String bodyError;
 	private MockService mockService;
 	private PolicyCancellationAsoErrorHandler policyCancellationAsoErrorHandler;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		ThreadContext.set(new Context());
 
 		MockBundleContext mockBundleContext = mock(MockBundleContext.class);
 		ApiConnectorFactoryTest apiConnectorFactoryMock = new ApiConnectorFactoryTest();
-		externalApiConnector = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, false);
-		rbvdR012.setExternalApiConnector(externalApiConnector);
 
 		internalApiConnector = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, false);
 		rbvdR012.setInternalApiConnector(internalApiConnector);
@@ -101,133 +84,13 @@ public class RBVDR012Test {
 		when(policyCancellationAsoErrorHandler.handler(any(RestClientException.class))).thenReturn(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_ASO.getAdviceCode());
 
 		mockDTO = MockDTO.getInstance();
-		responseCancelPolicy = mockDTO.getCancelPolicyMockResponse();
-		responseCancelSimulation = mockDTO.getCancelationSimulationMockResponse();
 		responsePolicyCanelationHost = mockDTO.getPolicyCancellationHostMockResponse();
-
-		pisdR014 = mock(PISDR014.class);
-		rbvdR012.setPisdR014(pisdR014);
-		when(pisdR014.executeSignatureConstruction(anyString(), anyString(), anyString(), anyString(), anyString()))
-				.thenReturn(new SignatureAWS("", "", "", ""));
 
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("abc");
 
 		bodyError = "{\"messages\": [{\"code\": \"functionalError\",\"message\": \"CODE#ERROR.\",\"parameters\": [],\"type\": \"FATAL\"}]}";
 	}
 
-	@Test
-	public void executeValidateCancelationRulesTestNull() {
-		LOGGER.info("RBVDR019Test - Executing executeValidateCancelationRulesTestNull...");
-		PolicyCancellationPayloadBO validation = rbvdR012.executeCancelPolicyRimac(null, null);
-		assertNull(validation);
-
-		InputRimacBO input = new InputRimacBO();
-		input.setNumeroPoliza(12345);
-		validation = rbvdR012.executeCancelPolicyRimac(input, null);
-		assertNull(validation);
-
-		input.setCodProducto("00001");
-		validation = rbvdR012.executeCancelPolicyRimac(input, null);
-		assertNull(validation);
-
-		input.setCodProducto("ABC");
-		validation = rbvdR012.executeCancelPolicyRimac(input, null);
-		assertNull(validation);
-	}
-
-	@Test
-	public void executeValidateCancelationRulesTestOK() {
-		LOGGER.info("RBVDR019Test - Executing executeValidateCancelationRulesTestOK...");
-		InputRimacBO input = new InputRimacBO();
-		input.setCodProducto("001");
-		input.setNumeroPoliza(1000);
-
-		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<PolicyCancellationBO>) any(), anyMap()))
-				.thenReturn(new ResponseEntity<>(responseCancelPolicy, HttpStatus.OK));
-
-		PolicyCancellationPayloadBO validation = rbvdR012.executeCancelPolicyRimac(input, null);
-		assertNotNull(validation);
-
-		input.setCertificado(100);
-		input.setFechaAnulacion(LocalDate.now());
-		input.setTipoFlujo("01");
-		when(this.applicationConfigurationService.getProperty("INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES")).thenReturn("001");
-
-		validation = rbvdR012.executeCancelPolicyRimac(input, null);
-		assertNotNull(validation);
-
-	}
-
-	@Test
-	public void executeValidateCancelationRulesTestRestClientException() {
-		LOGGER.info("RBVDR019Test - Executing executeValidateCancelationRulesTestRestClientException...");
-		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<CancelationRulesValidationBO>) any(), anyMap()))
-				.thenThrow(new RestClientException("ERROR"));
-
-		InputRimacBO input = new InputRimacBO();
-		input.setCodProducto("001");
-		input.setNumeroPoliza(1000);
-		PolicyCancellationPayloadBO validation = rbvdR012.executeCancelPolicyRimac(input, null);
-		assertNull(validation);
-	}
-
-	@Test
-	public void executeValidateSimulationRulesTestNull() {
-		LOGGER.info("RBVDR019Test - Executing executeValidateSimulationRulesTestNull...");
-		CancelationSimulationPayloadBO validation = rbvdR012.executeSimulateCancelationRimac(null);
-		assertNull(validation);
-
-		InputRimacBO input = new InputRimacBO();
-		input.setNumeroPoliza(12345);
-		validation = rbvdR012.executeSimulateCancelationRimac(input);
-		assertNull(validation);
-
-		input.setCodProducto("00001");
-		validation = rbvdR012.executeSimulateCancelationRimac(input);
-		assertNull(validation);
-
-		input.setCodProducto("ABC");
-		validation = rbvdR012.executeSimulateCancelationRimac(input);
-		assertNull(validation);
-	}
-
-	@Test
-	public void executeValidateSimulationRulesTestOK() {
-		LOGGER.info("RBVDR019Test - Executing executeValidateSimulationRulesTestOK...");
-
-		InputRimacBO input = new InputRimacBO();
-		input.setCodProducto("EASYYES");
-		input.setNumeroPoliza(1300029262);
-		input.setFechaAnulacion(LocalDate.now());
-
-		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<CancelationSimulationBO>) any(), anyMap()))
-				.thenReturn(new ResponseEntity<>(responseCancelSimulation, HttpStatus.OK));
-
-		CancelationSimulationPayloadBO validation = rbvdR012.executeSimulateCancelationRimac(input);
-		assertNotNull(validation);
-
-		input.setCertificado(100);
-
-		when(this.applicationConfigurationService.getProperty("INSURANCE_RIMAC_PRODUCT_CODE_EASY_YES")).thenReturn("001");
-
-		validation = rbvdR012.executeSimulateCancelationRimac(input);
-		assertNotNull(validation);
-
-	}
-
-	@Test
-	public void executeValidateSimulationRulesTestRestClientException() {
-		LOGGER.info("RBVDR019Test - Executing executeValidateSimulationRulesTestRestClientException...");
-		when(this.externalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<CancelationSimulationBO>) any(), anyMap()))
-				.thenThrow(new RestClientException("ERROR"));
-
-		InputRimacBO input = new InputRimacBO();
-		input.setCodProducto("001");
-		input.setNumeroPoliza(1000);
-		input.setFechaAnulacion(LocalDate.now());
-		CancelationSimulationPayloadBO validation = rbvdR012.executeSimulateCancelationRimac(input);
-		assertNull(validation);
-	}
 
 	@Test
 	public void executeCancelPolicyHostTestNull() {

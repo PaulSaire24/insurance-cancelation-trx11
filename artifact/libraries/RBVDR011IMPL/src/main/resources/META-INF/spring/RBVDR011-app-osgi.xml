@@ -7,4 +7,5 @@
 	<osgi:reference id="rbvdR042" interface="com.bbva.rbvd.lib.r042.RBVDR042"/>
 	<osgi:reference id="rbvdR051" interface="com.bbva.rbvd.lib.r051.RBVDR051"/>
 	<osgi:reference id="pisdR401" interface="com.bbva.pisd.lib.r401.PISDR401"/>
+	<osgi:reference id="rbvdR311" interface="com.bbva.rbvd.lib.r311.RBVDR311"/>
 </beans>

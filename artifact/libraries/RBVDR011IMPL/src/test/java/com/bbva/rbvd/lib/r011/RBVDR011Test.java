@@ -39,6 +39,7 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import com.bbva.rbvd.lib.r042.RBVDR042;
 import com.bbva.rbvd.lib.r051.RBVDR051;
+import com.bbva.rbvd.lib.r311.RBVDR311;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,11 +75,11 @@ public class RBVDR011Test {
 	private RBVDR011Impl rbvdR011 = new RBVDR011Impl();
 	private RBVDR011Impl spyRbvdR011;
 	private RBVDR012 RBVDR012;
+	private RBVDR311 rbvdr311;
 	private PISDR100 pisdr100;
 	private PISDR103 pisdr103;
 	private RBVDR042 rbvdR042;
 	private RBVDR051 rbvdR051;
-
 	private PISDR401 pisdR401;
 	private ApplicationConfigurationService applicationConfigurationService;
 
@@ -86,10 +87,14 @@ public class RBVDR011Test {
 	public void setUp() {
 		ThreadContext.set(new Context());
 		spyRbvdR011 = spy(rbvdR011);
-		
+
 		RBVDR012 = mock(RBVDR012.class);
 		rbvdR011.setRbvdR012(RBVDR012);
 		spyRbvdR011.setRbvdR012(RBVDR012);
+
+		rbvdr311 = mock(RBVDR311.class);
+		rbvdR011.setRbvdR311(rbvdr311);
+		spyRbvdR011.setRbvdR311(rbvdr311);
 
 		pisdR401 = mock(PISDR401.class);
 		rbvdR011.setPisdR401(pisdR401);
@@ -218,7 +223,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
-		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
@@ -259,7 +264,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
-		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 		when(applicationConfigurationService.getProperty("cancellation.request.8.PC")).thenReturn("false");
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 
@@ -302,7 +307,6 @@ public class RBVDR011Test {
 		advices.add(advice);
 		advice.setCode(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 		when(spyRbvdR011.getAdviceList()).thenReturn(advices);
-		//when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(null);
 
@@ -334,7 +338,7 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(null);
 		CancelationSimulationPayloadBO payload = new CancelationSimulationPayloadBO();
 		payload.setFechaAnulacion(Calendar.getInstance().getTime());
-		when(RBVDR012.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("00110840020012345678");
@@ -365,7 +369,7 @@ public class RBVDR011Test {
 		DatoParticularBO cuenta = new DatoParticularBO();
 		cuenta.setValor("TARJETA||***5085||PEN");
 		payload.setCuenta(cuenta);
-		when(RBVDR012.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 
 		Map<String, Object> responseGetRequestCancellationId = new HashMap<>();
 		responseGetRequestCancellationId.put(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue(), new BigDecimal("123"));
@@ -421,7 +425,7 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(null);
 		CancelationSimulationPayloadBO payload = new CancelationSimulationPayloadBO();
 		payload.setFechaAnulacion(Calendar.getInstance().getTime());
-		when(RBVDR012.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("00110840020012345678");
 		input.setChannelId("PC");
@@ -494,7 +498,6 @@ public class RBVDR011Test {
 		outHost.setCancellationDate(cancellationCalendar);
 
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
-		//when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(outHost);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
 		when(rbvdR042.executeICR4(anyObject())).thenReturn("OK");
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
@@ -559,7 +562,7 @@ public class RBVDR011Test {
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
 		CancelationSimulationPayloadBO payload = new CancelationSimulationPayloadBO();
 		payload.setFechaAnulacion(Calendar.getInstance().getTime());
-		when(RBVDR012.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 
 		List<Map<String, Object>> requestCancellationMovLast = new ArrayList<>();
 		requestCancellationMovLast.add(new HashMap<>());
@@ -647,7 +650,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
-		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
@@ -689,7 +692,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
-		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
