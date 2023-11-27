@@ -259,6 +259,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 	private EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response){
 		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
+		output.setId(icf3Response.getIcmf3s0().getIDCANCE());
 		GenericStatusDTO status = new GenericStatusDTO();
 		status.setId(icf3Response.getIcmf3s0().getDESSTCA());
 		status.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
