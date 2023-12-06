@@ -6,7 +6,6 @@ import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.lib.r011.RBVDR011;
-import com.bbva.rbvd.lib.r012.RBVDR012;
 import com.bbva.rbvd.lib.r042.RBVDR042;
 import com.bbva.rbvd.lib.r051.RBVDR051;
 import com.bbva.rbvd.lib.r311.RBVDR311;
@@ -20,19 +19,15 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 
 	protected PISDR100 pisdR100;
 
-	protected RBVDR012 rbvdR012;
-
 	protected PISDR103 pisdR103;
 
 	protected RBVDR042 rbvdR042;
 
 	protected RBVDR051 rbvdR051;
 
-	protected PISDR401 pisdR401;
-
 	protected RBVDR311 rbvdR311;
 
-
+	protected PISDR401 pisdr401;
 	/**
 	* @param applicationConfigurationService the this.applicationConfigurationService to set
 	*/
@@ -45,13 +40,6 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	*/
 	public void setPisdR100(PISDR100 pisdR100) {
 		this.pisdR100 = pisdR100;
-	}
-
-	/**
-	* @param rbvdR012 the this.rbvdR012 to set
-	*/
-	public void setRbvdR012(RBVDR012 rbvdR012) {
-		this.rbvdR012 = rbvdR012;
 	}
 
 	/**
@@ -76,17 +64,11 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	}
 
 	/**
-	* @param pisdR401 the this.pisdR401 to set
-	*/
-	public void setPisdR401(PISDR401 pisdR401) {
-		this.pisdR401 = pisdR401;
-	}
-
-	/**
 	* @param rbvdR311 the this.rbvdR311 to set
 	*/
 	public void setRbvdR311(RBVDR311 rbvdR311) {
 		this.rbvdR311 = rbvdR311;
 	}
 
+	public void setPisdr401(PISDR401 pisdr401) {this.pisdr401 = pisdr401;}
 }

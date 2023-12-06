@@ -62,15 +62,6 @@ Orientada a realizar la lógica de negocio de la transacción RBVDT011.
 
 - **Método executePolicyCancellation(InputParametersPolicyCancellationDTO input)**: Método para mapear datos de salida de la transacción.
   - Avisos a retornar: -
-
-#### 3.1.2. Librería RBVDR012
-Orientada a consumir el servicio interno "createInsuranceContractCancellations" haciendo uso de la cabecera "BCS-Operation-Tracer" para acceder al backend host ICF3.
-También consume el servicio externo de Rimac "cancelar".
-
-- **Método executeCancelPolicyHost(String contractId, Calendar cancellationDate, GenericIndicatorDTO reason, NotificationsDTO notifications)**: Método para ejecutar una cancelación de póliza por parte de host.
-  - Avisos a retornar: RBVD00000107, RBVD00000133, RBVD00000135, RBVD00000139, RBVD00000143, RBVD00000144, RBVD00000145 y RBVD00000146.
-- **Método executeCancelPolicyRimac(InputRimacBO input, PolicyCancellationPayloadBO inputPayload)**: Método para ejecutar una cancelación de póliza por parte de Rimac.
-  - Avisos a retornar: RBVD00000102, RBVD00000126 y RBVD00000127
   
 ### 3.2. Librerías Externas
 En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
