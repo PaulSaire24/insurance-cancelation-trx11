@@ -27,7 +27,7 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 
 	protected RBVDR311 rbvdR311;
 
-	protected PISDR401 pisdr401;
+	protected PISDR401 pisdR401;
 	/**
 	* @param applicationConfigurationService the this.applicationConfigurationService to set
 	*/
@@ -70,5 +70,5 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 		this.rbvdR311 = rbvdR311;
 	}
 
-	public void setPisdr401(PISDR401 pisdr401) {this.pisdr401 = pisdr401;}
+	public void setPisdR401(PISDR401 pisdR401) {this.pisdR401 = pisdR401;}
 }
