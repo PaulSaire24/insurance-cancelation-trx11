@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,16 +49,6 @@ public class RBVDR012Impl extends RBVDR012Abstract {
 		if (input == null || input.getCodProducto() == null || input.getNumeroPoliza() == null) { 
 			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyRimac ***** invalid input");
 			this.addAdvice(RBVDErrors.ERROR_INVALID_INPUT_VALIDATERULESCANCELATION.getAdviceCode());
-			return null; 
-		}
-		if (!NumberUtils.isNumber(input.getCodProducto())) {
-			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyRimac ***** invalid CodProducto");
-			this.addAdvice(RBVDErrors.ERROR_INVALID_INPUT_RIMAC_NONNUMBER_CODPRODUCTO.getAdviceCode());
-			return null; 
-		}
-		if (input.getCodProducto().length() > 4) {
-			LOGGER.info("***** RBVDR012Impl - executeCancelPolicyRimac ***** invalid CodProducto");
-			this.addAdvice(RBVDErrors.ERROR_INVALID_INPUT_RIMAC_CHARMAX4_CODPRODUCTO.getAdviceCode());
 			return null; 
 		}
 		
