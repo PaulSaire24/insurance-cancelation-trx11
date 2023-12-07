@@ -488,7 +488,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private Map<String, Object> getProductByProductId(String productId) {
 		Map<String,Object> arguments = new HashMap<>();
 		arguments.put(ConstantsUtil.FIELD_INSURANCE_PRODUCT_ID, productId);
-		return (Map<String,Object>) this.pisdr401.executeGetProductById(ConstantsUtil.QUERY_GET_PRODUCT_BY_PRODUCT_ID, arguments);
+		return (Map<String,Object>) this.pisdR401.executeGetProductById(ConstantsUtil.QUERY_GET_PRODUCT_BY_PRODUCT_ID, arguments);
 	}
 
 	private InputRimacBO buildRimacSimulationRequest(InputParametersPolicyCancellationDTO input, String policyId,

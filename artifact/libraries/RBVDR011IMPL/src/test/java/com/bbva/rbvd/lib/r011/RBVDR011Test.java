@@ -90,9 +90,6 @@ public class RBVDR011Test {
 		rbvdR011.setRbvdR311(rbvdr311);
 		spyRbvdR011.setRbvdR311(rbvdr311);
 
-		pisdR401 = mock(PISDR401.class);
-		rbvdR011.setPisdr401(pisdR401);
-
 		applicationConfigurationService = mock(ApplicationConfigurationService.class);
 		rbvdR011.setApplicationConfigurationService(applicationConfigurationService);
 		spyRbvdR011.setApplicationConfigurationService(applicationConfigurationService);
@@ -126,8 +123,8 @@ public class RBVDR011Test {
 		spyRbvdR011.setRbvdR051(rbvdR051);
 
 		pisdR401 = mock(PISDR401.class);
-		rbvdR011.setPisdr401(pisdR401);
-		spyRbvdR011.setPisdr401(pisdR401);
+		rbvdR011.setPisdR401(pisdR401);
+		spyRbvdR011.setPisdR401(pisdR401);
 		Map<String,Object> product = new HashMap<>();
 		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
