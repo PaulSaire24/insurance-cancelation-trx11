@@ -15,7 +15,5 @@
 	<modules>
 		<module>RBVDR011</module>
 		<module>RBVDR011IMPL</module>
-		<module>RBVDR012</module>
-		<module>RBVDR012IMPL</module>
 	</modules>
 </project>

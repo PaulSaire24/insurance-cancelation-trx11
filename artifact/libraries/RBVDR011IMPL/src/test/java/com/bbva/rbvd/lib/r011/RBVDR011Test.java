@@ -60,7 +60,6 @@ import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParameters
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.RBVDR011Impl;
-import com.bbva.rbvd.lib.r012.RBVDR012;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {
@@ -74,7 +73,6 @@ public class RBVDR011Test {
 
 	private RBVDR011Impl rbvdR011 = new RBVDR011Impl();
 	private RBVDR011Impl spyRbvdR011;
-	private RBVDR012 RBVDR012;
 	private RBVDR311 rbvdr311;
 	private PISDR100 pisdr100;
 	private PISDR103 pisdr103;
@@ -88,16 +86,12 @@ public class RBVDR011Test {
 		ThreadContext.set(new Context());
 		spyRbvdR011 = spy(rbvdR011);
 
-		RBVDR012 = mock(RBVDR012.class);
-		rbvdR011.setRbvdR012(RBVDR012);
-		spyRbvdR011.setRbvdR012(RBVDR012);
-
 		rbvdr311 = mock(RBVDR311.class);
 		rbvdR011.setRbvdR311(rbvdr311);
 		spyRbvdR011.setRbvdR311(rbvdr311);
 
 		pisdR401 = mock(PISDR401.class);
-		rbvdR011.setPisdR401(pisdR401);
+		rbvdR011.setPisdr401(pisdR401);
 
 		applicationConfigurationService = mock(ApplicationConfigurationService.class);
 		rbvdR011.setApplicationConfigurationService(applicationConfigurationService);
@@ -132,8 +126,8 @@ public class RBVDR011Test {
 		spyRbvdR011.setRbvdR051(rbvdR051);
 
 		pisdR401 = mock(PISDR401.class);
-		rbvdR011.setPisdR401(pisdR401);
-		spyRbvdR011.setPisdR401(pisdR401);
+		rbvdR011.setPisdr401(pisdR401);
+		spyRbvdR011.setPisdr401(pisdR401);
 		Map<String,Object> product = new HashMap<>();
 		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
@@ -554,7 +548,6 @@ public class RBVDR011Test {
 		outHost.setCancellationDate(cancellationCalendar);
 
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(outHost);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
 		when(rbvdR042.executeICR4(anyObject())).thenReturn("OK");
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
@@ -644,7 +637,6 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(requestCancellationMovLast);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
 
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
@@ -686,7 +678,6 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(requestCancellationMovLast);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
 
-		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);

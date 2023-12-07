@@ -4,9 +4,6 @@
 	<bean id="pisdR100" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r100.PISDR100"/>
 	</bean>
-	<bean id="rbvdR012" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.rbvd.lib.r012.RBVDR012"/>
-	</bean>
 	<bean id="pisdR103" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r103.PISDR103"/>
 	</bean>
@@ -15,9 +12,6 @@
 	</bean>
 	<bean id="rbvdR051" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r051.RBVDR051"/>
-	</bean>
-	<bean id="pisdR401" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.pisd.lib.r401.PISDR401"/>
 	</bean>
 	<bean id="rbvdR311" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r311.RBVDR311"/>
