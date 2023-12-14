@@ -59,7 +59,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
 		EntityOutPolicyCancellationDTO out;
 		if(policy == null){ //producto no royal
-			out = isCancellationTypeValidaty(input, null);
+			out = isCancellationTypeValidaty(input, null, policy);
 			return validatePolicy(out);
 		}
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: policy = {} *****", policy);
@@ -98,7 +98,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), input.getContractId().substring(4, 8));
 		argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), input.getContractId().substring(10));
 		Map<String, Object> cancellationRequest = this.pisdR103.executeGetRequestCancellation(argumentsRequest);
-		out = isCancellationTypeValidaty(input, cancellationRequest);
+		out = isCancellationTypeValidaty(input, cancellationRequest, policy);
 		if (out == null) return null;
 
 		String statusid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()), "0");
@@ -208,16 +208,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - cancelPolicy END *****");
 		return out;
 	}
-	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest){
+	private EntityOutPolicyCancellationDTO isCancellationTypeValidaty(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
 		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-			return executeCancelPolicyHost(input, cancellationRequest);
+			return executeCancelPolicyHost(input, cancellationRequest, policy);
 		}
 		return mapRetentionResponse(null, input, null, input.getCancellationType(), input.getCancellationType());
 	}
 
-	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest){
+	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - Start");
-		ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest);
+		ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy);
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Request: {}", icf3DTORequest);
 		ICF3Response icf3Response = this.rbvdR051.executePolicyCancellation(icf3DTORequest);
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
@@ -231,7 +231,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return mapICF3Response(input, icf3Response);
 	}
 
-	private ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest){
+	private ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
 		ICF3Request icf3DTORequest = new ICF3Request();
 		icf3DTORequest.setNUMCER(input.getContractId());
 
@@ -255,6 +255,21 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue()) != null){
 			icf3DTORequest.setMONTDEV(String.valueOf(cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())));
 		}
+
+		if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()) != null){
+			icf3DTORequest.setNUMPOL(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue())));
+		}
+
+		if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()) != null){
+			icf3DTORequest.setPRODRI(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue())));
+		}
+
+		if(input.getIsRefund()){
+			icf3DTORequest.setINDDEV("S");
+		}else{
+			icf3DTORequest.setINDDEV("N");
+		}
+
 		return icf3DTORequest;
 	}
 	private EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response){
