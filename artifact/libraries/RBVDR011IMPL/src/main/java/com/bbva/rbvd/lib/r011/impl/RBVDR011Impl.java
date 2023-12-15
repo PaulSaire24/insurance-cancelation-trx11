@@ -250,10 +250,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			}
 		}
 		if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue()) != null){
-			icf3DTORequest.setCOMRIMA((double)cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue()));
+			icf3DTORequest.setCOMRIMA(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue())).doubleValue());
 		}
 		if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue()) != null){
-			icf3DTORequest.setMONTDEV((double)(cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())));
+			icf3DTORequest.setMONTDEV(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())).doubleValue());
 		}
 
 		if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()) != null){

@@ -320,8 +320,8 @@ public class RBVDR011Test {
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdR042.executeICR4(anyObject())).thenReturn("OK");
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), 0.00);
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), 0.00);
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), new BigDecimal("0.01"));
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal("0.01"));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
@@ -377,8 +377,8 @@ public class RBVDR011Test {
 		requestCancellationMovLast.get(0).put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), RBVDConstants.MOV_BAJ);
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(requestCancellationMovLast);
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), 0.00);
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), 0.00);
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), new BigDecimal("0.01"));
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal("0.01"));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
