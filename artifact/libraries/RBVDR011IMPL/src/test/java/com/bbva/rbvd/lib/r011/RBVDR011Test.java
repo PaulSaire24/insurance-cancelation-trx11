@@ -111,9 +111,9 @@ public class RBVDR011Test {
 		ICMF3S0 icmf3s0 = new ICMF3S0();
 		icmf3s0.setIDSTCAN("1");
 		icmf3s0.setDESSTCA("OK");
-		icmf3s0.setIMDECIA("0");
-		icmf3s0.setIMPCLIE("0");
-		icmf3s0.setTIPCAMB("0");
+		icmf3s0.setIMDECIA(0);
+		icmf3s0.setIMPCLIE(0);
+		icmf3s0.setTIPCAMB(0);
 		icmf3s0.setFETIPCA("2023-11-03");
 		icmf3s0.setDESSTCA("COMPLETED");
 		ICF3Response  ifc3Response = new ICF3Response();
@@ -155,9 +155,9 @@ public class RBVDR011Test {
 		ICMF3S0 icmf3s0 = new ICMF3S0();
 		icmf3s0.setIDSTCAN("1");
 		icmf3s0.setDESSTCA("OK");
-		icmf3s0.setIMDECIA("0");
-		icmf3s0.setIMPCLIE("0");
-		icmf3s0.setTIPCAMB("0");
+		icmf3s0.setIMDECIA(0);
+		icmf3s0.setIMPCLIE(0);
+		icmf3s0.setTIPCAMB(0);
 		icmf3s0.setFETIPCA("2023-11-03");
 		icmf3s0.setDESSTCA("COMPLETED");
 		ifc3Response.setIcmf3s0(icmf3s0);
@@ -262,9 +262,9 @@ public class RBVDR011Test {
 		ICMF3S0 icmf3s0 = new ICMF3S0();
 		icmf3s0.setIDSTCAN("1");
 		icmf3s0.setDESSTCA("OK");
-		icmf3s0.setIMDECIA("0");
-		icmf3s0.setIMPCLIE("0");
-		icmf3s0.setTIPCAMB("0");
+		icmf3s0.setIMDECIA(0);
+		icmf3s0.setIMPCLIE(0);
+		icmf3s0.setTIPCAMB(0);
 		icmf3s0.setFETIPCA("2023-11-03");
 		icmf3s0.setDESSTCA("REFUND");
 		ICF3Response  ifc3Response = new ICF3Response();
