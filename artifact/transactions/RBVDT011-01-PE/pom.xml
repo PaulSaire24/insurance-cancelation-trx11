@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>com.bbva.rbvd</groupId>
 		<artifactId>TRANSACTIONS-insurance-cancelation-trx11</artifactId>
-		<version>0.10.16</version>
+		<version>0.10.17</version>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>RBVDT011-01-PE</artifactId>
-	<version>0.10.16</version>
+	<version>0.10.17</version>
 	<packaging>bundle</packaging>
 	<description>Transaction of policy cancelation</description>
 	<properties>
@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR011</artifactId>
-			<version>0.10.16</version>
+			<version>0.10.17</version>
 		</dependency>
 	</dependencies>
 	<build>
