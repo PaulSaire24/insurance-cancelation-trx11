@@ -73,6 +73,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: New cancellation request");
 			InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCode);
 			cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
+			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: cancellationSimulationResponse = {} *****", cancellationSimulationResponse);
 			if (cancellationSimulationResponse == null || !executeFirstCancellationRequest(input, policy, cancellationSimulationResponse)) {
 				return null;
 			}
@@ -190,7 +191,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			LOGGER.info("***** RBVDR011Impl - isChannelEndoso END  *****");
 		}
 
-		Date date = input.getCancellationDate().getTime();
+		Calendar dateCalendar = (Calendar)cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue());
+		LOGGER.info("***** RBVDR011Impl - cancelPolicy - dateCalendar: {}  *****", dateCalendar);
+		Date date = dateCalendar.getTime();
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);
 		String strDate = dateFormat.format(date);
 		poliza.setFechaAnulacion(strDate);
@@ -305,7 +308,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private Date convertStringToDate(String date){
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		java.time.LocalDate localdate = java.time.LocalDate.parse(date, formatter);
-		return Date.from(localdate.atStartOfDay(ZoneId.of("America/Lima")).toInstant());
+		return Date.from(localdate.atStartOfDay(ZoneId.of("UTC")).toInstant());
 	}
 
 	private String updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, String statusId) {
@@ -366,7 +369,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - ICR4 result: {}", result);
 		if (!result.equals(OK) && !result.equals(OK_WARN)) {
 			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
-			return false;//debería terminar la trx
+			return false;
 		}
 
 		Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
@@ -435,7 +438,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
-		arguments.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), input.getCancellationDate().getTime());
+		arguments.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat("dd/MM/yy").format(cancellationSimulationResponse.getFechaAnulacion()));
 		arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), input.getUserId());
 		arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), input.getUserId());
 		if(cancellationSimulationResponse.getExtornoComision() != null){
@@ -515,7 +518,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		rimacSimulationRequest.setFechaAnulacion(cancellationDate);
 		rimacSimulationRequest.setNumeroPoliza(Integer.parseInt(policyId));
 		rimacSimulationRequest.setCodProducto(productCode);
-
+		LOGGER.info("***** RBVDR011Impl - buildRimacSimulationRequest - {} *****", rimacSimulationRequest);
 		return rimacSimulationRequest;
 	}
 
