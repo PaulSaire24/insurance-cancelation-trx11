@@ -214,6 +214,11 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
+
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
@@ -271,6 +276,9 @@ public class RBVDR011Test {
 		ifc3Response.setIcmf3s0(icmf3s0);
 		ifc3Response.setHostAdviceCode(null);
 		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
@@ -322,6 +330,7 @@ public class RBVDR011Test {
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), new BigDecimal("0.01"));
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal("0.01"));
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
@@ -379,8 +388,8 @@ public class RBVDR011Test {
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), new BigDecimal("0.01"));
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal("0.01"));
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
-
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("00110840020012345678");
 		input.setChannelId("PC");
@@ -517,7 +526,9 @@ public class RBVDR011Test {
 		contactDetailDTO.setContact(genericContactDTO);
 		listContactDetailDTO.add(contactDetailDTO);
 		notificationsDTO.setContactDetails(listContactDetailDTO);
-
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		input.setNotifications(notificationsDTO);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
@@ -639,6 +650,11 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
+
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
@@ -680,6 +696,10 @@ public class RBVDR011Test {
 		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
