@@ -13,6 +13,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -216,7 +217,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
 
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
@@ -277,7 +278,7 @@ public class RBVDR011Test {
 		ifc3Response.setHostAdviceCode(null);
 		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
@@ -330,7 +331,7 @@ public class RBVDR011Test {
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), new BigDecimal("0.01"));
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal("0.01"));
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
@@ -388,7 +389,7 @@ public class RBVDR011Test {
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), new BigDecimal("0.01"));
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal("0.01"));
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setContractId("00110840020012345678");
@@ -527,7 +528,7 @@ public class RBVDR011Test {
 		listContactDetailDTO.add(contactDetailDTO);
 		notificationsDTO.setContactDetails(listContactDetailDTO);
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(),new Timestamp(System.currentTimeMillis()));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		input.setNotifications(notificationsDTO);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
@@ -652,7 +653,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
 
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
@@ -697,7 +698,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), Calendar.getInstance());
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());

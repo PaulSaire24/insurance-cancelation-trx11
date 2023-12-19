@@ -1,6 +1,7 @@
 package com.bbva.rbvd.lib.r011.impl;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -191,9 +192,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			LOGGER.info("***** RBVDR011Impl - isChannelEndoso END  *****");
 		}
 
-		Calendar dateCalendar = (Calendar)cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue());
-		LOGGER.info("***** RBVDR011Impl - cancelPolicy - dateCalendar: {}  *****", dateCalendar);
-		Date date = dateCalendar.getTime();
+		Timestamp dateTimestamp = (Timestamp)cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue());
+		LOGGER.info("***** RBVDR011Impl - cancelPolicy - dateTimestamp: {}  *****", dateTimestamp);
+		Date date = new Date(dateTimestamp.getTime());
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);
 		String strDate = dateFormat.format(date);
 		poliza.setFechaAnulacion(strDate);
