@@ -412,7 +412,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.FIELD_CONTRACT_SECOND_VERFN_DIGIT_ID.getValue(), input.getContractId().substring(9, 10));
 		arguments.put(RBVDProperties.FIELD_CHANNEL_ID.getValue(), input.getChannelId());
 		arguments.put(RBVDProperties.FIELD_CANCEL_BRANCH_ID.getValue(), null);
-		arguments.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new SimpleDateFormat("dd/MM/yyyy").format(cancellationSimulationResponse.getFechaAnulacion()));
+		arguments.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new SimpleDateFormat("dd/MM/yyyy").format(input.getCancellationDate().getTime()));
 		arguments.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), policy.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
 		arguments.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), policy.get(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue()));
 		arguments.put(RBVDProperties.FIELD_PAYMENT_FREQUENCY_ID.getValue(), null);
@@ -439,7 +439,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
-		arguments.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat("dd/MM/yy").format(cancellationSimulationResponse.getFechaAnulacion()));
+		arguments.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat("dd/MM/yy").format(input.getCancellationDate().getTime()));
 		arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), input.getUserId());
 		arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), input.getUserId());
 		if(cancellationSimulationResponse.getExtornoComision() != null){
