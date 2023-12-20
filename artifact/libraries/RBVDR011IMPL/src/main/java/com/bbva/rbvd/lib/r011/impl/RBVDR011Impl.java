@@ -84,7 +84,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
 		if(isAPXCancellationRequest(insuranceProductId, input.getChannelId())){
-			return mapRetentionResponse((String) policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), input, cancellationSimulationResponse, "01", CODE_PENDING);
+			return mapRetentionResponse((String) policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), input, "01", CODE_PENDING,input.getCancellationDate());
 		}else{ //Seguir el flujo de cancelación
 			return cancelPolicy( input, policy, policyId,  productCode);
 		}
@@ -193,7 +193,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		Timestamp dateTimestamp = (Timestamp)cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue());
-		LOGGER.info("***** RBVDR011Impl - cancelPolicy - dateTimestamp: {}  *****", dateTimestamp);
 		Date date = new Date(dateTimestamp.getTime());
 		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);
 		String strDate = dateFormat.format(date);
@@ -216,7 +215,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			return executeCancelPolicyHost(input, cancellationRequest, policy);
 		}
-		return mapRetentionResponse(null, input, null, input.getCancellationType(), input.getCancellationType());
+		return mapRetentionResponse(null, input, input.getCancellationType(), input.getCancellationType(), input.getCancellationDate());
 	}
 
 	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
@@ -232,16 +231,24 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return null;
 		}
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - End");
-		return mapICF3Response(input, icf3Response);
+		return mapICF3Response(input, icf3Response, cancellationRequest);
 	}
 
+	private Date getCancellationDate(Map<String, Object> cancellationRequest, InputParametersPolicyCancellationDTO input){
+		Date date;
+		if(cancellationRequest!=null){
+			Timestamp dateTimestamp = (Timestamp)cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue());
+			date = new Date(dateTimestamp.getTime());
+		}else{
+			date = input.getCancellationDate().getTime();
+		}
+		return date;
+	}
 	private ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
 		ICF3Request icf3DTORequest = new ICF3Request();
 		icf3DTORequest.setNUMCER(input.getContractId());
-
-		Date date = input.getCancellationDate().getTime();
+		Date date = getCancellationDate(cancellationRequest, input);
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-
 		icf3DTORequest.setFECCANC(dateFormat.format(date));
 		icf3DTORequest.setCODMOCA(input.getReason().getId());
 		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - cancellationDate: {}", dateFormat.format(date));
@@ -276,31 +283,34 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		return icf3DTORequest;
 	}
-	private EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response){
+	private EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response, Map<String, Object> cancellationRequest){
 		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
 		output.setId(icf3Response.getIcmf3s0().getIDCANCE());
 		GenericStatusDTO status = new GenericStatusDTO();
 		status.setId(icf3Response.getIcmf3s0().getDESSTCA());
 		status.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
 		output.setStatus(status);
-		output.setCancellationDate(input.getCancellationDate());
+		Calendar calendarTime = Calendar.getInstance();
+		Date date = getCancellationDate(cancellationRequest, input);
+		calendarTime.setTime(date);
+		output.setCancellationDate(calendarTime);
 		GenericIndicatorDTO reason = new GenericIndicatorDTO();
 		reason.setId(icf3Response.getIcmf3s0().getCODMOCA());
 		reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
 		output.setReason(reason);
 		output.setNotifications(input.getNotifications());
 		GenericAmountDTO insurerRefund = new GenericAmountDTO();
-		insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
+		insurerRefund.setAmount(icf3Response.getIcmf3s0().getIMDECIA());
 		insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
 		output.setInsurerRefund(insurerRefund);
 		GenericAmountDTO customerRefund = new GenericAmountDTO();
-		customerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMPCLIE()));
+		customerRefund.setAmount(icf3Response.getIcmf3s0().getIMPCLIE());
 		customerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVIMC());
 		output.setCustomerRefund(customerRefund);
 		ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO();
 		exchangeRateDTO.setTargetCurrency(icf3Response.getIcmf3s0().getDIVDEST());
 		exchangeRateDTO.setCalculationDate(convertStringToDate(icf3Response.getIcmf3s0().getFETIPCA()));
-		exchangeRateDTO.setValue(Double.valueOf(icf3Response.getIcmf3s0().getTIPCAMB()));
+		exchangeRateDTO.setValue(icf3Response.getIcmf3s0().getTIPCAMB());
 		exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
 		output.setExchangeRate(exchangeRateDTO);
 		return output;
@@ -467,18 +477,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 
 	private EntityOutPolicyCancellationDTO mapRetentionResponse(String policyId, InputParametersPolicyCancellationDTO input,
-																CancelationSimulationPayloadBO cancellationSimulationResponse,
-																String statusId, String statusDescription) {
+																String statusId, String statusDescription, Calendar cancellationDate) {
 		LOGGER.info("***** RBVDR011Impl - mapRetentionResponse START *****");
 		EntityOutPolicyCancellationDTO entityOutPolicyCancellationDTO = new EntityOutPolicyCancellationDTO();
 		entityOutPolicyCancellationDTO.setId(policyId);
-		if (cancellationSimulationResponse != null && cancellationSimulationResponse.getFechaAnulacion() != null) {
-			Calendar cancellationDate = Calendar.getInstance();
-			cancellationDate.setTime(cancellationSimulationResponse.getFechaAnulacion());
-			entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
-		} else {
-			entityOutPolicyCancellationDTO.setCancellationDate(input.getCancellationDate());
-		}
+		entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
 		entityOutPolicyCancellationDTO.setReason(new GenericIndicatorDTO());
 		entityOutPolicyCancellationDTO.getReason().setId(input.getReason().getId());
 		entityOutPolicyCancellationDTO.setStatus(new GenericStatusDTO());
