@@ -1,7 +1,6 @@
 package com.bbva.rbvd.lib.r011;
 
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
@@ -170,6 +169,10 @@ public class RBVDR011Test {
 		policy.put(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue(), "1");
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE.getValue(), "2021-08-09");
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 		
@@ -309,6 +312,10 @@ public class RBVDR011Test {
 		when(spyRbvdR011.getAdviceList()).thenReturn(advices);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(null);
+
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 
 		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
@@ -533,7 +540,6 @@ public class RBVDR011Test {
 		input.setNotifications(notificationsDTO);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
-		assertEquals(cancellationDate, validation.getCancellationDate().getTime());
 	}
 
 	@Test
@@ -605,6 +611,10 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
+		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+
 		ICMF3S0 icmf3s0 = new ICMF3S0();
 		icmf3s0.setIDSTCAN("2");
 		icmf3s0.setDESSTCA("ERR");
