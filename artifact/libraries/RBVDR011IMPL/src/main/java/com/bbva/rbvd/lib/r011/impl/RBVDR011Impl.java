@@ -127,8 +127,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		Map<String, Object> mapContract = RBVDUtils.getMapContractNumber(input.getContractId());
 		mapContract.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
-		Map<String, Object> arguments = new HashMap<>();
-		arguments.putAll(mapContract);
+		Map<String, Object> arguments = new HashMap<>(mapContract);
 		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_ORIGIN_BRANCH.getValue() , input.getBranchId());
 		arguments.put(RBVDProperties.KEY_REQUEST_MOVEMENT_TYPE.getValue()               , movementType);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()         , statusId);
@@ -324,7 +323,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 	private String updateContractStatusIfEndOfValidity(InputParametersPolicyCancellationDTO input, String statusId) {
 		if (END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-			 return  RBVDConstants.TAG_PEN;
+			 return  RBVDConstants.TAG_PEB;
 		}
 		return statusId;
 	}
@@ -394,6 +393,13 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
 		int isInsertedMov = this.pisdR103.executeSaveInsuranceRequestCancellationMov(argumentsForSaveRequestCancellationMov);
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - isInsertedMov: {}", isInsertedMov);
+
+		Map<String, Object> arguments = RBVDUtils.getMapContractNumber(input.getContractId());
+		arguments.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
+		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
+		this.pisdR100.executeUpdateContractStatus(arguments);
+		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - updateContractStatus: {}", RBVDConstants.TAG_PEN);
+
 		return true;
 	}
 
