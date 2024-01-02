@@ -6,8 +6,12 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import java.util.Calendar;
 
+/**
+ * In this class, the input and output data is defined automatically through the setters and getters.
+ */
 public abstract class AbstractRBVDT01101PETransaction extends AbstractTransaction {
 
 	public AbstractRBVDT01101PETransaction(){
@@ -40,6 +44,13 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	 */
 	protected NotificationsDTO getNotifications(){
 		return (NotificationsDTO)this.getParameter("notifications");
+	}
+
+	/**
+	 * Return value for input parameter insurerRefund
+	 */
+	protected InsurerRefundCancellationDTO getInsurerrefund(){
+		return (InsurerRefundCancellationDTO)this.getParameter("insurerRefund");
 	}
 
 	/**
@@ -78,13 +89,6 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	}
 
 	/**
-	 * Set value for GenericAmountDTO output parameter insurerRefund
-	 */
-	protected void setInsurerrefund(final GenericAmountDTO field){
-		this.addParameter("insurerRefund", field);
-	}
-
-	/**
 	 * Set value for GenericAmountDTO output parameter customerRefund
 	 */
 	protected void setCustomerrefund(final GenericAmountDTO field){
@@ -96,5 +100,12 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	 */
 	protected void setExchangerate(final ExchangeRateDTO field){
 		this.addParameter("exchangeRate", field);
+	}
+
+	/**
+	 * Set value for InsurerRefundCancellationDTO output parameter insurerRefund
+	 */
+	protected void setInsurerrefund(final InsurerRefundCancellationDTO field){
+		this.addParameter("insurerRefund", field);
 	}
 }

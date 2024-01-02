@@ -31,6 +31,7 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 		input.setReason(this.getReason());
 		input.setNotifications(this.getNotifications());
 		input.setCancellationDate(this.getCancellationdate());
+		input.setInsurerRefund(this.getInsurerrefund());
 		LOGGER.info("input: {}", input);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		if (validation == null) {
@@ -44,6 +45,7 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 			this.setInsurerrefund(validation.getInsurerRefund());
 			this.setCustomerrefund(validation.getCustomerRefund());
 			this.setExchangerate(validation.getExchangeRate());
+			this.setInsurerrefund(validation.getInsurerRefund());
 		}
 	}
 
