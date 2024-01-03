@@ -9,6 +9,7 @@ import com.bbva.rbvd.lib.r003.RBVDR003;
 import com.bbva.rbvd.lib.r011.RBVDR011;
 import com.bbva.rbvd.lib.r012.RBVDR012;
 import com.bbva.rbvd.lib.r042.RBVDR042;
+import com.bbva.rbvd.lib.r051.RBVDR051;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 
 /**
@@ -31,6 +32,8 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	protected RBVDR311 rbvdR311;
 
 	protected PISDR103 pisdR103;
+
+	protected RBVDR051 rbvdR051;
 
 
 	/**
@@ -87,6 +90,13 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	*/
 	public void setPisdR103(PISDR103 pisdR103) {
 		this.pisdR103 = pisdR103;
+	}
+
+	/**
+	* @param rbvdR051 the this.rbvdR051 to set
+	*/
+	public void setRbvdR051(RBVDR051 rbvdR051) {
+		this.rbvdR051 = rbvdR051;
 	}
 
 }

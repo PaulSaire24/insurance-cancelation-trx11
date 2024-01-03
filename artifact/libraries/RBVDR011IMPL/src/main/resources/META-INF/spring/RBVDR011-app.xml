@@ -9,5 +9,6 @@
 		<property name="rbvdR042" ref="rbvdR042"/>
 		<property name="rbvdR311" ref="rbvdR311"/>
 		<property name="pisdR103" ref="pisdR103"/>
+		<property name="rbvdR051" ref="rbvdR051"/>
 	</bean>
 </beans>

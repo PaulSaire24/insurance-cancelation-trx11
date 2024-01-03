@@ -15,10 +15,13 @@
 						<parameter order="3" name="address" mandatory="0" type="String" size="80"/>
 						<parameter order="4" name="username" mandatory="0" type="String" size="20"/>
 					</dto>
+					<parameter order="2" name="id" mandatory="0" type="String" size="40"/>
 				</dto>
 			</list>
 		</dto>
-		<dto order="5" name="insurerRefund" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO" artifactId="RBVDC001">
+		<parameter order="5" name="isRefund" mandatory="0" type="Boolean" size="0"/>
+		<parameter order="6" name="cancellationType" mandatory="0" type="String" size="20"/>
+		<dto order="7" name="insurerRefund" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO" artifactId="RBVDC001">
 			<dto order="1" name="paymentMethod" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO" artifactId="RBVDC001">
 				<dto order="1" name="contract" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO" artifactId="RBVDC001">
 					<parameter order="1" name="contractType" mandatory="1" type="String" size="30"/>
@@ -50,6 +53,7 @@
 						<parameter order="3" name="address" mandatory="0" type="String" size="80"/>
 						<parameter order="4" name="username" mandatory="0" type="String" size="20"/>
 					</dto>
+					<parameter order="2" name="id" mandatory="0" type="String" size="40"/>
 				</dto>
 			</list>
 		</dto>
@@ -67,7 +71,9 @@
 			<parameter order="3" name="targetCurrency" mandatory="1" type="String" size="5"/>
 			<parameter order="4" name="calculationDate" mandatory="1" type="Date (YYYY-MM-DD)" size="0"/>
 		</dto>
-		<dto order="8" name="insurerRefund" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO" artifactId="RBVDC001">
+		<parameter order="8" name="isRefund" mandatory="0" type="Boolean" size="0"/>
+		<parameter order="9" name="cancellationType" mandatory="0" type="String" size="20"/>
+		<dto order="10" name="insurerRefund" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO" artifactId="RBVDC001">
 			<parameter order="1" name="amount" mandatory="1" type="Double" size="18"/>
 			<parameter order="2" name="currency" mandatory="1" type="String" size="10"/>
 			<dto order="3" name="paymentMethod" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO" artifactId="RBVDC001">

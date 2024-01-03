@@ -23,6 +23,8 @@ import java.util.Map;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.pisd.lib.r401.PISDR401;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.insurancecancelation.commons.*;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
@@ -42,6 +44,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 import com.bbva.rbvd.lib.r042.RBVDR042;
+import com.bbva.rbvd.lib.r051.RBVDR051;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.mock.MockDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
@@ -72,6 +75,9 @@ public class RBVDR011Test {
 	private RBVDR042 rbvdR042;
 
 	private PISDR103 pisdr103;
+
+	private RBVDR051 rbvdR051;
+
 
 
 	private ApplicationConfigurationService applicationConfigurationService;
@@ -110,6 +116,22 @@ public class RBVDR011Test {
 		pisdr103 = mock(PISDR103.class);
 		rbvdR011.setPisdR103(pisdr103);
 		spyRbvdR011.setPisdR103(pisdr103);
+
+		rbvdR051 = mock(RBVDR051.class);
+		rbvdR011.setRbvdR051(rbvdR051);
+		ICMF3S0 icmf3s0 = new ICMF3S0();
+		icmf3s0.setIDSTCAN("1");
+		icmf3s0.setDESSTCA("OK");
+		icmf3s0.setIMDECIA(0);
+		icmf3s0.setIMPCLIE(0);
+		icmf3s0.setTIPCAMB(0);
+		icmf3s0.setFETIPCA("2023-11-03");
+		icmf3s0.setDESSTCA("COMPLETED");
+		ICF3Response  ifc3Response = new ICF3Response();
+		ifc3Response.setIcmf3s0(icmf3s0);
+		ifc3Response.setHostAdviceCode(null);
+		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
+		spyRbvdR011.setRbvdR051(rbvdR051);
 	}
 	
 	@Test
@@ -218,6 +240,19 @@ public class RBVDR011Test {
 		when(rbvdR042.executeICR4(anyObject())).thenReturn("ERROR");
 		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation2);
+
+		ICF3Response  ifc3Response = new ICF3Response();
+		ifc3Response.setIcmf3s0(null);
+		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
+		validation2 = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation2);
+
+		ifc3Response = new ICF3Response();
+		ifc3Response.setHostAdviceCode("00000169");
+		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
+		validation2 = rbvdR011.executePolicyCancellation(input);
+		assertNull(validation2);
+
 
 	}
 

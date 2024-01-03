@@ -3,6 +3,8 @@ package com.bbva.rbvd.lib.r011.impl;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -12,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
@@ -21,6 +26,10 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.PolizaBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.rescue.RescueBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
 import com.google.common.base.Strings;
@@ -36,7 +45,6 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
-import org.springframework.web.client.RestClientException;
 
 import static java.util.Objects.nonNull;
 
@@ -48,23 +56,24 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private static final String OK = "OK";
 	private static final String OK_WARN = "OK_WARN";
 
+	private static final String RL_ACCOUNT_ID = "RL_ACCOUNT_ID";
+	private static final String DATEFORMAT_CNCL_DATE = "dd/MM/yyyy";
+
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation START *****");
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation Params: {} *****", input);
-		
+
+		if (input.getCancellationDate() == null) input.setCancellationDate(Calendar.getInstance());
 		String xcontractNumber = this.rbvdR003.executeCypherService(new CypherASO(input.getContractId(), CypherASO.KINDAPXCYPHER_CONTRACTID));
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation xcontractNumber: {} *****", xcontractNumber);
-		
-		EntityOutPolicyCancellationDTO out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber
-				, input.getCancellationDate()
-				, input.getReason()
-				, input.getNotifications());
-		if (out == null) { return null; }
+
+		EntityOutPolicyCancellationDTO out;
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
 		if (policy == null) {
 			if (!org.springframework.util.CollectionUtils.isEmpty(this.getAdviceList())
 					&& this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
+				out = this.rbvdR012.executeCancelPolicyHost(xcontractNumber, input.getCancellationDate(), input.getReason(), input.getNotifications());
 				LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO NO ROYAL - Response = {} *****", out);
 				this.getAdviceList().clear();
 				return out;
@@ -72,11 +81,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return null; 
 		}
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation: policy = {} *****", policy);
-		String statusid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()), "0");
-		if (RBVDConstants.TAG_ANU.equals(statusid) || RBVDConstants.TAG_BAJ.equals(statusid)) {
-			this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
-			return null;
-		}
 		String policyId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
 		String productCompanyId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
 		String productId= java.util.Objects.toString(policy.get(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue()), "0");
@@ -85,8 +89,24 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		String businessName= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME), "");
 		String shortDesc= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC), "");
+		String statusid= java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()), "0");
+		if (RBVDConstants.TAG_ANU.equals(statusid) || RBVDConstants.TAG_BAJ.equals(statusid)) {
+			this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
+			return null;
+		}
 
-		Boolean isRescueCancellationOk = executeRescueCancellationRequest(input, policy, shortDesc);
+		InputRimacBO inputRimac = new InputRimacBO();
+		inputRimac.setTraceId(input.getTraceId());
+		inputRimac.setNumeroPoliza(Integer.parseInt(policyId));
+		inputRimac.setCodProducto(productCompanyId);
+
+		if(isLifeProduct(businessName)){
+			inputRimac.setCodProducto(shortDesc);
+		}
+
+		out = callCancelPolicyHost(xcontractNumber, input, inputRimac,policy ,shortDesc);
+		if (out == null) { return null; }
+
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
 		String statusId = RBVDConstants.TAG_BAJ;
@@ -134,7 +154,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
-		
+		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATEFORMAT_CNCL_DATE).format(input.getCancellationDate().getTime()));
+
 		this.pisdR100.executeUpdateContractStatus(arguments);
 
 		arguments.clear();
@@ -152,19 +173,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		String userCode = input.getUserId();
 
 
-		InputRimacBO inputRimac = new InputRimacBO();
-		inputRimac.setTraceId(input.getTraceId());
-		inputRimac.setNumeroPoliza(Integer.parseInt(policyId));
-		inputRimac.setCodProducto(productCompanyId);
-
-		if(isLifeProduct(businessName)){
-			inputRimac.setCodProducto(shortDesc);
-		}
-
 		PolicyCancellationPayloadBO inputPayload = new PolicyCancellationPayloadBO();
-		CancelationRescuePayloadBO rescuePayload = new CancelationRescuePayloadBO();
 		PolizaBO poliza = new PolizaBO();
-		RescueBO polizaRescue = new RescueBO();
 		if (input.getCancellationDate() == null) {
 			input.setCancellationDate(Calendar.getInstance());
 		}
@@ -179,34 +189,164 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		Date date = input.getCancellationDate().getTime();
-		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);  
-		String strDate = dateFormat.format(date);  
+		DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);
+		String strDate = dateFormat.format(date);
 		poliza.setFechaAnulacion(strDate);
 		poliza.setCodigoMotivo(input.getReason().getId());
-		polizaRescue.setFechaSolicitud(date);
 		ContratanteBO contratante = new ContratanteBO();
 		contratante.setCorreo(email);
 		contratante.setEnvioElectronico("S");
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
-		rescuePayload.setPoliza(polizaRescue);
-		rescuePayload.setContratante(contratante);
-
-		callExecuteCancelationService(inputRimac, inputPayload, rescuePayload, shortDesc, isRescueCancellationOk);
+		cancelPolicyByProduct(inputRimac, inputPayload,null, shortDesc);
 
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
 	}
 
-	private void callExecuteCancelationService(InputRimacBO inputRimac, PolicyCancellationPayloadBO inputPayload, CancelationRescuePayloadBO rescuePayload, String shortDesc, Boolean isOk){
-		if (ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shortDesc)) {
-			if (isOk) {
-				rbvdR311.executeRescueCancelationRimac(inputRimac, rescuePayload);
-			}
-		} else {
+
+
+	private void cancelPolicyByProduct(InputRimacBO inputRimac,PolicyCancellationPayloadBO inputPayload, CancelationRescuePayloadBO rescuePayload, String shorDesc){
+		if (!ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shorDesc)){
 			this.rbvdR012.executeCancelPolicyRimac(inputRimac, inputPayload);
 		}
+	}
+
+	private EntityOutPolicyCancellationDTO callCancelPolicyHost(String xcontractNumber, InputParametersPolicyCancellationDTO input, InputRimacBO inputrimac, Map<String, Object> policy,String shortDesc){
+		if (!ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shortDesc)){
+			return this.rbvdR012.executeCancelPolicyHost(xcontractNumber, input.getCancellationDate(), input.getReason(), input.getNotifications());
+		}
+		else {
+			Date date = input.getCancellationDate().getTime();
+			RescueBO polizaRescue = new RescueBO();
+			CancelationRescuePayloadBO cancelPayload = new CancelationRescuePayloadBO();
+			ContratanteBO contratante = new ContratanteBO();
+
+			polizaRescue.setFechaSolicitud(date);
+			String email = "";
+			if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
+					&& input.getNotifications().getContactDetails().get(0).getContact() != null) {
+				email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
+			}
+			contratante.setCorreo(email);
+			contratante.setEnvioElectronico("S");
+			cancelPayload.setPoliza(polizaRescue);
+			cancelPayload.setContratante(contratante);
+			rbvdR311.executeRescueCancelationRimac(inputrimac, cancelPayload);
+			executeRescueCancellationRequest(input, policy, shortDesc);
+			Map<String, Object> argumentsRequest = new HashMap<>();
+			argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), input.getContractId().substring(0, 4));
+			argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), input.getContractId().substring(4, 8));
+			argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), input.getContractId().substring(10));
+			Map<String, Object> cancellationRequest = this.pisdR103.executeGetRequestCancellation(argumentsRequest);
+			return executeCancelPolicyHost(input,cancellationRequest , policy);
+		}
+	}
+
+	private ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
+		ICF3Request icf3DTORequest = new ICF3Request();
+		icf3DTORequest.setNUMCER(input.getContractId());
+
+		Date date = input.getCancellationDate().getTime();
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+		icf3DTORequest.setFECCANC(dateFormat.format(date));
+		icf3DTORequest.setCODMOCA(input.getReason().getId());
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - cancellationDate: {}", dateFormat.format(date));
+		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
+				&& input.getNotifications().getContactDetails().get(0).getContact() != null
+				&& input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
+			icf3DTORequest.setTIPCONT("001");
+			if(input.getNotifications().getContactDetails().get(0).getContact().getAddress() != null){
+				icf3DTORequest.setDESCONT(input.getNotifications().getContactDetails().get(0).getContact().getAddress());
+			}
+		}
+		if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue()) != null){
+			icf3DTORequest.setCOMRIMA(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue())).doubleValue());
+		}
+		if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue()) != null){
+			icf3DTORequest.setMONTDEV(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())).doubleValue());
+		}
+
+		if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()) != null){
+			icf3DTORequest.setNUMPOL(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue())));
+		}
+
+		if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()) != null){
+			icf3DTORequest.setPRODRI(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue())));
+		}
+
+		if(input.getIsRefund()){
+			icf3DTORequest.setINDDEV("S");
+		}else{
+			icf3DTORequest.setINDDEV("N");
+		}
+
+		return icf3DTORequest;
+	}
+
+	private EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response){
+		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
+		if (icf3Response.getIcmf3s0()==null) {
+			ICMF3S0 icmf3s0 = new ICMF3S0();
+			icmf3s0.setIDSTCAN("1");
+			icmf3s0.setDESSTCA("OK");
+			icmf3s0.setIMDECIA(0);
+			icmf3s0.setIMPCLIE(0);
+			icmf3s0.setTIPCAMB(0);
+			icmf3s0.setFETIPCA("2023-11-03");
+			icmf3s0.setDESSTCA("COMPLETED");
+			icf3Response.setIcmf3s0(icmf3s0);
+		}
+		output.setId(icf3Response.getIcmf3s0().getIDCANCE());
+		GenericStatusDTO status = new GenericStatusDTO();
+		status.setId(icf3Response.getIcmf3s0().getDESSTCA());
+		status.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
+		output.setStatus(status);
+		output.setCancellationDate(input.getCancellationDate());
+		GenericIndicatorDTO reason = new GenericIndicatorDTO();
+		reason.setId(icf3Response.getIcmf3s0().getCODMOCA());
+		reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
+		output.setReason(reason);
+		output.setNotifications(input.getNotifications());
+		InsurerRefundCancellationDTO insurerRefund = new InsurerRefundCancellationDTO();
+		insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
+		insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
+		output.setInsurerRefund(insurerRefund);
+		GenericAmountDTO customerRefund = new GenericAmountDTO();
+		customerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMPCLIE()));
+		customerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVIMC());
+		output.setCustomerRefund(customerRefund);
+		ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO();
+		exchangeRateDTO.setTargetCurrency(icf3Response.getIcmf3s0().getDIVDEST());
+		exchangeRateDTO.setCalculationDate(convertStringToDate(icf3Response.getIcmf3s0().getFETIPCA()));
+		exchangeRateDTO.setValue(Double.valueOf(icf3Response.getIcmf3s0().getTIPCAMB()));
+		exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
+		output.setExchangeRate(exchangeRateDTO);
+		return output;
+	}
+
+	private Date convertStringToDate(String date){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		java.time.LocalDate localdate = java.time.LocalDate.parse(date, formatter);
+		return Date.from(localdate.atStartOfDay(ZoneId.of("UTC")).toInstant());
+	}
+
+	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - Start");
+		ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy);
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Request: {}", icf3DTORequest);
+		ICF3Response icf3Response = this.rbvdR051.executePolicyCancellation(icf3DTORequest);
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
+
+		if (icf3Response.getHostAdviceCode() != null) {
+			LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - Error at icf3 execution - Host advice code: {}", icf3Response.getHostAdviceCode());
+			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
+			return null;
+		}
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - End");
+		return mapICF3Response(input, icf3Response);
 	}
 
 	private Map<String, Object> getProductByProductId(String productId) {
@@ -241,11 +381,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		argumentsCommon.put(RBVDProperties.FIELD_COLECTIVE_CERTIFICATE_ID.getValue(), null);
 		argumentsCommon.put(RBVDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), null);
 		argumentsCommon.put(RBVDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), null);
-		Date policyDate = new Date();
-		DateFormat datePolicyFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);
-		String strPolicyDate = datePolicyFormat.format(policyDate);
-		argumentsCommon.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), strPolicyDate);
-		argumentsCommon.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), strPolicyDate);
+		argumentsCommon.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new SimpleDateFormat(DATEFORMAT_CNCL_DATE).format(input.getCancellationDate().getTime()));
+		argumentsCommon.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATEFORMAT_CNCL_DATE).format(input.getCancellationDate().getTime()));
 		NotificationsDTO notificationsDTO = input.getNotifications();
 		if (nonNull(notificationsDTO)) {
 			notificationsDTO.getContactDetails().stream().forEach(x -> {
@@ -270,11 +407,14 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		InsurerRefundCancellationDTO insurerRefundDTO = input.getInsurerRefund();
 		if (nonNull(insurerRefundDTO)) {
 			if (RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue().equals(insurerRefundDTO.getPaymentMethod().getContract().getContractType())) {
-				arguments.put(RBVDProperties.FIELD_SETTLED_CANCEL_ACCOUNTS_NUMBER.getValue(), insurerRefundDTO.getPaymentMethod().getContract().getId());
+				arguments.put(RL_ACCOUNT_ID, insurerRefundDTO.getPaymentMethod().getContract().getId());
 			}
 			else if(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue().equals(insurerRefundDTO.getPaymentMethod().getContract().getContractType())) {
-				arguments.put(RBVDProperties.FIELD_SETTLED_CANCEL_ACCOUNTS_NUMBER.getValue(), insurerRefundDTO.getPaymentMethod().getContract().getNumber());
+				arguments.put(RL_ACCOUNT_ID, insurerRefundDTO.getPaymentMethod().getContract().getNumber());
 			}
+		}
+		else {
+			arguments.put(RL_ACCOUNT_ID, null);
 		}
 		arguments.put(RBVDProperties.FIELD_REQUEST_TYPE.getValue(), ConstantsUtil.REQUEST_TYPE_DEFAULT);
 		return arguments;
