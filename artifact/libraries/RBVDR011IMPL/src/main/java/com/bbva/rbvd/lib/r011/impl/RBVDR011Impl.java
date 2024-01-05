@@ -30,7 +30,7 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -38,8 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bbva.rbvd.dto.insurancecancelation.aso.cypher.CypherASO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
@@ -290,13 +288,18 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
 		if (icf3Response.getIcmf3s0()==null) {
 			ICMF3S0 icmf3s0 = new ICMF3S0();
-			icmf3s0.setIDSTCAN("1");
-			icmf3s0.setDESSTCA("OK");
+			icmf3s0.setDESSTCA("COMPLETED");
 			icmf3s0.setIMDECIA(0);
+			icmf3s0.setDIVDCIA("USD");
 			icmf3s0.setIMPCLIE(0);
+			icmf3s0.setDIVIMC("USD");
 			icmf3s0.setTIPCAMB(0);
 			icmf3s0.setFETIPCA("2023-11-03");
-			icmf3s0.setDESSTCA("COMPLETED");
+			icmf3s0.setDIVORIG("USD");
+			icmf3s0.setIDCANCE("idmock");
+			icmf3s0.setCODMOCA("1");
+			icmf3s0.setDESMOCA("Desription mock");
+			icmf3s0.setDIVDEST("Div");
 			icf3Response.setIcmf3s0(icmf3s0);
 		}
 		output.setId(icf3Response.getIcmf3s0().getIDCANCE());
@@ -310,10 +313,22 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
 		output.setReason(reason);
 		output.setNotifications(input.getNotifications());
-		InsurerRefundCancellationDTO insurerRefund = new InsurerRefundCancellationDTO();
-		insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
-		insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
-		output.setInsurerRefund(insurerRefund);
+		if (input.getInsurerRefund()!=null) {
+			InsurerRefundCancellationDTO insurerRefund = input.getInsurerRefund();
+			insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
+			insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
+			PaymentMethodCancellationDTO paymentMethodReturn = input.getInsurerRefund().getPaymentMethod();
+			ContractCancellationDTO contractReturn = paymentMethodReturn.getContract();
+			if(contractReturn.getId()!=null){ //PENDING CHANGES
+				contractReturn.setNumber(contractReturn.getId());
+			}
+			if(contractReturn.getProductType()!=null){ //PENDING CHANGES
+				contractReturn.setNumberType(contractReturn.getProductType());
+			}
+			paymentMethodReturn.setContract(contractReturn);
+			insurerRefund.setPaymentMethod(paymentMethodReturn);
+			output.setInsurerRefund(insurerRefund);
+		}
 		GenericAmountDTO customerRefund = new GenericAmountDTO();
 		customerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMPCLIE()));
 		customerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVIMC());
