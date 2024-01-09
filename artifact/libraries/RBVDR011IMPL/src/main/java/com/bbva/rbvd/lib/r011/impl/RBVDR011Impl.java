@@ -49,6 +49,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private static final String RECEIPT_STATUS_TYPE_LIST = "RECEIPT_STATUS_TYPE_LIST";
 	private static final String OK = "OK";
 	private static final String OK_WARN = "OK_WARN";
+	private static final String DATE_FORMAT = "dd/MM/yyyy";
 
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
@@ -164,7 +165,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), updateContractStatusIfEndOfValidity(input, statusId));
-		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat("dd/MM/yyyy").format(input.getCancellationDate().getTime()));
+		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATE_FORMAT).format(input.getCancellationDate().getTime()));
 		this.pisdR100.executeUpdateContractStatus(arguments);
 
 		String listCancellation = this.applicationConfigurationService.getProperty("cancellation.list.endoso");
@@ -397,7 +398,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		Map<String, Object> arguments = RBVDUtils.getMapContractNumber(input.getContractId());
 		arguments.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
-		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat("dd/MM/yyyy").format(input.getCancellationDate().getTime()));
+		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATE_FORMAT).format(input.getCancellationDate().getTime()));
 		this.pisdR100.executeUpdateContractStatus(arguments);
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - updateContractStatus: {}", RBVDConstants.TAG_PEN);
 
@@ -429,7 +430,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.FIELD_CONTRACT_SECOND_VERFN_DIGIT_ID.getValue(), input.getContractId().substring(9, 10));
 		arguments.put(RBVDProperties.FIELD_CHANNEL_ID.getValue(), input.getChannelId());
 		arguments.put(RBVDProperties.FIELD_CANCEL_BRANCH_ID.getValue(), null);
-		arguments.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new SimpleDateFormat("dd/MM/yyyy").format(input.getCancellationDate().getTime()));
+		arguments.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new SimpleDateFormat(DATE_FORMAT).format(input.getCancellationDate().getTime()));
 		arguments.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), policy.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
 		arguments.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), policy.get(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue()));
 		arguments.put(RBVDProperties.FIELD_PAYMENT_FREQUENCY_ID.getValue(), null);
