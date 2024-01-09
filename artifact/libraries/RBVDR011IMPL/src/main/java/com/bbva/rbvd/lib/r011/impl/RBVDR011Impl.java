@@ -397,6 +397,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		Map<String, Object> arguments = RBVDUtils.getMapContractNumber(input.getContractId());
 		arguments.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
+		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat("dd/MM/yyyy").format(input.getCancellationDate().getTime()));
 		this.pisdR100.executeUpdateContractStatus(arguments);
 		LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - updateContractStatus: {}", RBVDConstants.TAG_PEN);
 
