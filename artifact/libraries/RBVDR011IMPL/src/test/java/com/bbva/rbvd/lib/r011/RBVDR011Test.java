@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.pisd.lib.r401.PISDR401;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -125,6 +127,13 @@ public class RBVDR011Test {
 		icmf3s0.setTIPCAMB(0);
 		icmf3s0.setFETIPCA("2023-11-03");
 		icmf3s0.setDESSTCA("COMPLETED");
+		icmf3s0.setDIVDCIA("USD");
+		icmf3s0.setDIVIMC("USD");
+		icmf3s0.setDIVORIG("USD");
+		icmf3s0.setIDCANCE("idmock");
+		icmf3s0.setCODMOCA("1");
+		icmf3s0.setDESMOCA("Desription mock");
+		icmf3s0.setDIVDEST("Div");
 		ICF3Response  ifc3Response = new ICF3Response();
 		ifc3Response.setIcmf3s0(icmf3s0);
 		ifc3Response.setHostAdviceCode(null);
@@ -244,19 +253,10 @@ public class RBVDR011Test {
 		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation2);
 
-		ICF3Response  ifc3Response = new ICF3Response();
-		ifc3Response.setIcmf3s0(null);
-		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
-		validation2 = rbvdR011.executePolicyCancellation(input);
-		assertNotNull(validation2);
-
-		ifc3Response = new ICF3Response();
-		ifc3Response.setHostAdviceCode("00000169");
-		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
+		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject()))
+				.thenThrow(new BusinessException("01020052", false, "Mensaje Error"));
 		validation2 = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation2);
-
-
 	}
 
 	@Test

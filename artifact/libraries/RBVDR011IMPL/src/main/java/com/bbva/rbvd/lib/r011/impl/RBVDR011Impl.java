@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
-import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
@@ -30,7 +30,11 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -45,6 +49,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 
 import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
 public class RBVDR011Impl extends RBVDR011Abstract {
 
@@ -102,8 +107,14 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			inputRimac.setCodProducto(shortDesc);
 		}
 
-		out = callCancelPolicyHost(xcontractNumber, input, inputRimac,policy ,shortDesc);
-		if (out == null) { return null; }
+		try {
+			out = callCancelPolicyHost(xcontractNumber, input, inputRimac,policy ,shortDesc);
+		} catch (BusinessException exception) {
+			this.addAdviceWithDescription(exception.getAdviceCode(), exception.getMessage());
+			return null;
+		}
+
+		if(isNull(out)) return null;
 
 		Double totalDebt = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
 		Double pendingAmount = NumberUtils.toDouble(java.util.Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
@@ -173,9 +184,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		PolicyCancellationPayloadBO inputPayload = new PolicyCancellationPayloadBO();
 		PolizaBO poliza = new PolizaBO();
-		if (input.getCancellationDate() == null) {
-			input.setCancellationDate(Calendar.getInstance());
-		}
 
 		if(!Strings.isNullOrEmpty(isChannelEndoso)){
 			LOGGER.info("***** RBVDR011Impl - CANAL: {} ACCEPTED  *****", isChannelEndoso);
@@ -231,7 +239,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			contratante.setEnvioElectronico("S");
 			cancelPayload.setPoliza(polizaRescue);
 			cancelPayload.setContratante(contratante);
-			rbvdR311.executeRescueCancelationRimac(inputrimac, cancelPayload);
+
+			this.rbvdR311.executeRescueCancelationRimac(inputrimac, cancelPayload);
+
 			executeRescueCancellationRequest(input, policy, shortDesc);
 			Map<String, Object> argumentsRequest = new HashMap<>();
 			argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), input.getContractId().substring(0, 4));
@@ -286,22 +296,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 	private EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response){
 		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
-		if (icf3Response.getIcmf3s0()==null) {
-			ICMF3S0 icmf3s0 = new ICMF3S0();
-			icmf3s0.setDESSTCA("COMPLETED");
-			icmf3s0.setIMDECIA(0);
-			icmf3s0.setDIVDCIA("USD");
-			icmf3s0.setIMPCLIE(0);
-			icmf3s0.setDIVIMC("USD");
-			icmf3s0.setTIPCAMB(0);
-			icmf3s0.setFETIPCA("2023-11-03");
-			icmf3s0.setDIVORIG("USD");
-			icmf3s0.setIDCANCE("idmock");
-			icmf3s0.setCODMOCA("1");
-			icmf3s0.setDESMOCA("Desription mock");
-			icmf3s0.setDIVDEST("Div");
-			icf3Response.setIcmf3s0(icmf3s0);
-		}
 		output.setId(icf3Response.getIcmf3s0().getIDCANCE());
 		GenericStatusDTO status = new GenericStatusDTO();
 		status.setId(icf3Response.getIcmf3s0().getDESSTCA());
