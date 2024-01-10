@@ -31,6 +31,7 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 		input.setReason(this.getReason());
 		input.setNotifications(this.getNotifications());
 		input.setCancellationDate(this.getCancellationdate());
+		input.setInsurerRefund(this.getInsurerrefund());
 		LOGGER.info("input: {}", input);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		if (validation == null) {
