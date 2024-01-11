@@ -23,6 +23,7 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationRescuePayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.ContratanteBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolizaBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.BankAccountBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.rescue.RescueBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
@@ -228,6 +229,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			RescueBO polizaRescue = new RescueBO();
 			CancelationRescuePayloadBO cancelPayload = new CancelationRescuePayloadBO();
 			ContratanteBO contratante = new ContratanteBO();
+			BankAccountBO cuentaBancaria = new BankAccountBO();
 
 			polizaRescue.setFechaSolicitud(date);
 			String email = "";
@@ -237,6 +239,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			}
 			contratante.setCorreo(email);
 			contratante.setEnvioElectronico("S");
+			if (input.getInsurerRefund()!=null) {
+				ContractCancellationDTO contractReturn = input.getInsurerRefund().getPaymentMethod().getContract();
+				if(contractReturn.getId()!=null){ //PENDING CHANGES
+					contractReturn.setNumber(contractReturn.getId());
+				}
+				cuentaBancaria.setNumeroCuenta(contractReturn.getNumber());
+				cuentaBancaria.setTipoMoneda(this.applicationConfigurationService.getProperty("cancellation.rescue.currency"));
+				cuentaBancaria.setRazonSocialBanco(this.applicationConfigurationService.getProperty("cancellation.rescue.bank.name"));
+				contratante.setCuentaBancaria(cuentaBancaria);
+			}
 			cancelPayload.setPoliza(polizaRescue);
 			cancelPayload.setContratante(contratante);
 
@@ -248,7 +260,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), input.getContractId().substring(4, 8));
 			argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), input.getContractId().substring(10));
 			Map<String, Object> cancellationRequest = this.pisdR103.executeGetRequestCancellation(argumentsRequest);
-			return executeCancelPolicyHost(input,cancellationRequest , policy);
+			return executeCancelPolicyHostICF3(input,cancellationRequest , policy);
 		}
 	}
 
@@ -261,7 +273,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		icf3DTORequest.setFECCANC(dateFormat.format(date));
 		icf3DTORequest.setCODMOCA(input.getReason().getId());
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - cancellationDate: {}", dateFormat.format(date));
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHostICF3 - cancellationDate: {}", dateFormat.format(date));
 		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
 				&& input.getNotifications().getContactDetails().get(0).getContact() != null
 				&& input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
@@ -342,19 +354,19 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return Date.from(localdate.atStartOfDay(ZoneId.of("UTC")).toInstant());
 	}
 
-	private EntityOutPolicyCancellationDTO executeCancelPolicyHost (InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - Start");
+	private EntityOutPolicyCancellationDTO executeCancelPolicyHostICF3 (InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy){
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHostICF3 - Start");
 		ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy);
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Request: {}", icf3DTORequest);
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHostICF3 - ICF3Request: {}", icf3DTORequest);
 		ICF3Response icf3Response = this.rbvdR051.executePolicyCancellation(icf3DTORequest);
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - ICF3Response: {}", icf3Response);
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHostICF3 - ICF3Response: {}", icf3Response);
 
 		if (icf3Response.getHostAdviceCode() != null) {
-			LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - Error at icf3 execution - Host advice code: {}", icf3Response.getHostAdviceCode());
+			LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHostICF3 - Error at icf3 execution - Host advice code: {}", icf3Response.getHostAdviceCode());
 			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 			return null;
 		}
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHost - End");
+		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHostICF3 - End");
 		return mapICF3Response(input, icf3Response);
 	}
 
@@ -464,7 +476,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
 			Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellationRescue(requestCancellationId, input, policy);
 			LOGGER.info("***s** RBVDR011Impl - executeRescueCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
-			int isInserted = this.pisdR103.executeSaveInsuranceRequestCancellation(argumentsForSaveRequestCancellation);
+			int isInserted = this.pisdR103.executeSaveInsuranceRequestCancellationI(argumentsForSaveRequestCancellation);
 			LOGGER.info("***** RBVDR011Impl - isInserted: {}", isInserted);
 			Map<String, Object> argumentsForSaveRequestCancellationMov = mapInRequestCancellationMov(requestCancellationId, input, RBVDConstants.MOV_BAJ, 1);
 			LOGGER.info("***** RBVDR011Impl - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
