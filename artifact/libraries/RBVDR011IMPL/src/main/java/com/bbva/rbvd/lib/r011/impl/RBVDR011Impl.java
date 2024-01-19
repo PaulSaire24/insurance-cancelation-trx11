@@ -24,7 +24,7 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationRescuePayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.ContratanteBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolizaBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.BankAccountBO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.rescue.RescueBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.rescue.RescueInversionBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
@@ -225,13 +225,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return this.rbvdR012.executeCancelPolicyHost(xcontractNumber, input.getCancellationDate(), input.getReason(), input.getNotifications());
 		}
 		else {
+			inputrimac.setShortDesc(shortDesc);
 			Date date = input.getCancellationDate().getTime();
-			RescueBO polizaRescue = new RescueBO();
+			DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);
+			String strDate = dateFormat.format(date);
+			RescueInversionBO polizaRescue = new RescueInversionBO();
 			CancelationRescuePayloadBO cancelPayload = new CancelationRescuePayloadBO();
 			ContratanteBO contratante = new ContratanteBO();
 			BankAccountBO cuentaBancaria = new BankAccountBO();
 
-			polizaRescue.setFechaSolicitud(date);
+			polizaRescue.setFechaSolicitud(strDate);
 			String email = "";
 			if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
 					&& input.getNotifications().getContactDetails().get(0).getContact() != null) {
