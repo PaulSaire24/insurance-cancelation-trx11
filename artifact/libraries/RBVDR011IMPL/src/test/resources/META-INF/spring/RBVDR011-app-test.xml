@@ -19,4 +19,19 @@
 	<bean id="pisdR401" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r401.PISDR401"/>
 	</bean>
+	<bean id="rbvdR310" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r310.RBVDR310"/>
+	</bean>
+	<bean id="cancellationRequestImpl" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl"/>
+	</bean>
+	<bean id="icr4Connection" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection"/>
+	</bean>
+	<bean id="icf2Connection" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection"/>
+	</bean>
+	<bean id="icf3Connection" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection"/>
+	</bean>
 </beans>

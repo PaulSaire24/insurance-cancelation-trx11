@@ -1,0 +1,65 @@
+package com.bbva.rbvd.hostConnections;
+
+import com.bbva.elara.domain.transaction.Context;
+import com.bbva.elara.domain.transaction.ThreadContext;
+import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
+import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
+import com.bbva.rbvd.lib.r042.RBVDR042;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+
+import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.buildImmediateCancellationInput_EmailContact;
+import static com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl.PENDING_CANCELLATION_STATUS;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+public class ICR4ConnectionTest {
+    private static final String OK = "OK";
+    private static final String OK_WARN = "OK_WARN";
+    private static final String ERROR_CODE = "ERROR";
+    private ICR4Connection icr4Connection = new ICR4Connection();
+    private RBVDR042 rbvdr042;
+
+    @Before
+    public void setUp() {
+        ThreadContext.set(new Context());
+        rbvdr042 = mock(RBVDR042.class);
+        icr4Connection.setRbvdR042(rbvdr042);
+    }
+
+    @Test
+    public void validateExecuteICR4TransactionOk(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        when(rbvdr042.executeICR4(anyObject())).thenReturn(OK);
+        boolean validate = icr4Connection.executeICR4Transaction(input, PENDING_CANCELLATION_STATUS);
+        assertTrue(validate);
+    }
+
+    @Test
+    public void validateExecuteICR4TransactionOkWarn(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        when(rbvdr042.executeICR4(anyObject())).thenReturn(OK_WARN);
+        boolean validate = icr4Connection.executeICR4Transaction(input, PENDING_CANCELLATION_STATUS);
+        assertTrue(validate);
+    }
+
+    @Test
+    public void validateExecuteICR4TransactionError(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        when(rbvdr042.executeICR4(anyObject())).thenReturn(ERROR_CODE);
+        boolean validate = icr4Connection.executeICR4Transaction(input, PENDING_CANCELLATION_STATUS);
+        assertFalse(validate);
+    }
+
+}
