@@ -91,7 +91,7 @@ public class RBVDT01101PETransactionTest {
 		Assert.assertNotNull(this.transaction);
 		this.transaction.execute();
 		assertTrue(this.transaction.getIsrefund());
-		assertEquals(this.transaction.getCancellationtype(),"APPLICATION_DATE");
+		assertEquals("APPLICATION_DATE", this.transaction.getCancellationtype());
 	}
 
 	@Test

@@ -46,7 +46,7 @@
 			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 			<parameter order="2" name="description" mandatory="0" type="String" size="20"/>
 		</dto>
-		<dto order="6" name="insurerRefund" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO" artifactId="RBVDC001">
+		<dto order="6" name="insurerRefund" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO" artifactId="RBVDC001">
 			<parameter order="1" name="amount" mandatory="1" type="Double" size="18"/>
 			<parameter order="2" name="currency" mandatory="1" type="String" size="10"/>
 		</dto>
