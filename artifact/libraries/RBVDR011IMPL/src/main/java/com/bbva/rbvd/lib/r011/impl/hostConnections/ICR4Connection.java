@@ -13,11 +13,12 @@ public class ICR4Connection {
     protected RBVDR042 rbvdR042;
 
     public boolean executeICR4Transaction(InputParametersPolicyCancellationDTO input, String status){
+        LOGGER.info("***** ICR4Connection - executeICR4Transaction - status: {}", status);
         ICR4DTO icr4Dto = new ICR4DTO();
         icr4Dto.setNUMCON(input.getContractId());
         icr4Dto.setICSITU(status);
         String result = rbvdR042.executeICR4(icr4Dto);
-        LOGGER.info("***** RBVDR011Impl - executeICR4Transaction - ICR4 result: {}", result);
+        LOGGER.info("***** ICR4Connection - executeICR4Transaction - ICR4 result: {}", result);
         return result.equals(OK) || result.equals(OK_WARN);
     }
 

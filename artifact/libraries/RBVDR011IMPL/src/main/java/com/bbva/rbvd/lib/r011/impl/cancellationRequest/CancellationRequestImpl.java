@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r011.impl.cancellationRequest;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
@@ -31,6 +32,8 @@ public class CancellationRequestImpl {
     protected PISDR103 pisdR103;
     protected PISDR100 pisdR100;
     protected ICR4Connection icr4Connection;
+    protected ApplicationConfigurationService applicationConfigurationService;
+    private static final String CONTRACT_STATUS_HOST_CANCELLATION_REQUEST = "contract.status.host.cancellation.request";
 
     public boolean validateNewCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy,
                                                    boolean isRoyal){
@@ -98,7 +101,7 @@ public class CancellationRequestImpl {
     public boolean executeFirstCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
                                                           String policyId, String productCodeForRimac) {
         LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - begin");
-        if (!this.icr4Connection.executeICR4Transaction(input, PENDING_CANCELLATION_STATUS)) return false;
+        if (!this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(CONTRACT_STATUS_HOST_CANCELLATION_REQUEST,"PS"))) return false;
 
         CancelationSimulationPayloadBO cancellationSimulationResponse = null;
 
@@ -234,4 +237,5 @@ public class CancellationRequestImpl {
     public void setIcr4Connection(ICR4Connection icr4Connection){
         this.icr4Connection = icr4Connection;
     }
+    public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {this.applicationConfigurationService = applicationConfigurationService;}
 }

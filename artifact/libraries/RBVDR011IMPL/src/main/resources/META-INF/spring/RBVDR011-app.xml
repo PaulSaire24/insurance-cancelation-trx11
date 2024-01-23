@@ -19,6 +19,7 @@
 		<property name="pisdR103" ref="pisdR103"/>
 		<property name="pisdR100" ref="pisdR100"/>
 		<property name="icr4Connection" ref="icr4Connection"/>
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
 	<bean id="icr4Connection" class="com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection">
 		<property name="rbvdR042" ref="rbvdR042"/>

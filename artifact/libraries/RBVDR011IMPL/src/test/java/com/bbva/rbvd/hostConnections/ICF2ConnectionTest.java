@@ -4,19 +4,11 @@ import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICMF1S2;
-import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection;
 import com.bbva.rbvd.lib.r310.RBVDR310;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Calendar;
 
 import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.buildImmediateCancellationInput_EmailContact;
 import static org.junit.Assert.assertNotNull;

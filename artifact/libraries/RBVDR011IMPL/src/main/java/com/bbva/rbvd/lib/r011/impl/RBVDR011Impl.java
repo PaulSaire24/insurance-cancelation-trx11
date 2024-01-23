@@ -49,8 +49,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private static final String RECEIPT_STATUS_TYPE_LIST = "RECEIPT_STATUS_TYPE_LIST";
 	private static final String DATE_FORMAT = "dd/MM/yyyy";
 	private static final String PRODUCT_CODE= "productCode";
-	private static final String END_OF_VALIDITY_STATUS = "08";
-
+	private static final String CONTRACT_STATUS_HOST_END_OF_VALIDITY = "contract.status.host.end.of.validity";
+	private static final String CANCELLATION_LIST_ENDOSO = "cancellation.list.endoso";
+	private static final String CANCELLATION_REQUEST = "cancellation.request.";
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation START *****");
@@ -179,7 +180,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATE_FORMAT).format(input.getCancellationDate().getTime()));
 		this.pisdR100.executeUpdateContractStatus(arguments);
 
-		String listCancellation = this.applicationConfigurationService.getProperty("cancellation.list.endoso");
+		String listCancellation = this.applicationConfigurationService.getProperty(CANCELLATION_LIST_ENDOSO);
 
 		String[] channelCancelation = listCancellation.split(",");
 
@@ -199,7 +200,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
 		}
 
-		if(!isRoyal && !this.icr4Connection.executeICR4Transaction(input, END_OF_VALIDITY_STATUS)){
+		if(!isRoyal && !this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(CONTRACT_STATUS_HOST_END_OF_VALIDITY,"08"))){
 				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 				return null;
 		}
@@ -215,7 +216,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 
 	private boolean isAPXCancellationRequest(String insuranceProductId, String channelId) {
-		String flagCancellationRequest = "cancellation.request.".concat(StringUtils.defaultString(insuranceProductId)).concat(".").concat(channelId.toLowerCase());
+		String flagCancellationRequest = CANCELLATION_REQUEST.concat(StringUtils.defaultString(insuranceProductId)).concat(".").concat(channelId.toLowerCase());
 		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - property: {}", flagCancellationRequest);
 		boolean isAPXCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty(flagCancellationRequest));
 		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - isAPXCancellationRequest: {}", isAPXCancellationRequest);

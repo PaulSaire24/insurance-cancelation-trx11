@@ -1,11 +1,11 @@
 package com.bbva.rbvd.cancellationRequest;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
-import com.bbva.rbvd.dto.cicsconnection.icf2.ICMF1S2;
 import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.DatoParticularBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
@@ -44,7 +44,7 @@ public class CancellationRequestImplTest {
     private PISDR103 pisdr103;
     private PISDR100 pisdr100;
     private ICR4Connection icr4Connection;
-    private ICF2Response icf2Response;
+    private ApplicationConfigurationService applicationConfigurationService;
 
     @Before
     public void setUp() {
@@ -60,6 +60,9 @@ public class CancellationRequestImplTest {
 
         icr4Connection = mock(ICR4Connection.class);
         cancellationRequestImpl.setIcr4Connection(icr4Connection);
+
+        applicationConfigurationService = mock(ApplicationConfigurationService.class);
+        cancellationRequestImpl.setApplicationConfigurationService(applicationConfigurationService);
     }
 
     @Test
