@@ -479,7 +479,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
 			Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellationRescue(requestCancellationId, input, policy);
 			LOGGER.info("***s** RBVDR011Impl - executeRescueCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
-			int isInserted = this.pisdR103.executeSaveInsuranceRequestCancellationI(argumentsForSaveRequestCancellation);
+			int isInserted = this.pisdR103.executeSaveRequestCancellationInvestment(argumentsForSaveRequestCancellation);
 			LOGGER.info("***** RBVDR011Impl - isInserted: {}", isInserted);
 			Map<String, Object> argumentsForSaveRequestCancellationMov = mapInRequestCancellationMov(requestCancellationId, input, RBVDConstants.MOV_BAJ, 1);
 			LOGGER.info("***** RBVDR011Impl - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
