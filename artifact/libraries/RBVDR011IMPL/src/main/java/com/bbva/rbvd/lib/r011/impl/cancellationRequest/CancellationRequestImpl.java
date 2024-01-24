@@ -137,12 +137,7 @@ public class CancellationRequestImpl {
             arguments.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), policy.get(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue()));
             arguments.put(RBVDProperties.FIELD_POLICY_ID.getValue(), policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()));
             arguments.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), cancellationSimulationResponse.getMonto());
-            String currency = cancellationSimulationResponse.getMoneda();
-            if (cancellationSimulationResponse.getCuenta() != null && cancellationSimulationResponse.getCuenta().getValor() != null) {
-                String[] spliter = cancellationSimulationResponse.getCuenta().getValor().split("\\|\\|");
-                if (spliter.length == 3) currency = spliter[2];
-            }
-            arguments.put(RBVDProperties.FIELD_PREMIUM_CURRENCY_ID.getValue(), currency);
+            arguments.put(RBVDProperties.FIELD_PREMIUM_CURRENCY_ID.getValue(), cancellationSimulationResponse.getMoneda());
             arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
             if(cancellationSimulationResponse.getExtornoComision() != null){
                 arguments.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), cancellationSimulationResponse.getExtornoComision());
@@ -159,7 +154,7 @@ public class CancellationRequestImpl {
             arguments.put(RBVDProperties.FIELD_PREMIUM_CURRENCY_ID.getValue(), icf2Response.getIcmf1S2().getDIVIMC());
             arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), icf2Response.getIcmf1S2().getCODCLI());
             arguments.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), icf2Response.getIcmf1S2().getIMPCOMI());
-            arguments.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), icf2Response.getIcmf1S2().getDIVDCIA());
+            arguments.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), icf2Response.getIcmf1S2().getDIVIMC());
         }
 
         return arguments;
