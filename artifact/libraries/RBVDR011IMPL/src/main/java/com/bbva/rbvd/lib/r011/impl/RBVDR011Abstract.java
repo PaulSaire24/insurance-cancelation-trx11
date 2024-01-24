@@ -8,7 +8,6 @@ import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.lib.r003.RBVDR003;
 import com.bbva.rbvd.lib.r011.RBVDR011;
 import com.bbva.rbvd.lib.r012.RBVDR012;
-import com.bbva.rbvd.lib.r042.RBVDR042;
 import com.bbva.rbvd.lib.r051.RBVDR051;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 
@@ -26,8 +25,6 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	protected RBVDR003 rbvdR003;
 
 	protected PISDR401 pisdR401;
-
-	protected RBVDR042 rbvdR042;
 
 	protected RBVDR311 rbvdR311;
 
@@ -69,13 +66,6 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	*/
 	public void setPisdR401(PISDR401 pisdR401) {
 		this.pisdR401 = pisdR401;
-	}
-
-	/**
-	* @param rbvdR042 the this.rbvdR042 to set
-	*/
-	public void setRbvdR042(RBVDR042 rbvdR042) {
-		this.rbvdR042 = rbvdR042;
 	}
 
 	/**

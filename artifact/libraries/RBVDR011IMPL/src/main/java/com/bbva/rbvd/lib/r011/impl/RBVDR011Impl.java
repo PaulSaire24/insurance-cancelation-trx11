@@ -17,7 +17,6 @@ import java.util.Objects;
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
-import com.bbva.rbvd.dto.cicsconnection.utils.ICR4DTO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationRescuePayloadBO;
@@ -455,24 +454,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return arguments;
 	}
 
-	private Boolean setICR4Status(InputParametersPolicyCancellationDTO input, String status){
-		ICR4DTO icr4Dto = new ICR4DTO();
-		icr4Dto.setNUMCON(input.getContractId());
-		icr4Dto.setICSITU(status);
-		String result = this.rbvdR042.executeICR4(icr4Dto);
-		LOGGER.info("***** RBVDR011Impl - ICR4 result: {}", result);
-		if (!result.equals(OK) && !result.equals(OK_WARN)) {
-			this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
-			return false;
-		}
-		return true;
-	}
 	private Boolean executeRescueCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, String shortDesc) {
 		if(ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shortDesc)) {
-			LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - ICR4 ");
-			if (!setICR4Status(input, RBVDConstants.MOV_BAJ)) {
-				return false;
-			}
 			LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - executeGetRequestCancellationId ");
 			Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
 			LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);

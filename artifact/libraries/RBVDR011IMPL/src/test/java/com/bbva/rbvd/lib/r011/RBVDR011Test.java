@@ -45,7 +45,6 @@ import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.rbvd.lib.r311.RBVDR311;
-import com.bbva.rbvd.lib.r042.RBVDR042;
 import com.bbva.rbvd.lib.r051.RBVDR051;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.mock.MockDTO;
@@ -72,8 +71,6 @@ public class RBVDR011Test {
 	private PISDR100 pisdr100;
 	private PISDR401 pisdR401;
 	private RBVDR311 rbvdr311;
-	private RBVDR042 rbvdR042;
-
 	private PISDR103 pisdr103;
 
 	private RBVDR051 rbvdR051;
@@ -108,10 +105,6 @@ public class RBVDR011Test {
 		rbvdr311 = mock(RBVDR311.class);
 		rbvdR011.setRbvdR311(rbvdr311);
 		spyRbvdR011.setRbvdR311(rbvdr311);
-
-		rbvdR042 = mock(RBVDR042.class);
-		rbvdR011.setRbvdR042(rbvdR042);
-		spyRbvdR011.setRbvdR042(rbvdR042);
 
 		pisdr103 = mock(PISDR103.class);
 		rbvdR011.setPisdR103(pisdr103);
@@ -230,7 +223,6 @@ public class RBVDR011Test {
 		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
 		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
-		when(rbvdR042.executeICR4(anyObject())).thenReturn("OK");
 		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC,"VIDAINVERSION");
 		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject()))
 				.thenReturn(new PolicyCancellationPayloadBO());
@@ -249,7 +241,6 @@ public class RBVDR011Test {
 		EntityOutPolicyCancellationDTO validation1 = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation1);
 
-		when(rbvdR042.executeICR4(anyObject())).thenReturn("ERROR");
 		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation2);
 

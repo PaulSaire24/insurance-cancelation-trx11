@@ -105,11 +105,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
-			<artifactId>RBVDR042</artifactId>
-			<version>0.1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR311</artifactId>
 			<version>0.2.1</version>
 		</dependency>
