@@ -243,8 +243,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			contratante.setEnvioElectronico("S");
 			if (input.getInsurerRefund()!=null) {
 				ContractCancellationDTO contractReturn = input.getInsurerRefund().getPaymentMethod().getContract();
-				if(contractReturn.getId()!=null){ //PENDING CHANGES
+				if(contractReturn.getId()!=null){
 					contractReturn.setNumber(contractReturn.getId());
+				}
+				cuentaBancaria.setTipoCuenta("A");
+				if(contractReturn.getNumber().substring(10,12).equals("01")){
+					cuentaBancaria.setTipoCuenta("C");
 				}
 				cuentaBancaria.setNumeroCuenta(contractReturn.getNumber());
 				cuentaBancaria.setTipoMoneda(this.applicationConfigurationService.getProperty("cancellation.rescue.currency"));

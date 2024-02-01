@@ -216,7 +216,7 @@ public class RBVDR011Test {
 		input.setInsurerRefund(new InsurerRefundCancellationDTO());
 		input.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());
 		input.getInsurerRefund().getPaymentMethod().setContract(new ContractCancellationDTO());
-		input.getInsurerRefund().getPaymentMethod().getContract().setId("idMock");
+		input.getInsurerRefund().getPaymentMethod().getContract().setId("00110abc000105049053");
 		input.getInsurerRefund().getPaymentMethod().getContract().setProductType(new CommonCancellationDTO());
 		Map<String, Object> responseGetRequestCancellationId = new HashMap<>();
 		responseGetRequestCancellationId.put(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue(), new BigDecimal("123"));

@@ -25,14 +25,14 @@
 			<dto order="1" name="paymentMethod" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO" artifactId="RBVDC001">
 				<dto order="1" name="contract" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO" artifactId="RBVDC001">
 					<parameter order="1" name="contractType" mandatory="1" type="String" size="30"/>
-					<parameter order="2" name="id" mandatory="0" type="Long" size="30"/>
-					<parameter order="3" name="number" mandatory="0" type="Long" size="30"/>
-					<dto order="4" name="productType" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
+					<dto order="2" name="productType" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
 						<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 					</dto>
-					<dto order="5" name="numberType" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
+					<dto order="3" name="numberType" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
 						<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 					</dto>
+					<parameter order="4" name="id" mandatory="0" type="String" size="30"/>
+					<parameter order="5" name="number" mandatory="0" type="String" size="30"/>
 				</dto>
 			</dto>
 		</dto>
@@ -79,14 +79,14 @@
 			<dto order="3" name="paymentMethod" mandatory="0" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO" artifactId="RBVDC001">
 				<dto order="1" name="contract" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO" artifactId="RBVDC001">
 					<parameter order="1" name="contractType" mandatory="1" type="String" size="30"/>
-					<parameter order="2" name="id" mandatory="0" type="Long" size="30"/>
-					<parameter order="3" name="number" mandatory="1" type="Long" size="30"/>
-					<dto order="4" name="productType" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
+					<dto order="2" name="productType" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
 						<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 					</dto>
-					<dto order="5" name="numberType" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
+					<dto order="3" name="numberType" mandatory="1" package="com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO" artifactId="RBVDC001">
 						<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 					</dto>
+					<parameter order="4" name="id" mandatory="0" type="String" size="30"/>
+					<parameter order="5" name="number" mandatory="1" type="String" size="30"/>
 				</dto>
 			</dto>
 		</dto>
