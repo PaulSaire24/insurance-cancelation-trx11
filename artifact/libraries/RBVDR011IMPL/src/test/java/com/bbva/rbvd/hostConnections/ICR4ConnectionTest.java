@@ -8,7 +8,7 @@ import com.bbva.rbvd.lib.r042.RBVDR042;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.buildImmediateCancellationInput_EmailContact;
+import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.buildImmediateCancellationInput_EmailContactAndPhoneContact;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyObject;
@@ -33,7 +33,7 @@ public class ICR4ConnectionTest {
 
     @Test
     public void validateExecuteICR4TransactionOk(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         when(rbvdr042.executeICR4(anyObject())).thenReturn(OK);
         boolean validate = icr4Connection.executeICR4Transaction(input, CANCELLATION_REQUEST_STATUS);
         assertTrue(validate);
@@ -41,7 +41,7 @@ public class ICR4ConnectionTest {
 
     @Test
     public void validateExecuteICR4TransactionOkWarn(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         when(rbvdr042.executeICR4(anyObject())).thenReturn(OK_WARN);
         boolean validate = icr4Connection.executeICR4Transaction(input, CANCELLATION_REQUEST_STATUS);
         assertTrue(validate);
@@ -49,7 +49,7 @@ public class ICR4ConnectionTest {
 
     @Test
     public void validateExecuteICR4TransactionError(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         when(rbvdr042.executeICR4(anyObject())).thenReturn(ERROR_CODE);
         boolean validate = icr4Connection.executeICR4Transaction(input, CANCELLATION_REQUEST_STATUS);
         assertFalse(validate);

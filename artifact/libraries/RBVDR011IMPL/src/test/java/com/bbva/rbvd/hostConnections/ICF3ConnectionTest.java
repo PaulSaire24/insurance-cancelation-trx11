@@ -12,12 +12,12 @@ import com.bbva.rbvd.lib.r051.RBVDR051;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.buildImmediateCancellationInput_EmailContact;
+import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.*;
 import static com.bbva.rbvd.hostConnections.ICF2ConnectionTest.buildICF2ResponseOk;
-import static com.bbva.rbvd.lib.r011.RBVDR011Test.buildPolicyMap;
-import static com.bbva.rbvd.lib.r011.RBVDR011Test.buildResponseGetRequestCancellation;
+import static com.bbva.rbvd.lib.r011.RBVDR011Test.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyObject;
@@ -37,7 +37,7 @@ public class ICF3ConnectionTest {
 
     @Test
     public void validateExecuteICF3TransactionOk(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> policy = buildPolicyMap();
         ICF2Response icf2Response = buildICF2ResponseOk();
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
@@ -48,8 +48,91 @@ public class ICF3ConnectionTest {
     }
 
     @Test
+    public void validateExecuteICF3TransactionOk_WithoutPolicy(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionOk_WithoutInsurerRefund(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        input.setInsurerRefund(null);
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionOk_WithoutFETIPCAfromICF3(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        input.setInsurerRefund(null);
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        icf3Response.getIcmf3s0().setFETIPCA("");
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionOk_WithoutCancellationRequest(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> policy = buildPolicyMap();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, null, policy, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionOkWithoutNotifications(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_WithOutNotifications();
+        Map<String, Object> policy = buildPolicyMap();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionOkWithoutContactEmail(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_WithoutContactEmail();
+        Map<String, Object> policy = buildPolicyMap();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionWithoutRequestCancellationResponseOk(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> policy = buildPolicyMap();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
     public void validateExecuteICF3TransactionError(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> policy = buildPolicyMap();
         ICF2Response icf2Response = buildICF2ResponseOk();
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
