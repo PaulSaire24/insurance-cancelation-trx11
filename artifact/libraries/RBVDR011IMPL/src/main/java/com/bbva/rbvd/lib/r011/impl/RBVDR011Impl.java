@@ -56,8 +56,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR011Impl.class);
 	private static final String CODE_REFUND = "REFUND";
 	private static final String RECEIPT_STATUS_TYPE_LIST = "RECEIPT_STATUS_TYPE_LIST";
-	private static final String OK = "OK";
-	private static final String OK_WARN = "OK_WARN";
 
 	private static final String RL_ACCOUNT_ID = "RL_ACCOUNT_ID";
 	private static final String DATEFORMAT_CNCL_DATE = "dd/MM/yyyy";
@@ -204,7 +202,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		contratante.setEnvioElectronico("S");
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
-		cancelPolicyByProduct(inputRimac, inputPayload,null, shortDesc);
+		cancelPolicyByProduct(inputRimac, inputPayload, shortDesc);
 
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
@@ -213,7 +211,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 
 
-	private void cancelPolicyByProduct(InputRimacBO inputRimac,PolicyCancellationPayloadBO inputPayload, CancelationRescuePayloadBO rescuePayload, String shorDesc){
+	private void cancelPolicyByProduct(InputRimacBO inputRimac,PolicyCancellationPayloadBO inputPayload, String shorDesc){
 		if (!ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shorDesc)){
 			this.rbvdR012.executeCancelPolicyRimac(inputRimac, inputPayload);
 		}
@@ -266,7 +264,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), input.getContractId().substring(4, 8));
 			argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), input.getContractId().substring(10));
 			Map<String, Object> cancellationRequest = this.pisdR103.executeGetRequestCancellation(argumentsRequest);
-			return executeCancelPolicyHostICF3(input,cancellationRequest , policy);
+			return executeCancelPolicyHostICF3(input,cancellationRequest, policy);
 		}
 	}
 
@@ -279,7 +277,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		icf3DTORequest.setFECCANC(dateFormat.format(date));
 		icf3DTORequest.setCODMOCA(input.getReason().getId());
-		LOGGER.info("***** RBVDR011Impl - executeCancelPolicyHostICF3 - cancellationDate: {}", dateFormat.format(date));
 		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
 				&& input.getNotifications().getContactDetails().get(0).getContact() != null
 				&& input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
@@ -379,8 +376,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private Map<String, Object> getProductByProductId(String productId) {
 		Map<String,Object> arguments = new HashMap<>();
 		arguments.put(ConstantsUtil.FIELD_INSURANCE_PRODUCT_ID, productId);
-		Map<String,Object> productById = (Map<String,Object>) this.pisdR401.executeGetProductById(ConstantsUtil.QUERY_GET_PRODUCT_BY_PRODUCT_ID, arguments);
-		return productById;
+		return (Map<String,Object>) this.pisdR401.executeGetProductById(ConstantsUtil.QUERY_GET_PRODUCT_BY_PRODUCT_ID, arguments);
 	}
 
 	private boolean isLifeProduct(String businessName){
