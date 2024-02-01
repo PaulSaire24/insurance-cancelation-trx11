@@ -12,7 +12,7 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl;
@@ -67,7 +67,7 @@ public class CancellationRequestImplTest {
 
     @Test
     public void validateNewCancellationRequestRoyal(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> policy = buildPolicyMap();
         boolean validate = cancellationRequestImpl.validateNewCancellationRequest(input, policy, true);
         assertTrue(validate);
@@ -75,7 +75,7 @@ public class CancellationRequestImplTest {
 
     @Test
     public void validateNewCancellationRequestRoyal_CancelledPolicy(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> policy = buildCancelledPolicyMap();
         boolean validate = cancellationRequestImpl.validateNewCancellationRequest(input, policy, true);
         assertFalse(validate);
@@ -83,7 +83,7 @@ public class CancellationRequestImplTest {
 
     @Test
     public void validateNewCancellationRequestNoRoyal(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> policy = null;
         boolean validate = cancellationRequestImpl.validateNewCancellationRequest(input, policy, false);
         assertTrue(validate);
@@ -136,20 +136,7 @@ public class CancellationRequestImplTest {
     @Test
     public void validateCancellationRequestRegisterForRoyalWithEmailContactOk(){
         CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
-        Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
-        Map<String, Object> policy = buildPolicyMap();
-        when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
-        when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
-        when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
-        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, "123456", "1121");
-        assertTrue(validate);
-    }
-
-    @Test
-    public void validateCancellationRequestRegisterForRoyalWithPhoneContactOk(){
-        CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_PhoneContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
         Map<String, Object> policy = buildPolicyMap();
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
@@ -162,7 +149,7 @@ public class CancellationRequestImplTest {
     @Test
     public void validateCancellationRequestRegisterForRoyalWithoutExtornoComisionOk(){
         CancelationSimulationPayloadBO payload = buildCancelationSimulationResponseWithoutExtornoComision();
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_PhoneContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
         Map<String, Object> policy = buildPolicyMap();
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
@@ -175,7 +162,7 @@ public class CancellationRequestImplTest {
 
     @Test
     public void validateCancellationRequestRegisterForNoRoyalWithEmailContactOk(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
         Map<String, Object> policy = null;
         ICF2Response icf2Response = buildICF2ResponseOk();
@@ -185,7 +172,7 @@ public class CancellationRequestImplTest {
         assertTrue(validate);
     }
 
-    public static InputParametersPolicyCancellationDTO buildImmediateCancellationInput_EmailContact(){
+    public static InputParametersPolicyCancellationDTO buildImmediateCancellationInput_EmailContactAndPhoneContact(){
         InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
         input.setContractId("11111111111111111111");
         input.setChannelId("PC");
@@ -200,11 +187,44 @@ public class CancellationRequestImplTest {
         input.getNotifications().getContactDetails().add(new ContactDetailDTO());
         input.getNotifications().getContactDetails().get(0).setContact(new GenericContactDTO());
         input.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_EMAIL_ID.getValue());
-        input.getNotifications().getContactDetails().get(0).getContact().setNumber("CARLOS.CARRILLO.DELGADO@BBVA.COM");
+        input.getNotifications().getContactDetails().get(0).getContact().setAddress("CARLOS.CARRILLO.DELGADO@BBVA.COM");
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(1).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(1).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
+        input.getNotifications().getContactDetails().get(1).getContact().setNumber("999888777");
+        input.setIsRefund(true);
+        input.setInsurerRefund(new InsurerRefundCancellationDTO());
+        input.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().setContract(new ContractCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().getContract().setProductType(new CommonCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue());
+        input.getInsurerRefund().getPaymentMethod().getContract().getProductType().setId(RBVDConstants.TAG_ACCOUNT);
+        input.getInsurerRefund().getPaymentMethod().getContract().setId("00110130220210452319");
         return input;
     }
 
-    private InputParametersPolicyCancellationDTO buildImmediateCancellationInput_PhoneContact(){
+    public static InputParametersPolicyCancellationDTO buildImmediateCancellationInput_WithOutNotifications(){
+        InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+        input.setContractId("11111111111111111111");
+        input.setChannelId("PC");
+        input.setUserId("user");
+        GenericIndicatorDTO reason = new GenericIndicatorDTO();
+        reason.setId("01");
+        input.setReason(reason);
+        input.setCancellationType("IMMEDIATE");
+        input.setCancellationDate(Calendar.getInstance());
+        input.setIsRefund(true);
+        input.setInsurerRefund(new InsurerRefundCancellationDTO());
+        input.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().setContract(new ContractCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().getContract().setProductType(new CommonCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue());
+        input.getInsurerRefund().getPaymentMethod().getContract().getProductType().setId(RBVDConstants.TAG_ACCOUNT);
+        input.getInsurerRefund().getPaymentMethod().getContract().setId("00110130220210452319");
+        return input;
+    }
+
+    public static InputParametersPolicyCancellationDTO buildImmediateCancellationInput_WithoutContactEmail(){
         InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
         input.setContractId("11111111111111111111");
         input.setChannelId("PC");
@@ -217,9 +237,14 @@ public class CancellationRequestImplTest {
         input.setNotifications(new NotificationsDTO());
         input.getNotifications().setContactDetails(new ArrayList<>());
         input.getNotifications().getContactDetails().add(new ContactDetailDTO());
-        input.getNotifications().getContactDetails().get(0).setContact(new GenericContactDTO());
-        input.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
-        input.getNotifications().getContactDetails().get(0).getContact().setNumber("999888777");
+        input.setIsRefund(true);
+        input.setInsurerRefund(new InsurerRefundCancellationDTO());
+        input.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().setContract(new ContractCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().getContract().setProductType(new CommonCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue());
+        input.getInsurerRefund().getPaymentMethod().getContract().getProductType().setId(RBVDConstants.TAG_ACCOUNT);
+        input.getInsurerRefund().getPaymentMethod().getContract().setId("00110130220210452319");
         return input;
     }
 

@@ -13,13 +13,18 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
 import com.bbva.rbvd.lib.r311.RBVDR311;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 
 import static java.util.Objects.nonNull;
 
@@ -105,7 +110,7 @@ public class CancellationRequestImpl {
 
         CancelationSimulationPayloadBO cancellationSimulationResponse = null;
 
-        if(isRoyal){
+        if(isRoyal && !isStartDateTodayOrAfterToday(isRoyal, policy)){
             InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCodeForRimac);
             cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
             if(cancellationSimulationResponse == null) return false;
@@ -132,7 +137,7 @@ public class CancellationRequestImpl {
                                                          CancelationSimulationPayloadBO cancellationSimulationResponse, ICF2Response icf2Response, boolean isRoyal) {
         Map<String, Object> commonArguments = mapInRequestCancellationCommonFields(requestCancellationId, input);
         Map<String, Object> arguments = new HashMap<>(commonArguments);
-        if(isRoyal){
+        if(isRoyal && !isStartDateTodayOrAfterToday(isRoyal, policy)){
             arguments.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), policy.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
             arguments.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), policy.get(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue()));
             arguments.put(RBVDProperties.FIELD_POLICY_ID.getValue(), policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()));
@@ -180,11 +185,12 @@ public class CancellationRequestImpl {
         arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), input.getUserId());
         NotificationsDTO notificationsDTO = input.getNotifications();
         if (nonNull(notificationsDTO)) {
-            notificationsDTO.getContactDetails().stream().forEach(x -> {
-                if (RBVDProperties.CONTACT_EMAIL_ID.getValue().equals(x.getContact().getContactDetailType())) {
-                    arguments.put(RBVDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), x.getContact().getAddress());
-                } else if (RBVDProperties.CONTACT_MOBILE_ID.getValue().equals(x.getContact().getContactDetailType())) {
-                    arguments.put(RBVDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), x.getContact().getNumber());
+            notificationsDTO.getContactDetails().stream().forEach(contactDetailDTO -> {
+                if (RBVDProperties.CONTACT_EMAIL_ID.getValue().equals(contactDetailDTO.getContact().getContactDetailType())) {
+                    arguments.put(RBVDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), contactDetailDTO.getContact().getAddress());
+                }
+                if (RBVDProperties.CONTACT_MOBILE_ID.getValue().equals(contactDetailDTO.getContact().getContactDetailType())) {
+                    arguments.put(RBVDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), contactDetailDTO.getContact().getNumber());
                 }
             });
         }
@@ -215,6 +221,17 @@ public class CancellationRequestImpl {
         rimacSimulationRequest.setCodProducto(productCodeForRimac);
         LOGGER.info("***** RBVDR011Impl - buildRimacSimulationRequest - rimacSimulationRequest : {} *****", rimacSimulationRequest);
         return rimacSimulationRequest;
+    }
+
+    public boolean isStartDateTodayOrAfterToday(boolean isRoyal, Map<String, Object> policy) {
+        if(isRoyal){
+            LocalDate localDate = new LocalDate(StringUtils.substring(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE.getValue())), 0, 10));
+            LOGGER.info("***** RBVDR011Impl - isTodayStartDate LocalDate: {} *****", new LocalDate());
+            LOGGER.info("***** RBVDR011Impl - isTodayStartDate StartDate: {} *****", localDate);
+            return (new LocalDate()).equals(localDate) || localDate.isAfter(new LocalDate());
+        }else{
+            return false;
+        }
     }
 
     public void setRbvdR311(RBVDR311 rbvdR311){

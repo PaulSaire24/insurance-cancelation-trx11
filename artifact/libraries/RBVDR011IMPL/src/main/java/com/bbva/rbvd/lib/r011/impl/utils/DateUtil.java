@@ -20,7 +20,7 @@ public class DateUtil {
 
     public static Date getCancellationDate(Map<String, Object> cancellationRequest, InputParametersPolicyCancellationDTO input){
         Date date;
-        if(cancellationRequest!=null){
+        if(cancellationRequest!=null && cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue())!= null){
             Timestamp dateTimestamp = (Timestamp)cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue());
             date = new Date(dateTimestamp.getTime());
         }else{

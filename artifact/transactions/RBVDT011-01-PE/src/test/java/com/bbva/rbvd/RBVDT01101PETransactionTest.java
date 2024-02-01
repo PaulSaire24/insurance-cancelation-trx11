@@ -10,6 +10,7 @@ import java.util.Calendar;
 
 import javax.annotation.Resource;
 
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,6 +86,28 @@ public class RBVDT01101PETransactionTest {
         this.transaction.execute();
         assertTrue(this.transaction.getAdviceList().isEmpty());
     }
+
+	@Test
+	public void executeTestWithIsRefundNullOK() {
+		LOGGER.info("Execution of RBVDT01101PETransactionTest - executeTestOK *********");
+		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
+		output.setCancellationDate(Calendar.getInstance());
+		this.transaction.setIsrefund(null);
+		when(rbvdr011.executePolicyCancellation(anyObject())).thenReturn(output);
+		this.transaction.execute();
+		assertTrue(this.transaction.getAdviceList().isEmpty());
+	}
+
+	@Test
+	public void executeTestWithInsurerRefundOK() {
+		LOGGER.info("Execution of RBVDT01101PETransactionTest - executeTestOK *********");
+		EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
+		output.setCancellationDate(Calendar.getInstance());
+		this.transaction.setInsurerrefund(new InsurerRefundCancellationDTO());
+		when(rbvdr011.executePolicyCancellation(anyObject())).thenReturn(output);
+		this.transaction.execute();
+		assertTrue(this.transaction.getAdviceList().isEmpty());
+	}
 
 	@Test
 	public void testNotNull(){
