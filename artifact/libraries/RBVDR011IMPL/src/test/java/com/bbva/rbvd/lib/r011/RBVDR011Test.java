@@ -30,6 +30,7 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.*;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
 import com.google.common.collect.Maps;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -230,12 +231,17 @@ public class RBVDR011Test {
 		List<ContactDetailDTO> listContactDetailDTO = new ArrayList<>();
 		ContactDetailDTO contactDetailDTO = new ContactDetailDTO();
 		GenericContactDTO genericContactDTO = new GenericContactDTO();
-		genericContactDTO.setContactDetailType("EMAIL");
+		genericContactDTO.setContactDetailType(RBVDProperties.CONTACT_EMAIL_ID.getValue());
+		genericContactDTO.setAddress("prueba@gmail.com");
 		contactDetailDTO.setContact(genericContactDTO);
 		listContactDetailDTO.add(contactDetailDTO);
 		notificationsDTO.setContactDetails(listContactDetailDTO);
 		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
 		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(),new Timestamp(System.currentTimeMillis()));
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(),new BigDecimal(123));
+		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal(142));
+		policy.put(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue(),0011);
+		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(),0011);
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		input.setNotifications(notificationsDTO);
 		EntityOutPolicyCancellationDTO validation1 = rbvdR011.executePolicyCancellation(input);
@@ -243,6 +249,15 @@ public class RBVDR011Test {
 
 		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation2);
+
+
+		input.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
+		input.getNotifications().getContactDetails().get(0).getContact().setNumber("999999999");
+		input.getInsurerRefund().getPaymentMethod().getContract().setId(null);
+		input.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue());
+		input.getInsurerRefund().getPaymentMethod().getContract().setNumber("00110abc000205049053");
+		validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
 
 		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject()))
 				.thenThrow(new BusinessException("01020052", false, "Mensaje Error"));
