@@ -21,10 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 import static java.util.Objects.nonNull;
 
@@ -50,7 +49,7 @@ public class CancellationRequestImpl {
     private boolean validateNewCancellationRequestRoyal(InputParametersPolicyCancellationDTO input, Map<String, Object> policy) {
         if (policy != null && isActiveStatusId(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue()))) {
             Map<String, Object> requestCancellationMovLast = executeGetRequestCancellationMovLast(input.getContractId());
-            LOGGER.info("***** RBVDR011Impl - validateNewCancellationRequestRoyal - requestCancellationMovLast: {}", requestCancellationMovLast);
+            LOGGER.info("***** CancellationRequestImpl - validateNewCancellationRequestRoyal - requestCancellationMovLast: {}", requestCancellationMovLast);
             return isRetainedOrNotExistsCancellationRequest(requestCancellationMovLast);
         }
         return false;
@@ -61,7 +60,7 @@ public class CancellationRequestImpl {
     }
     private boolean validateNewCancellationRequestNoRoyal(InputParametersPolicyCancellationDTO input) {
         Map<String, Object> requestCancellationMovLast = executeGetRequestCancellationMovLast(input.getContractId());
-        LOGGER.info("***** RBVDR011Impl - validateNewCancellationRequestNoRoyal - requestCancellationMovLast: {}", requestCancellationMovLast);
+        LOGGER.info("***** CancellationRequestImpl - validateNewCancellationRequestNoRoyal - requestCancellationMovLast: {}", requestCancellationMovLast);
         return isRetainedOrNotExistsCancellationRequest(requestCancellationMovLast);
     }
 
@@ -80,7 +79,7 @@ public class CancellationRequestImpl {
     public boolean isOpenOrNotExistsCancellationRequest(Map<String, Object> requestCancellationMovLast) {
         if (requestCancellationMovLast != null) {
             String statusId = requestCancellationMovLast.get(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue()).toString();
-            LOGGER.info("***** RBVDR011Impl - isOpenCancellationRequest - requestCancellationMovLast -> statusId: {}", statusId);
+            LOGGER.info("***** CancellationRequestImpl - isOpenCancellationRequest - requestCancellationMovLast -> statusId: {}", statusId);
             return PENDING_CANCELLATION_STATUS.equals(statusId);
         }
         return true;
@@ -89,7 +88,7 @@ public class CancellationRequestImpl {
     public boolean isRetainedOrNotExistsCancellationRequest(Map<String, Object> requestCancellationMovLast) {
         if (requestCancellationMovLast != null) {
             String statusId = requestCancellationMovLast.get(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue()).toString();
-            LOGGER.info("***** RBVDR011Impl - isRetainedCancellationRequest - requestCancellationMovLast -> statusId: {}", statusId);
+            LOGGER.info("***** CancellationRequestImpl - isRetainedCancellationRequest - requestCancellationMovLast -> statusId: {}", statusId);
             return RETAINED_INSURANCE_STATUS.equals(statusId);
         }
         return true;
@@ -101,11 +100,11 @@ public class CancellationRequestImpl {
         arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
         arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATE_FORMAT).format(input.getCancellationDate().getTime()));
         pisdR100.executeUpdateContractStatus(arguments);
-        LOGGER.info("***** RBVDR011Impl - updateContractStatusToPending - newContractStatus: {}", RBVDConstants.TAG_PEN);
+        LOGGER.info("***** CancellationRequestImpl - updateContractStatusToPending - newContractStatus: {}", RBVDConstants.TAG_PEN);
     }
     public boolean executeFirstCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
                                                           String policyId, String productCodeForRimac) {
-        LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - begin");
+        LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - begin");
         if (!this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(CONTRACT_STATUS_HOST_CANCELLATION_REQUEST,"PS"))) return false;
 
         CancelationSimulationPayloadBO cancellationSimulationResponse = null;
@@ -117,16 +116,16 @@ public class CancellationRequestImpl {
         }
 
         Map<String, Object> responseGetRequestCancellationId = pisdR103.executeGetRequestCancellationId();
-        LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
+        LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
         BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
         Map<String, Object> argumentsForSaveRequestCancellation = mapRequestCancellationArguments(requestCancellationId, input, policy, cancellationSimulationResponse, icf2Response, isRoyal);
-        LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
+        LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
         int isInserted = pisdR103.executeSaveInsuranceRequestCancellation(argumentsForSaveRequestCancellation);
-        LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - isInserted: {}", isInserted);
+        LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - isInserted: {}", isInserted);
         Map<String, Object> argumentsForSaveRequestCancellationMov = mapInRequestCancellationMov(requestCancellationId, input, PENDING_CANCELLATION_STATUS, 1);
-        LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
+        LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
         int isInsertedMov = pisdR103.executeSaveInsuranceRequestCancellationMov(argumentsForSaveRequestCancellationMov);
-        LOGGER.info("***** RBVDR011Impl - executeFirstCancellationRequest - isInsertedMov: {}", isInsertedMov);
+        LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - isInsertedMov: {}", isInsertedMov);
 
         if(isRoyal) updateContractStatusToPending(input);
 
@@ -219,19 +218,38 @@ public class CancellationRequestImpl {
         rimacSimulationRequest.setFechaAnulacion(cancellationDate);
         rimacSimulationRequest.setNumeroPoliza(Integer.parseInt(policyId));
         rimacSimulationRequest.setCodProducto(productCodeForRimac);
-        LOGGER.info("***** RBVDR011Impl - buildRimacSimulationRequest - rimacSimulationRequest : {} *****", rimacSimulationRequest);
+        LOGGER.info("***** CancellationRequestImpl - buildRimacSimulationRequest - rimacSimulationRequest : {} *****", rimacSimulationRequest);
         return rimacSimulationRequest;
     }
 
     public boolean isStartDateTodayOrAfterToday(boolean isRoyal, Map<String, Object> policy) {
         if(isRoyal){
-            LocalDate localDate = new LocalDate(StringUtils.substring(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue())), 0, 10));
-            LOGGER.info("***** RBVDR011Impl - isTodayStartDate LocalDate: {} *****", new LocalDate());
-            LOGGER.info("***** RBVDR011Impl - isTodayStartDate StartDate: {} *****", localDate);
-            return (new LocalDate()).equals(localDate) || localDate.isAfter(new LocalDate());
+            String startDatePolicy= Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue()),null);
+            return validateStartDate(startDatePolicy);
         }else{
             return false;
         }
+    }
+
+    private Boolean validateStartDate(String startDatePolicy){
+        if(StringUtils.isNotEmpty(startDatePolicy)){
+            String formattedDate = startDatePolicy.split(" ")[0];
+
+            LOGGER.info("***** CancellationRequestImpl - validateStartDate ***** : formattedDate{}", formattedDate);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            LOGGER.info("***** CancellationRequestImpl - validateStartDate ***** : strDate{}", startDatePolicy);
+
+            java.time.LocalDate startDateFormatted = java.time.LocalDate.parse(formattedDate, formatter);
+            ZonedDateTime zoneStartDate = startDateFormatted.atStartOfDay(ZoneId.of("America/Lima"));
+
+            LOGGER.info("***** CancellationRequestImpl - validateStartDate *****  startDateFormatted: {}", startDateFormatted);
+            java.time.LocalDate todayFormatted = java.time.LocalDate.now();
+            ZonedDateTime zonedToday = todayFormatted.atStartOfDay(ZoneId.of("America/Lima"));
+            LOGGER.info("***** CancellationRequestImpl - validateStartDate *****  zonedToday: {}", zonedToday);
+
+            return zoneStartDate.isAfter(zonedToday) || zoneStartDate.isEqual(zonedToday);
+        }
+        return false;
     }
 
     public void setRbvdR311(RBVDR311 rbvdR311){

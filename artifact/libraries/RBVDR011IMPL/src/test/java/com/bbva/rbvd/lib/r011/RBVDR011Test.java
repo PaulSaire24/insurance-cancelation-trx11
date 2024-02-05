@@ -519,7 +519,7 @@ public class RBVDR011Test {
 		policy.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), "1");
 		policy.put(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue(), "123456");
 		policy.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), "12345678");
-		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue(), "2021-08-09 12:00:00");
+		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue(), "08-09-2021 00:00:00");
 		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(),"2101");
 		return policy;
 	}
