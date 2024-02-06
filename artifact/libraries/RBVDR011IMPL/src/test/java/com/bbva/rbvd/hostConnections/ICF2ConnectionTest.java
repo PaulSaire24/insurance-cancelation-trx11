@@ -10,7 +10,7 @@ import com.bbva.rbvd.lib.r310.RBVDR310;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.buildImmediateCancellationInput_EmailContact;
+import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.buildImmediateCancellationInput_EmailContactAndPhoneContact;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyObject;
@@ -30,7 +30,7 @@ public class ICF2ConnectionTest {
 
     @Test
     public void validateExecuteICF2TransactionOk(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         ICF2Response icf2Response = buildICF2ResponseOk();
         when(rbvdr310.executeICF2(anyObject())).thenReturn(icf2Response);
         icf2Response = icf2Connection.executeICF2Transaction(input);
@@ -39,7 +39,7 @@ public class ICF2ConnectionTest {
 
     @Test
     public void validateExecuteICF2TransactionWithError(){
-        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContact();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         ICF2Response icf2Response = buildICF2ResponseError();
         when(rbvdr310.executeICF2(anyObject())).thenReturn(icf2Response);
         icf2Response = icf2Connection.executeICF2Transaction(input);

@@ -7,7 +7,6 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
-
 import java.util.Calendar;
 
 /**
@@ -59,6 +58,13 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 	 */
 	protected String getCancellationtype(){
 		return (String)this.getParameter("cancellationType");
+	}
+
+	/**
+	 * Return value for input parameter insurerRefund
+	 */
+	protected InsurerRefundCancellationDTO getInsurerrefund(){
+		return (InsurerRefundCancellationDTO)this.getParameter("insurerRefund");
 	}
 
 	/**

@@ -27,6 +27,7 @@ import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
 		isRoyal = policy != null;
 
-		if(!isRoyal) {
+		if(cancellationRequestImpl.isStartDateTodayOrAfterToday(isRoyal, policy) || !isRoyal) {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - executeICF2Transaction begin *****");
 			icf2Response = this.icf2Connection.executeICF2Transaction(input);
 			if(icf2Response == null) {this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode()); return null;}
@@ -91,7 +92,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
-		if(isAPXCancellationRequest(productId, input.getChannelId())){
+		if(isAPXCancellationRequest(productId, input.getChannelId()) && !cancellationRequestImpl.isStartDateTodayOrAfterToday(isRoyal, policy)){
 			//Retornar respuesta con estado PENDIENTE
 			return mapRetentionResponse(policyId, input, PENDING_CANCELLATION_STATUS, CODE_PENDING,input.getCancellationDate());
 		}else{ //Seguir el flujo de cancelación
@@ -109,7 +110,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), input.getContractId().substring(4, 8));
 		argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), input.getContractId().substring(10));
 		Map<String, Object> cancellationRequest = this.pisdR103.executeGetRequestCancellation(argumentsRequest);
-		out = validateCancellationType(input, cancellationRequest, policy, icf2Response, isRoyal);
+		out = validateCancellationType(input, cancellationRequest, policy, icf2Response);
 		if (out == null) return null;
 		if (!isRoyal) return validatePolicy(out);
 
@@ -195,14 +196,15 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - cancelPolicy END *****");
 		return out;
 	}
-	private EntityOutPolicyCancellationDTO validateCancellationType(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response, boolean isRoyal){
+	private EntityOutPolicyCancellationDTO validateCancellationType(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response){
 		if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
 			return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
-		}
-
-		if(!isRoyal && !this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(CONTRACT_STATUS_HOST_END_OF_VALIDITY,"08"))){
+		}else{
+			boolean icr4RespondsOk = this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(CONTRACT_STATUS_HOST_END_OF_VALIDITY,"08"));
+			if(!icr4RespondsOk) {
 				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 				return null;
+			}
 		}
 
 		return mapRetentionResponse(null, input, input.getCancellationType(), input.getCancellationType(), input.getCancellationDate());
