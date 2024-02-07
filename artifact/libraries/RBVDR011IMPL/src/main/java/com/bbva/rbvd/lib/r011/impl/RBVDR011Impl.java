@@ -33,7 +33,6 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
 import com.google.common.base.Strings;
@@ -56,9 +55,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR011Impl.class);
 	private static final String CODE_REFUND = "REFUND";
 	private static final String RECEIPT_STATUS_TYPE_LIST = "RECEIPT_STATUS_TYPE_LIST";
-
-	private static final String RL_ACCOUNT_ID = "RL_ACCOUNT_ID";
-	private static final String DATEFORMAT_CNCL_DATE = "dd/MM/yyyy";
 
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
@@ -161,7 +157,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), statusId);
-		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATEFORMAT_CNCL_DATE).format(input.getCancellationDate().getTime()));
+		arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(RBVDConstants.DATEFORMAT_ANNULATION_DATE).format(input.getCancellationDate().getTime()));
 
 		this.pisdR100.executeUpdateContractStatus(arguments);
 
@@ -322,22 +318,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
 		output.setReason(reason);
 		output.setNotifications(input.getNotifications());
-		if (input.getInsurerRefund()!=null) {
-			InsurerRefundCancellationDTO insurerRefund = input.getInsurerRefund();
-			insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
-			insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
-			PaymentMethodCancellationDTO paymentMethodReturn = input.getInsurerRefund().getPaymentMethod();
-			ContractCancellationDTO contractReturn = paymentMethodReturn.getContract();
-			if(contractReturn.getId()!=null){ //PENDING CHANGES
-				contractReturn.setNumber(contractReturn.getId());
-			}
-			if(contractReturn.getProductType()!=null){ //PENDING CHANGES
-				contractReturn.setNumberType(contractReturn.getProductType());
-			}
-			paymentMethodReturn.setContract(contractReturn);
-			insurerRefund.setPaymentMethod(paymentMethodReturn);
-			output.setInsurerRefund(insurerRefund);
-		}
+		InsurerRefundCancellationDTO insurerRefund = input.getInsurerRefund();
+		insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
+		insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
+		output.setInsurerRefund(insurerRefund);
 		GenericAmountDTO customerRefund = new GenericAmountDTO();
 		customerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMPCLIE()));
 		customerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVIMC());
@@ -404,8 +388,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		argumentsCommon.put(RBVDProperties.FIELD_COLECTIVE_CERTIFICATE_ID.getValue(), null);
 		argumentsCommon.put(RBVDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), null);
 		argumentsCommon.put(RBVDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), null);
-		argumentsCommon.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new SimpleDateFormat(DATEFORMAT_CNCL_DATE).format(input.getCancellationDate().getTime()));
-		argumentsCommon.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(DATEFORMAT_CNCL_DATE).format(input.getCancellationDate().getTime()));
+		argumentsCommon.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new SimpleDateFormat(RBVDConstants.DATEFORMAT_ANNULATION_DATE).format(input.getCancellationDate().getTime()));
+		argumentsCommon.put(RBVDProperties.FIELD_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(RBVDConstants.DATEFORMAT_ANNULATION_DATE).format(input.getCancellationDate().getTime()));
 		NotificationsDTO notificationsDTO = input.getNotifications();
 		if (nonNull(notificationsDTO)) {
 			notificationsDTO.getContactDetails().stream().forEach(x -> {
@@ -430,14 +414,14 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		InsurerRefundCancellationDTO insurerRefundDTO = input.getInsurerRefund();
 		if (nonNull(insurerRefundDTO)) {
 			if (RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue().equals(insurerRefundDTO.getPaymentMethod().getContract().getContractType())) {
-				arguments.put(RL_ACCOUNT_ID, insurerRefundDTO.getPaymentMethod().getContract().getId());
+				arguments.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), insurerRefundDTO.getPaymentMethod().getContract().getId());
 			}
 			else if(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue().equals(insurerRefundDTO.getPaymentMethod().getContract().getContractType())) {
-				arguments.put(RL_ACCOUNT_ID, insurerRefundDTO.getPaymentMethod().getContract().getNumber());
+				arguments.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), insurerRefundDTO.getPaymentMethod().getContract().getNumber());
 			}
 		}
 		else {
-			arguments.put(RL_ACCOUNT_ID, null);
+			arguments.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), null);
 		}
 		arguments.put(RBVDProperties.FIELD_REQUEST_TYPE.getValue(), ConstantsUtil.REQUEST_TYPE_DEFAULT);
 		return arguments;
