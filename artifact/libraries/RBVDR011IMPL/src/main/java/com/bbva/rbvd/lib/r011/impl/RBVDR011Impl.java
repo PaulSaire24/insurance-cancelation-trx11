@@ -273,8 +273,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		icf3DTORequest.setFECCANC(dateFormat.format(date));
 		icf3DTORequest.setCODMOCA(input.getReason().getId());
-		if(input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
-				&& input.getNotifications().getContactDetails().get(0).getContact() != null
+		if(input.getNotifications() != null
+				&& !input.getNotifications().getContactDetails().isEmpty()
 				&& input.getNotifications().getContactDetails().get(0).getContact().getContactDetailType().equals("EMAIL")){
 			icf3DTORequest.setTIPCONT("001");
 			if(input.getNotifications().getContactDetails().get(0).getContact().getAddress() != null){
@@ -288,11 +288,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			icf3DTORequest.setMONTDEV(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())).doubleValue());
 		}
 
-		if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()) != null){
+		if(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()) != null){
 			icf3DTORequest.setNUMPOL(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue())));
 		}
 
-		if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()) != null){
+		if(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()) != null){
 			icf3DTORequest.setPRODRI(String.valueOf(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue())));
 		}
 
@@ -318,7 +318,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
 		output.setReason(reason);
 		output.setNotifications(input.getNotifications());
-		InsurerRefundCancellationDTO insurerRefund = input.getInsurerRefund();
+		InsurerRefundCancellationDTO insurerRefund = new InsurerRefundCancellationDTO();
 		insurerRefund.setAmount(Double.valueOf(icf3Response.getIcmf3s0().getIMDECIA()));
 		insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
 		output.setInsurerRefund(insurerRefund);
@@ -364,12 +364,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 
 	private boolean isLifeProduct(String businessName){
-		if(Objects.nonNull(businessName) && (
-				businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES)
-		)){
-			return true;
-		}
-		return false;
+		return Objects.nonNull(businessName) && (businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES));
 	}
 	private Map<String, Object> mapInRequestCancellationCommon(BigDecimal requestCancellationId, InputParametersPolicyCancellationDTO input, Map<String, Object> policy){
 		Map<String, Object> argumentsCommon = new HashMap<>();
@@ -439,23 +434,18 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	}
 
 	private Boolean executeRescueCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, String shortDesc) {
-		if(ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shortDesc)) {
-			LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - executeGetRequestCancellationId ");
-			Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
-			LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
-			BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
-			Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellationRescue(requestCancellationId, input, policy);
-			LOGGER.info("***s** RBVDR011Impl - executeRescueCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
-			int isInserted = this.pisdR103.executeSaveRequestCancellationInvestment(argumentsForSaveRequestCancellation);
-			LOGGER.info("***** RBVDR011Impl - isInserted: {}", isInserted);
-			Map<String, Object> argumentsForSaveRequestCancellationMov = mapInRequestCancellationMov(requestCancellationId, input, RBVDConstants.MOV_BAJ, 1);
-			LOGGER.info("***** RBVDR011Impl - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
-			int isInsertedMov = this.pisdR103.executeSaveInsuranceRequestCancellationMov(argumentsForSaveRequestCancellationMov);
-			LOGGER.info("***** RBVDR011Impl - isInsertedMov: {}", isInsertedMov);
-			return true;
-		}
-		else{
-			return false;
-		}
+		LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - executeGetRequestCancellationId ");
+		Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
+		LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
+		BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
+		Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellationRescue(requestCancellationId, input, policy);
+		LOGGER.info("***s** RBVDR011Impl - executeRescueCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
+		int isInserted = this.pisdR103.executeSaveRequestCancellationInvestment(argumentsForSaveRequestCancellation);
+		LOGGER.info("***** RBVDR011Impl - isInserted: {}", isInserted);
+		Map<String, Object> argumentsForSaveRequestCancellationMov = mapInRequestCancellationMov(requestCancellationId, input, RBVDConstants.MOV_BAJ, 1);
+		LOGGER.info("***** RBVDR011Impl - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
+		int isInsertedMov = this.pisdR103.executeSaveInsuranceRequestCancellationMov(argumentsForSaveRequestCancellationMov);
+		LOGGER.info("***** RBVDR011Impl - isInsertedMov: {}", isInsertedMov);
+		return true;
 	}
 }
