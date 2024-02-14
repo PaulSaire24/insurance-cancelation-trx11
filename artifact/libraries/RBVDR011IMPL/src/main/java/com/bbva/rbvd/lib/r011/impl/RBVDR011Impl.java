@@ -100,13 +100,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if(isLifeProduct(businessName)){
 			inputRimac.setCodProducto(shortDesc);
 		}
-
-		try {
-			out = callCancelPolicyHost(xcontractNumber, input, inputRimac,policy ,shortDesc);
-		} catch (BusinessException exception) {
-			this.addAdviceWithDescription(exception.getAdviceCode(), exception.getMessage());
-			return null;
-		}
+		out = callCancelPolicyHost(xcontractNumber, input,policy ,shortDesc);
 
 		if(isNull(out)) return null;
 
@@ -198,7 +192,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		contratante.setEnvioElectronico("S");
 		inputPayload.setPoliza(poliza);
 		inputPayload.setContratante(contratante);
-		cancelPolicyByProduct(inputRimac, inputPayload, shortDesc);
+		try {
+			cancelPolicyByProduct(inputRimac, inputPayload,input, shortDesc);
+		} catch (BusinessException exception) {
+			this.addAdviceWithDescription(exception.getAdviceCode(), exception.getMessage());
+			return null;
+		}
 
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
@@ -207,15 +206,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 
 
-	private void cancelPolicyByProduct(InputRimacBO inputRimac,PolicyCancellationPayloadBO inputPayload, String shorDesc){
-		if (!ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shorDesc)){
-			this.rbvdR012.executeCancelPolicyRimac(inputRimac, inputPayload);
-		}
-	}
-
-	private EntityOutPolicyCancellationDTO callCancelPolicyHost(String xcontractNumber, InputParametersPolicyCancellationDTO input, InputRimacBO inputrimac, Map<String, Object> policy,String shortDesc){
+	private void cancelPolicyByProduct(InputRimacBO inputrimac,PolicyCancellationPayloadBO inputPayload, InputParametersPolicyCancellationDTO input, String shortDesc){
 		if (!ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shortDesc)){
-			return this.rbvdR012.executeCancelPolicyHost(xcontractNumber, input.getCancellationDate(), input.getReason(), input.getNotifications());
+			this.rbvdR012.executeCancelPolicyRimac(inputrimac, inputPayload);
 		}
 		else {
 			inputrimac.setShortDesc(shortDesc);
@@ -253,8 +246,15 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			cancelPayload.setContratante(contratante);
 
 			this.rbvdR311.executeRescueCancelationRimac(inputrimac, cancelPayload);
+		}
+	}
 
-			executeRescueCancellationRequest(input, policy, shortDesc);
+	private EntityOutPolicyCancellationDTO callCancelPolicyHost(String xcontractNumber, InputParametersPolicyCancellationDTO input, Map<String, Object> policy,String shortDesc){
+		if (!ConstantsUtil.BUSINESS_NAME_VIDAINVERSION.equals(shortDesc)){
+			return this.rbvdR012.executeCancelPolicyHost(xcontractNumber, input.getCancellationDate(), input.getReason(), input.getNotifications());
+		}
+		else {
+			executeRescueCancellationRequest(input, policy);
 			Map<String, Object> argumentsRequest = new HashMap<>();
 			argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), input.getContractId().substring(0, 4));
 			argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), input.getContractId().substring(4, 8));
@@ -433,7 +433,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return arguments;
 	}
 
-	private Boolean executeRescueCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, String shortDesc) {
+	private Boolean executeRescueCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy) {
 		LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - executeGetRequestCancellationId ");
 		Map<String, Object> responseGetRequestCancellationId = this.pisdR103.executeGetRequestCancellationId();
 		LOGGER.info("***** RBVDR011Impl - executeRescueCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
