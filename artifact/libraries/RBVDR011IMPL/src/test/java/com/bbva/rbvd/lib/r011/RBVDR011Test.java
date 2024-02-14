@@ -149,6 +149,7 @@ public class RBVDR011Test {
 		inputInvestment.getInsurerRefund().getPaymentMethod().setContract(new ContractCancellationDTO());
 		inputInvestment.getInsurerRefund().getPaymentMethod().getContract().setId("00110abc000105049053");
 		inputInvestment.getInsurerRefund().getPaymentMethod().getContract().setProductType(new CommonCancellationDTO());
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 	}
 	
 	@Test
@@ -302,7 +303,6 @@ public class RBVDR011Test {
 				.thenReturn(new PolicyCancellationPayloadBO());
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		inputInvestment.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue());
-		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(inputInvestment);
 		assertNotNull(validation2);
 	}
@@ -322,7 +322,6 @@ public class RBVDR011Test {
 		inputInvestment.setNotifications(null);
 		inputInvestment.setIsRefund(true);
 		inputInvestment.setInsurerRefund(null);
-		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
         EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(inputInvestment);
         assertNotNull(validation2);
 
@@ -364,7 +363,6 @@ public class RBVDR011Test {
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
 		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
-		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 		input.setChannelId("PC");
