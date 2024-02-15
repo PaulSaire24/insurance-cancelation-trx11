@@ -3,7 +3,10 @@ package com.bbva.rbvd.lib.r011.impl.hostConnections;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
-import com.bbva.rbvd.dto.insurancecancelation.commons.*;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
@@ -22,16 +25,13 @@ import java.util.Map;
 
 import static com.bbva.rbvd.lib.r011.impl.utils.DateUtil.convertStringToDate;
 import static com.bbva.rbvd.lib.r011.impl.utils.DateUtil.getCancellationDate;
+import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.validateEmailContact;
+import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.obtainInsurerRefundAccountOrCard;
 import static java.util.Objects.nonNull;
 
 public class ICF3Connection {
     private static final Logger LOGGER = LoggerFactory.getLogger(ICF3Connection.class);
-    private static final String EMAIL_CONTACT_TYPE = "001";
-    private static final String CANCELLATION_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-    private static final String REFUND_INDICATOR = "S";
-    private static final String NOT_REFUND_INDICATOR = "N";
     protected RBVDR051 rbvdR051;
-
 
     public EntityOutPolicyCancellationDTO executeICF3Transaction(InputParametersPolicyCancellationDTO input,
                                                                         Map<String, Object> cancellationRequest, Map<String, Object> policy,
@@ -54,7 +54,7 @@ public class ICF3Connection {
         ICF3Request icf3DTORequest = new ICF3Request();
         icf3DTORequest.setNUMCER(input.getContractId());
         Date date = getCancellationDate(cancellationRequest, input);
-        DateFormat dateFormat = new SimpleDateFormat(CANCELLATION_DATE_FORMAT);
+        DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_CNCL_DATE);
         icf3DTORequest.setFECCANC(dateFormat.format(date));
         icf3DTORequest.setCODMOCA(input.getReason().getId());
         LOGGER.info("***** RBVDR011Impl - ICF3Connection - buildICF3Request: {}", icf3DTORequest.getFECCANC());
@@ -62,7 +62,7 @@ public class ICF3Connection {
         if (nonNull(input.getNotifications())){
             input.getNotifications().getContactDetails().stream().forEach(contactDetailDTO -> {
                 if (validateEmailContact(contactDetailDTO)) {
-                    icf3DTORequest.setTIPCONT(EMAIL_CONTACT_TYPE);
+                    icf3DTORequest.setTIPCONT(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3);
                     icf3DTORequest.setDESCONT(contactDetailDTO.getContact().getAddress());
                 }
             });
@@ -86,27 +86,12 @@ public class ICF3Connection {
             icf3DTORequest.setPRODRI(icf2Response.getIcmf1S2().getCODPROD());
         }
 
-        icf3DTORequest.setINDDEV(NOT_REFUND_INDICATOR);
-        if(input.getIsRefund()){
-            icf3DTORequest.setINDDEV(REFUND_INDICATOR);
-        }
-
-        if(validateInsurerRefundAccount(input)){
-            icf3DTORequest.setCTAADEV(input.getInsurerRefund().getPaymentMethod().getContract().getId());
-        }
+        icf3DTORequest.setINDDEV(RBVDConstants.TAG_S);
+        icf3DTORequest.setCTAADEV(obtainInsurerRefundAccountOrCard(input));
 
         return icf3DTORequest;
     }
 
-    private boolean validateEmailContact(ContactDetailDTO contactDetailDTO){
-        return nonNull(contactDetailDTO.getContact()) &&
-                        RBVDProperties.CONTACT_EMAIL_ID.getValue().equals(contactDetailDTO.getContact().getContactDetailType());
-    }
-    private boolean validateInsurerRefundAccount(InputParametersPolicyCancellationDTO input){
-        return input.getInsurerRefund() != null && input.getInsurerRefund().getPaymentMethod() != null
-                && input.getInsurerRefund().getPaymentMethod().getContract().getContractType().equals(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue())
-                && input.getInsurerRefund().getPaymentMethod().getContract().getProductType().getId().equals(RBVDConstants.TAG_ACCOUNT);
-    }
     public EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response, Map<String, Object> cancellationRequest){
         EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
         output.setId(icf3Response.getIcmf3s0().getIDCANCE());
