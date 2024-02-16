@@ -64,7 +64,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if(isStartDateTodayOrAfterToday(isRoyal, policy)) {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - executeICF2Transaction begin *****");
 			icf2Response = this.icf2Connection.executeICF2Transaction(input);
-			if(icf2Response == null) {this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode()); return null;}
+
+			if(icf2Response == null) {
+				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
+				return null;
+			}
 		}
 
 		Map<String, Object> policyMap = getPolicyInsuranceData(isRoyal, policy, icf2Response);
@@ -80,7 +84,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - new cancellation request *****");
 			//Registrar la solicitud de cancelación
 			if(!this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal,  icf2Response, policyId, productCodeForRimac)) {
-				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode()); return null;
+				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
+				return null;
 			}
 		}else{
 			//Seguir el flujo de cancelación
@@ -98,7 +103,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 	private EntityOutPolicyCancellationDTO cancelPolicy(InputParametersPolicyCancellationDTO input, Map<String, Object> policy,
 												String policyId, String productCode, ICF2Response icf2Response, boolean isRoyal){
-		//se recupera de bd los datos guardados de la simulaciónnDTO
+		//se recupera de bd los datos guardados de la simulaciónDTO
 		LOGGER.info("***** RBVDR011Impl - cancelPolicy: Policy cancellation start");
 		EntityOutPolicyCancellationDTO out;
 		Map<String, Object> argumentsRequest = new HashMap<>();
