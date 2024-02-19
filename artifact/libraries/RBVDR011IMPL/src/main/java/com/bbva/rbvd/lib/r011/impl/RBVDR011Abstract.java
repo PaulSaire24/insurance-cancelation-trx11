@@ -6,7 +6,7 @@ import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.lib.r011.RBVDR011;
-import com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl;
+import com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;

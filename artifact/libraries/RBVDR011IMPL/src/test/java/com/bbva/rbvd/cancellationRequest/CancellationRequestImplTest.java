@@ -15,7 +15,7 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
-import com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl;
+import com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 import org.junit.Before;

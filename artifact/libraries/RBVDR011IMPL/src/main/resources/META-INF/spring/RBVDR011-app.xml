@@ -14,7 +14,7 @@
 		<property name="icf2Connection" ref="icf2Connection"/>
 		<property name="icf3Connection" ref="icf3Connection"/>
 	</bean>
-	<bean id="cancellationRequestImpl" class="com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl">
+	<bean id="cancellationRequestImpl" class="com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl">
 		<property name="rbvdR311" ref="rbvdR311"/>
 		<property name="pisdR103" ref="pisdR103"/>
 		<property name="pisdR100" ref="pisdR100"/>

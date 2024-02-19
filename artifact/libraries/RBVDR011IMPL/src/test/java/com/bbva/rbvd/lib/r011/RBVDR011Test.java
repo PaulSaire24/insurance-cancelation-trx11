@@ -33,7 +33,7 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.DatoParticularBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.*;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
-import com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl;
+import com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;

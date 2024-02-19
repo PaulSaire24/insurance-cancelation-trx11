@@ -23,7 +23,7 @@
 		<constructor-arg value="com.bbva.rbvd.lib.r310.RBVDR310"/>
 	</bean>
 	<bean id="cancellationRequestImpl" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.cancellationRequest.CancellationRequestImpl"/>
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl"/>
 	</bean>
 	<bean id="icr4Connection" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection"/>

@@ -1,4 +1,4 @@
-package com.bbva.rbvd.lib.r011.impl.cancellationRequest;
+package com.bbva.rbvd.lib.r011.impl.business;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.lib.r100.PISDR100;
