@@ -12,7 +12,6 @@ import com.bbva.rbvd.lib.r051.RBVDR051;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.bbva.rbvd.cancellationRequest.CancellationRequestImplTest.*;
@@ -121,6 +120,30 @@ public class ICF3ConnectionTest {
     @Test
     public void validateExecuteICF3TransactionWithoutRequestCancellationResponseOk(){
         InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> policy = buildPolicyMap();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionOkWithCardPaymentMethod(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_WithCardPaymentMethod();
+        Map<String, Object> policy = buildPolicyMap();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
+        ICF3Response icf3Response = buildICF3ResponseOk();
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
+        assertNotNull(out);
+    }
+
+    @Test
+    public void validateExecuteICF3TransactionOkWithAccountPaymentMethod(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_WithAccountPaymentMethod();
         Map<String, Object> policy = buildPolicyMap();
         ICF2Response icf2Response = buildICF2ResponseOk();
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
