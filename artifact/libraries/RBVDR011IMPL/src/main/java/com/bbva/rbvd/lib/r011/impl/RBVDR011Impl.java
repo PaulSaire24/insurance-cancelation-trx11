@@ -77,7 +77,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
-		if (isAPXCancellationRequest(productId, input.getChannelId()) && !isStartDateTodayOrAfterToday(isRoyal, policy) && !input.getCancellationType().equals(INMEDIATE.name())) {
+		if (isAPXCancellationRequest(productId, input.getChannelId()) &&
+				!isStartDateTodayOrAfterToday(isRoyal, policy) && !input.getCancellationType().equals(INMEDIATE.name())) {
 			//Retornar respuesta con estado PENDIENTE
 			return mapRetentionResponse(policyId, input, RBVDConstants.MOV_PEN, RBVDConstants.TAG_PENDING, input.getCancellationDate());
 		} else { //Seguir el flujo de cancelación

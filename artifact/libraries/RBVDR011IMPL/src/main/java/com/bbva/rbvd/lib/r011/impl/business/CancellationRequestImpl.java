@@ -129,6 +129,8 @@ public class CancellationRequestImpl {
             arguments.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), cancellationSimulationResponse.getMonto());
             arguments.put(RBVDProperties.FIELD_PREMIUM_CURRENCY_ID.getValue(), cancellationSimulationResponse.getMoneda());
             arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
+            arguments.put(RBVDProperties.FIELD_REQUEST_TYPE.getValue(), "000");
+
             if(cancellationSimulationResponse.getExtornoComision() != null){
                 arguments.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), cancellationSimulationResponse.getExtornoComision());
                 arguments.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), cancellationSimulationResponse.getMoneda());
@@ -149,6 +151,7 @@ public class CancellationRequestImpl {
             arguments.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), icf2Response.getIcmf1S2().getIMPCOMI());
             arguments.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), icf2Response.getIcmf1S2().getDIVIMC());
             arguments.put(RBVDProperties.FIELD_REQUEST_STATUS_NAME.getValue(), input.getCancellationType());
+            arguments.put(RBVDProperties.FIELD_REQUEST_TYPE.getValue(), "000");
         }
 
         return arguments;

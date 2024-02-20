@@ -110,6 +110,9 @@ public class CancellationBusiness extends AbstractLibrary {
             baseDAO.executeUpdateReceiptsStatusV2(input, statusId, receiptStatusList);
         }
 
+        LOGGER.info("***** RBVDR011Impl - cancelPolicy: input - {}", input);
+        LOGGER.info("***** RBVDR011Impl - cancelPolicy: statusId - {}", statusId);
+
         // ACTUALIZA EL ESTADO DEL CONTRATO Y FECHA DE ANULACIÓN EN LA TABLA DE CONTRATOS
         // sI ES PEN O PEB LA FECHA DE ANULACIÓN SE SETEA CON LA QUE LE ENVIAMOS Y SINO SETEA LA FECHA DE ANULACIÓN DEL CONTRATO
         baseDAO.executeUpdateContractStatusAndAnnulationDate(input, statusId, cancellationRequest);
