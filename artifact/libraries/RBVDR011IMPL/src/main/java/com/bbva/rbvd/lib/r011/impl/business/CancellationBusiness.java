@@ -141,10 +141,10 @@ public class CancellationBusiness extends AbstractLibrary {
     private EntityOutPolicyCancellationDTO validateCancellationType(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest,
                                                                     Map<String, Object> policy, ICF2Response icf2Response)
     {
-        if(input.getCancellationType().equals(APPLICATION_DATE.name()) &&
-                policy != null && validateMassiveProduct(policy, applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,","))) {
-            input.setCancellationType(END_OF_VALIDATY.name());
-        }
+        //if(input.getCancellationType().equals(APPLICATION_DATE.name()) &&
+        //        policy != null && validateMassiveProduct(policy, applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,","))) {
+        //    input.setCancellationType(END_OF_VALIDATY.name());
+        //}
 
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
             return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
