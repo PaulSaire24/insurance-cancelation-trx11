@@ -27,6 +27,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
+import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -140,13 +141,13 @@ public class CancellationBusiness extends AbstractLibrary {
     private EntityOutPolicyCancellationDTO validateCancellationType(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest,
                                                                     Map<String, Object> policy, ICF2Response icf2Response)
     {
-        /*if(input.getCancellationType().equals(APPLICATION_DATE.name()) &&
+        if(input.getCancellationType().equals(APPLICATION_DATE.name()) &&
                 policy != null &&
                 validateMassiveProduct(policy, applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,",")) &&
-                !input.getIsRefund())
+                )
         {
             input.setCancellationType(END_OF_VALIDATY.name());
-        }*/
+        }
 
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
             return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
@@ -231,5 +232,12 @@ public class CancellationBusiness extends AbstractLibrary {
         entityOutPolicyCancellationDTO.getStatus().setDescription(statusDescription);
         LOGGER.info("***** RBVDR011Impl - mapRetentionResponse END *****");
         return entityOutPolicyCancellationDTO;
+    }
+
+    public boolean validateMassiveProduct(Map<String, Object> policy, String massiveProductsParameter){
+        String[] massiveProductsList = massiveProductsParameter.split(",");
+        String massiveProduct = Arrays.stream(massiveProductsList).filter(product ->
+                product.equals(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()))).findFirst().orElse(null);
+        return massiveProduct != null;
     }
 }
