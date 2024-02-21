@@ -142,10 +142,7 @@ public class CancellationBusiness extends AbstractLibrary {
                                                                     Map<String, Object> policy, ICF2Response icf2Response)
     {
         if(input.getCancellationType().equals(APPLICATION_DATE.name()) &&
-                policy != null &&
-                validateMassiveProduct(policy, applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,","))
-                )
-        {
+                policy != null && validateMassiveProduct(policy, applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,","))) {
             input.setCancellationType(END_OF_VALIDATY.name());
         }
 
