@@ -25,17 +25,15 @@ public class ValidationUtil {
 
     private ValidationUtil(){}
 
-    public static  boolean validateInsurerRefundAccount(InputParametersPolicyCancellationDTO input){
+    public static  boolean validateInsurerRefundInternal(InputParametersPolicyCancellationDTO input){
         return input.getInsurerRefund() != null && input.getInsurerRefund().getPaymentMethod() != null
                 && input.getInsurerRefund().getPaymentMethod().getContract().getContractType().equals(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue())
-                && input.getInsurerRefund().getPaymentMethod().getContract().getProductType().getId().equals(RBVDConstants.TAG_ACCOUNT)
                 && input.getInsurerRefund().getPaymentMethod().getContract().getId() != null;
     }
 
-    public static boolean validateInsurerRefundCard(InputParametersPolicyCancellationDTO input){
+    public static boolean validateInsurerRefundExternal(InputParametersPolicyCancellationDTO input){
         return input.getInsurerRefund() != null && input.getInsurerRefund().getPaymentMethod() != null
                 && input.getInsurerRefund().getPaymentMethod().getContract().getContractType().equals(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue())
-                && input.getInsurerRefund().getPaymentMethod().getContract().getProductType().getId().equals(RBVDConstants.TAG_CARD)
                 && input.getInsurerRefund().getPaymentMethod().getContract().getNumber() != null;
     }
 
@@ -97,8 +95,8 @@ public class ValidationUtil {
     }
 
     public static String obtainInsurerRefundAccountOrCard(InputParametersPolicyCancellationDTO input){
-        if(validateInsurerRefundAccount(input)) return input.getInsurerRefund().getPaymentMethod().getContract().getId();
-        else if(validateInsurerRefundCard(input)) return input.getInsurerRefund().getPaymentMethod().getContract().getNumber();
+        if(validateInsurerRefundInternal(input)) return input.getInsurerRefund().getPaymentMethod().getContract().getId();
+        else if(validateInsurerRefundExternal(input)) return input.getInsurerRefund().getPaymentMethod().getContract().getNumber();
         else return null;
     }
 
