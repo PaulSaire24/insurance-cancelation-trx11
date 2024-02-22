@@ -100,13 +100,6 @@ public class ValidationUtil {
         else return null;
     }
 
-    public static boolean validateMassiveProduct(Map<String, Object> policy, String massiveProductsParameter){
-        String[] massiveProductsList = massiveProductsParameter.split(",");
-        String massiveProduct = Arrays.stream(massiveProductsList).filter(product ->
-                product.equals(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()))).findFirst().orElse(null);
-        return massiveProduct != null;
-    }
-
     public static boolean validateDaysOfRightToRepent(Map<String, Object> policy){
         String startDatePolicy= Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue()),null);
         return validateRightToRepent(startDatePolicy);
