@@ -474,10 +474,23 @@ public class RBVDR011Test {
 		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
 		input.setCancellationType(null);
 
+		Map<String, Object> mapp = new HashMap<>();
+		mapp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
+		mapp.put(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue(), "733");
+		mapp.put(RBVDProperties.FIELD_ADDITIONAL_DATA_DESC.getValue(), "descripcion");
+		mapp.put(RBVDProperties.FIELD_SEQ_MOV_NUMBER.getValue(), "122");
+
+		Map<String, Object> mappp = new HashMap<>();
+		mappp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
+
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
 		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
+		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyObject())).thenReturn(mapp);
+		when(cancellationRequestImpl.mapInRequestCancellationMov(anyObject(), anyObject(), anyString(), anyInt())).thenReturn(mappp);
+		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNotNull(validation);
