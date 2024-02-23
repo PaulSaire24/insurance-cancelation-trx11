@@ -37,7 +37,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		ICF2Response icf2Response = null;
 
 		if (input.getCancellationDate() == null) input.setCancellationDate(Calendar.getInstance());
-		if (input.getCancellationType() == null) input.setCancellationType(APPLICATION_DATE.name());
+		if (input.getCancellationType() == null) input.setCancellationType(INMEDIATE.name());
 
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
 		isRoyal = policy != null;
