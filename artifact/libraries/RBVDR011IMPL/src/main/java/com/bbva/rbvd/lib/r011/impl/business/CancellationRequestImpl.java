@@ -8,10 +8,12 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
+import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,7 @@ public class CancellationRequestImpl {
     protected ApplicationConfigurationService applicationConfigurationService;
 
     public boolean validateNewCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy,
-                                                   boolean isRoyal){
+                                                  boolean isRoyal){
 
         //validar si se tiene registrada una solicitud de cancelación pendiente
         return isRoyal? validateNewCancellationRequestRoyal(input, policy) : validateNewCancellationRequestNoRoyal(input);
@@ -89,7 +91,7 @@ public class CancellationRequestImpl {
         LOGGER.info("***** CancellationRequestImpl - updateContractStatusToPendingAndPolicyAnnulationDate - newContractStatus: {}", RBVDConstants.TAG_PEN);
     }
     public boolean executeFirstCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
-                                                          String policyId, String productCodeForRimac) {
+                                                   String policyId, String productCodeForRimac) {
         LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - begin");
         if (!this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_CANCELLATION_REQUEST,RBVDConstants.TAG_CANCELLATION_PENDING_HOST_STATUS))) return false;
 
@@ -99,6 +101,7 @@ public class CancellationRequestImpl {
             InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCodeForRimac);
             cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
             if(cancellationSimulationResponse == null) return false;
+            cancellationSimulationResponse.setMoneda(conversor(cancellationSimulationResponse.getMoneda()));
         }
 
         Map<String, Object> responseGetRequestCancellationId = pisdR103.executeGetRequestCancellationId();
@@ -117,9 +120,50 @@ public class CancellationRequestImpl {
 
         return true;
     }
+    private Map<String, Object> mapInRequestCancellationRescue(BigDecimal requestCancellationId, InputParametersPolicyCancellationDTO input, Boolean isRoyal, Map<String, Object> policyInvestment) {
+        Map<String, Object> argumentsInvestment = mapInRequestCancellationCommonFields(requestCancellationId, input,isRoyal ,policyInvestment);
+        argumentsInvestment.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), policyInvestment.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
+        argumentsInvestment.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), policyInvestment.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
+        argumentsInvestment.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), policyInvestment.get(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue()));
+        argumentsInvestment.put(RBVDProperties.FIELD_POLICY_ID.getValue(), policyInvestment.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()));
+        argumentsInvestment.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), null);
+        argumentsInvestment.put(RBVDProperties.FIELD_PREMIUM_CURRENCY_ID.getValue(), null);
+        argumentsInvestment.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(), null);
+        argumentsInvestment.put(RBVDProperties.FIELD_INSRC_CO_RTURN_AMOUNT_CCY_ID.getValue(), null);
+        InsurerRefundCancellationDTO insurerRefundDTO = input.getInsurerRefund();
+        if (nonNull(insurerRefundDTO)) {
+            if (RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue().equals(insurerRefundDTO.getPaymentMethod().getContract().getContractType())) {
+                argumentsInvestment.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), insurerRefundDTO.getPaymentMethod().getContract().getId());
+            }
+            else if(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue().equals(insurerRefundDTO.getPaymentMethod().getContract().getContractType())) {
+                argumentsInvestment.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), insurerRefundDTO.getPaymentMethod().getContract().getNumber());
+            }
+        }
+        else {
+            argumentsInvestment.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), null);
+        }
+        argumentsInvestment.put(RBVDProperties.FIELD_REQUEST_TYPE.getValue(), "001");
+        return argumentsInvestment;
+    }
+
+    public boolean executeRescueCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, Boolean isRoyal) {
+        LOGGER.info("***** CancellationRequestImpl - executeRescueCancellationRequest - begin");
+        Map<String, Object> responseGetRequestCancellationId = pisdR103.executeGetRequestCancellationId();
+        LOGGER.info("***** CancellationRequestImpl - executeRescueCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
+        BigDecimal requestCancellationId = (BigDecimal) responseGetRequestCancellationId.get(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue());
+        Map<String, Object> argumentsForSaveRequestCancellation = mapInRequestCancellationRescue(requestCancellationId, input, isRoyal, policy);
+        LOGGER.info("***** CancellationRequestImpl - executeRescueCancellationRequest - argumentsForSaveRequestCancellation: {}", argumentsForSaveRequestCancellation);
+        int isInserted = pisdR103.executeSaveRequestCancellationInvestment(argumentsForSaveRequestCancellation);
+        LOGGER.info("***** CancellationRequestImpl - executeRescueCancellationRequest - isInserted: {}", isInserted);
+        Map<String, Object> argumentsForSaveRequestCancellationMov = mapInRequestCancellationMov(requestCancellationId, input, RBVDConstants.MOV_BAJ, 1);
+        LOGGER.info("***** CancellationRequestImpl - executeRescueCancellationRequest - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
+        int isInsertedMov = pisdR103.executeSaveInsuranceRequestCancellationMov(argumentsForSaveRequestCancellationMov);
+        LOGGER.info("***** CancellationRequestImpl - executeRescueCancellationRequest - isInsertedMov: {}", isInsertedMov);
+        return true;
+    }
 
     private Map<String, Object> mapRequestCancellationArguments(BigDecimal requestCancellationId, InputParametersPolicyCancellationDTO input, Map<String, Object> policy,
-                                                         CancelationSimulationPayloadBO cancellationSimulationResponse, ICF2Response icf2Response, boolean isRoyal) {
+                                                                CancelationSimulationPayloadBO cancellationSimulationResponse, ICF2Response icf2Response, boolean isRoyal) {
         Map<String, Object> commonArguments = mapInRequestCancellationCommonFields(requestCancellationId, input, isRoyal, policy);
         Map<String, Object> arguments = new HashMap<>(commonArguments);
         if(!isStartDateTodayOrAfterToday(isRoyal, policy)){
@@ -224,6 +268,12 @@ public class CancellationRequestImpl {
         String massiveProduct = Arrays.stream(massiveProductsList).filter(product ->
                 product.equals(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()))).findFirst().orElse(null);
         return massiveProduct != null;
+    }
+    public String conversor(String currency) {
+        if(currency.equalsIgnoreCase(RBVDConstants.CURRENCY_SOL)) {
+            currency = ConstantsUtil.CURRENCY_PEN;
+        }
+        return currency;
     }
 
     public void setRbvdR311(RBVDR311 rbvdR311){

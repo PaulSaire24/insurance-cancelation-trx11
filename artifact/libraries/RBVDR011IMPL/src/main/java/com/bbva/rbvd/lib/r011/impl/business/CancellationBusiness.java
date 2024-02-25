@@ -6,13 +6,17 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
-import com.bbva.rbvd.dto.insurancecancelation.bo.ContratanteBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationRescuePayloadBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.ContratanteBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.BankAccountBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolizaBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.rescue.RescueInversionBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
@@ -21,6 +25,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.dao.BaseDAO;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
+import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -31,8 +36,13 @@ import org.springframework.util.CollectionUtils;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
-
+import java.util.Map;
+import java.util.Objects;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Calendar;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isOpenCancellationRequest;
 
@@ -61,9 +71,9 @@ public class CancellationBusiness extends AbstractLibrary {
         LOGGER.info("***** RBVDR011Impl - cancelPolicy: Policy cancellation start");
 
         // CONSULTA PARA OBTENER DATOS DE LA TABLA DE SOLICITUDES DE CANCELACIÓN
-        Map<String, Object> cancellationRequest = baseDAO.executeGetRequestCancellation(input);
+        Map<String, Object> cancellationRequest = getRequestCancellationRequest(input, policy, isRoyal, productCode);
 
-        EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response);
+        EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response, productCode, isRoyal);
         if (out == null) return null;
         if (!isRoyal) return validatePolicy(out);
 
@@ -73,7 +83,7 @@ public class CancellationBusiness extends AbstractLibrary {
             return null;
         }
 
-        if(!executeCancellationRequestMov(input)){
+        if(!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode) && !executeCancellationRequestMov(input)){
             this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
             return null;
         }
@@ -128,22 +138,24 @@ public class CancellationBusiness extends AbstractLibrary {
         String channelCode = input.getChannelId();
         String isChannelEndoso = Arrays.stream(channelCancelation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
         String userCode = input.getUserId();
-
-        executeRimacCancellation(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email);
-
+        executeRimacCancellationType(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email);
         validateResponse(out, policyId);
         LOGGER.info("***** RBVDR011Impl - cancelPolicy - PRODUCTO ROYAL ***** Response: {}", out);
         LOGGER.info("***** RBVDR011Impl - cancelPolicy END *****");
         return out;
     }
 
+    private Map<String, Object> getRequestCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, String productCode) {
+        if(productCode.equals(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT)){
+            cancellationRequestImpl.executeRescueCancellationRequest(input, policy, isRoyal);
+        }
+        return baseDAO.executeGetRequestCancellation(input);
+    }
+
     private EntityOutPolicyCancellationDTO validateCancellationType(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest,
-                                                                    Map<String, Object> policy, ICF2Response icf2Response)
-    {
-
-
-        if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
-            return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response);
+                                                                    Map<String, Object> policy, ICF2Response icf2Response, String productCode, Boolean isRoyal) {
+        if (!END_OF_VALIDATY.name().equals(input.getCancellationType()) || productCode.equals(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT)) {
+            return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, productCode);
         }else{
             boolean icr4RespondsOk = this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_END_OF_VALIDITY,"08"));
             if(!icr4RespondsOk) {
@@ -171,6 +183,51 @@ public class CancellationBusiness extends AbstractLibrary {
             return isInsertedMov == 1;
         }
         return false;
+    }
+
+    private void executeRimacCancellationType(InputParametersPolicyCancellationDTO input, String policyId, String productCode, String isChannelEndoso, String userCode, Map<String, Object> cancellationRequest, String email) {
+        if(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)){
+            executeRescueCancellationRimac(input,policyId, productCode);
+        }
+        else{
+            executeRimacCancellation(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email);
+        }
+    }
+    private void executeRescueCancellationRimac(InputParametersPolicyCancellationDTO input, String policyId ,String productCode){
+        InputRimacBO inputRimac = new InputRimacBO();
+        inputRimac.setTraceId(input.getTraceId());
+        inputRimac.setNumeroPoliza(Integer.parseInt(policyId));
+        inputRimac.setCodProducto(productCode);
+        Date date = input.getCancellationDate().getTime();
+        DateFormat dateFormat = new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD);
+        String strDate = dateFormat.format(date);
+        RescueInversionBO polizaRescue = new RescueInversionBO();
+        CancelationRescuePayloadBO cancelPayload = new CancelationRescuePayloadBO();
+        ContratanteBO contratante = new ContratanteBO();
+        BankAccountBO cuentaBancaria = new BankAccountBO();
+
+        polizaRescue.setFechaSolicitud(strDate);
+        String email = "";
+        if (input.getNotifications() != null
+                && !input.getNotifications().getContactDetails().isEmpty()
+                && input.getNotifications().getContactDetails().get(0).getContact() != null) {
+            email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
+        }
+        contratante.setCorreo(email);
+        contratante.setEnvioElectronico("S");
+        ContractCancellationDTO contractReturn = input.getInsurerRefund().getPaymentMethod().getContract();
+        cuentaBancaria.setTipoCuenta("A");
+        if(contractReturn.getId().substring(10,12).equals("01")){
+            cuentaBancaria.setTipoCuenta("C");
+        }
+        cuentaBancaria.setNumeroCuenta(contractReturn.getId());
+        cuentaBancaria.setTipoMoneda(this.applicationConfigurationService.getProperty("cancellation.rescue.currency"));
+        cuentaBancaria.setRazonSocialBanco(this.applicationConfigurationService.getProperty("cancellation.rescue.bank.name"));
+        contratante.setCuentaBancaria(cuentaBancaria);
+        cancelPayload.setPoliza(polizaRescue);
+        cancelPayload.setContratante(contratante);
+
+        rbvdR311.executeRescueCancelationRimac(inputRimac, cancelPayload);
     }
 
     private void executeRimacCancellation(InputParametersPolicyCancellationDTO input, String policyId, String productCode,
