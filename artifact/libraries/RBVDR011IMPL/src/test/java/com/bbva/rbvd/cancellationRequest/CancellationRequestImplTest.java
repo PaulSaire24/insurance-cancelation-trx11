@@ -166,6 +166,54 @@ public class CancellationRequestImplTest {
     }
 
     @Test
+    public void validateExecuteRescueCancellationRequest(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
+        Map<String, Object> policy = buildPolicyMap();
+        when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
+        boolean validate = cancellationRequestImpl.executeRescueCancellationRequest(input, policy, true);
+        assertTrue(validate);
+
+        input.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue());
+        input.getInsurerRefund().getPaymentMethod().getContract().getProductType().setId(RBVDConstants.TAG_ACCOUNT);
+        input.getInsurerRefund().getPaymentMethod().getContract().setId("00110130220210452319");
+    }
+
+    @Test
+    public void validateExecuteRescueCancellationRequestExternal(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
+        Map<String, Object> policy = buildPolicyMap();
+        input.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue());
+        input.getInsurerRefund().getPaymentMethod().getContract().setNumber("00110130220110452319");
+        when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
+        boolean validate = cancellationRequestImpl.executeRescueCancellationRequest(input, policy, true);
+        assertTrue(validate);
+    }
+
+    @Test
+    public void validateExecuteRescueCancellationRequestNullInsurer(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
+        Map<String, Object> policy = buildPolicyMap();
+        input.setInsurerRefund(null);
+        when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
+        boolean validate = cancellationRequestImpl.executeRescueCancellationRequest(input, policy, true);
+        assertTrue(validate);
+    }
+
+    @Test
+    public void validateExecuteRescueCancellationRequestNotContractType(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
+        Map<String, Object> policy = buildPolicyMap();
+        input.getInsurerRefund().getPaymentMethod().getContract().setContractType("NOTFOUND");
+        when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
+        boolean validate = cancellationRequestImpl.executeRescueCancellationRequest(input, policy, true);
+        assertTrue(validate);
+    }
+
+    @Test
     public void validateExecuteGetRequestCancellationMovLast(){
         when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(buildOpenRequestCancellationMovLastOpen());
         Map<String, Object> validate = cancellationRequestImpl.executeGetRequestCancellationMovLast("00110176584000189190");
@@ -286,7 +334,7 @@ public class CancellationRequestImplTest {
     public static CancelationSimulationPayloadBO buildCancelationSimulationResponse(){
         CancelationSimulationPayloadBO response = new CancelationSimulationPayloadBO();
         response.setFechaAnulacion(Calendar.getInstance().getTime());
-        response.setMoneda("PEN");
+        response.setMoneda("SOL");
         response.setMonto(15.00);
         DatoParticularBO cuenta = new DatoParticularBO();
         cuenta.setValor("1234****1234|15.00|PEN");

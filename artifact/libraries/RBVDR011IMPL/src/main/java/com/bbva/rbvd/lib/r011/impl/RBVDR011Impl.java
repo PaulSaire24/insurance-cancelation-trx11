@@ -21,7 +21,6 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 
-import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.INMEDIATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isStartDateTodayOrAfterToday;
 
@@ -64,7 +63,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 				this.applicationConfigurationService, this.icf3Connection, this.icr4Connection, this.cancellationRequestImpl);
 
 		//Validar si se trata de una nueva solicitud de cancelación
-		if (this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal)) {
+		if (!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac) && this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal)) {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - new cancellation request *****");
 			//Registrar la solicitud de cancelación
 			if (!this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response, policyId, productCodeForRimac)) {
@@ -107,12 +106,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		boolean isAPXCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty(flagCancellationRequest));
 		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - isAPXCancellationRequest: {}", isAPXCancellationRequest);
 		return isAPXCancellationRequest;
-	}
-
-	private void validateResponse(EntityOutPolicyCancellationDTO out, String policyId) {
-		if (out.getId() == null) {
-			out.setId(policyId);
-		}
 	}
 
 	private Map<String, Object> getPolicyInsuranceData(boolean isRoyal, Map<String, Object> policy, ICF2Response icf2Response){

@@ -91,7 +91,7 @@
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR103</artifactId>
-			<version>0.5.8</version>
+			<version>0.5.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>

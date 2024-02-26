@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
+import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.obtainInsurerRefundAccountOrCard;
 
 public class BaseDAO {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseDAO.class);
@@ -124,6 +125,7 @@ public class BaseDAO {
         //actualizar policy annulation date y request status name de la solicitud de acuerdo al tipo de cancelación escogido
         arguments.put(RBVDProperties.FIELD_REQUEST_STATUS_NAME.getValue(), input.getCancellationType());
         arguments.put(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue(), cancellationRequest.get(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue()));
+        arguments.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), obtainInsurerRefundAccountOrCard(input));
 
         Integer result = this.pisdR103.executeUpdateCancellationRequest(mappingPolicyAnnulationDate(input, arguments, cancellationRequest));
 

@@ -12,6 +12,7 @@ import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParameters
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
+import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import com.bbva.rbvd.lib.r051.RBVDR051;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +35,10 @@ public class ICF3Connection {
     protected RBVDR051 rbvdR051;
 
     public EntityOutPolicyCancellationDTO executeICF3Transaction(InputParametersPolicyCancellationDTO input,
-                                                                        Map<String, Object> cancellationRequest, Map<String, Object> policy,
-                                                                        ICF2Response icf2Response) {
+                                                                 Map<String, Object> cancellationRequest, Map<String, Object> policy,
+                                                                 ICF2Response icf2Response, String productCode) {
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - Start");
-        ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy, icf2Response);
+        ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy, icf2Response, productCode);
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - ICF3Request: {}", icf3DTORequest);
         ICF3Response icf3Response = rbvdR051.executePolicyCancellation(icf3DTORequest);
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - ICF3Response: {}", icf3Response);
@@ -50,7 +51,7 @@ public class ICF3Connection {
         return mapICF3Response(input, icf3Response, cancellationRequest);
     }
 
-    public ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response){
+    public ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response, String productCode){
         ICF3Request icf3DTORequest = new ICF3Request();
         icf3DTORequest.setNUMCER(input.getContractId());
         Date date = getCancellationDate(cancellationRequest, input);
@@ -86,9 +87,13 @@ public class ICF3Connection {
             icf3DTORequest.setPRODRI(icf2Response.getIcmf1S2().getCODPROD());
         }
 
-        icf3DTORequest.setINDDEV(RBVDConstants.TAG_S);
-        icf3DTORequest.setCTAADEV(obtainInsurerRefundAccountOrCard(input));
-
+        if(!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
+            icf3DTORequest.setINDDEV(RBVDConstants.TAG_S);
+            icf3DTORequest.setCTAADEV(obtainInsurerRefundAccountOrCard(input));
+        }
+        else {
+            icf3DTORequest.setINDDEV(RBVDConstants.TAG_N);
+        }
         return icf3DTORequest;
     }
 
