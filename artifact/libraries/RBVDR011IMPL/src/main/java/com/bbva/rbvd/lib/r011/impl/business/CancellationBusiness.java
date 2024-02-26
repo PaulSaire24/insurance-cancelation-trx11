@@ -29,6 +29,7 @@ import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,8 +110,11 @@ public class CancellationBusiness extends AbstractLibrary {
         baseDAO.executeSaveContractMovement(input, movementType, statusId);
 
         if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
-                && input.getNotifications().getContactDetails().get(0).getContact() != null) {
+                && input.getNotifications().getContactDetails().get(0).getContact() != null
+                && !StringUtils.isEmpty(input.getNotifications().getContactDetails().get(0).getContact().getAddress())) {
             email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
+        } else {
+            email = out.getNotifications().getContactDetails().get(0).getContact().getAddress();
         }
 
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
