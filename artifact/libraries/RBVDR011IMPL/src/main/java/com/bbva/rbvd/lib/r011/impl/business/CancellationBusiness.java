@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r011.impl.business;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
@@ -138,7 +139,14 @@ public class CancellationBusiness extends AbstractLibrary {
         String channelCode = input.getChannelId();
         String isChannelEndoso = Arrays.stream(channelCancelation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
         String userCode = input.getUserId();
-        executeRimacCancellationType(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email);
+
+        try {
+            executeRimacCancellationType(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email);
+        } catch (BusinessException exception) {
+            this.addAdviceWithDescription(exception.getAdviceCode(), exception.getMessage());
+            return null;
+        }
+
         validateResponse(out, policyId);
         LOGGER.info("***** RBVDR011Impl - cancelPolicy - PRODUCTO ROYAL ***** Response: {}", out);
         LOGGER.info("***** RBVDR011Impl - cancelPolicy END *****");
