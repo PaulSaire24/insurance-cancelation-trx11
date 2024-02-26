@@ -21,11 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Date;
-import java.util.Arrays;
+import java.util.*;
 
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;

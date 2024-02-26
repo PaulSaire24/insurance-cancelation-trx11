@@ -6,6 +6,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 
 import org.apache.commons.lang.StringUtils;
+import org.omg.CORBA.StringHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class ValidationUtil {
     }
 
     public static boolean isActiveStatusId(Object statusId) {
-        return statusId != null && !RBVDConstants.TAG_ANU.equals(statusId.toString()) && !RBVDConstants.TAG_BAJ.equals(statusId.toString());
+        return statusId != null && RBVDConstants.TAG_FOR.equals(statusId.toString());
     }
 
     public static Boolean validateStartDate(String startDatePolicy){
@@ -85,7 +86,7 @@ public class ValidationUtil {
     }
 
     public static boolean isRetainedOrNotExistsCancellationRequest(Map<String, Object> requestCancellationMovLast) {
-        if (requestCancellationMovLast != null) {
+        if (requestCancellationMovLast != null ) {
             String statusId = requestCancellationMovLast.get(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue()).toString();
             LOGGER.info("***** CancellationRequestImpl - isRetainedCancellationRequest - requestCancellationMovLast -> statusId: {}", statusId);
             return RBVDConstants.MOV_RET.equals(statusId);
