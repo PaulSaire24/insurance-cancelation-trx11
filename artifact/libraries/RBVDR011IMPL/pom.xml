@@ -86,12 +86,12 @@
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR100</artifactId>
-			<version>0.10.16</version>
+			<version>0.10.18</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR103</artifactId>
-			<version>0.5.9</version>
+			<version>0.5.10</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
