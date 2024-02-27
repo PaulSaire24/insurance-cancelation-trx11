@@ -113,9 +113,12 @@ public class CancellationBusiness extends AbstractLibrary {
                 && input.getNotifications().getContactDetails().get(0).getContact() != null
                 && !StringUtils.isEmpty(input.getNotifications().getContactDetails().get(0).getContact().getAddress())) {
             email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
-        } else {
+        } else if(out.getNotifications() != null){
             email = out.getNotifications().getContactDetails().get(0).getContact().getAddress();
+        } else {
+            email = this.applicationConfigurationService.getProperty("default.cancellation.email");
         }
+
 
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType())) {
             // INSERTA UN REGISTRO EN LA TABLA DE CONTRATOS CANCELADOS

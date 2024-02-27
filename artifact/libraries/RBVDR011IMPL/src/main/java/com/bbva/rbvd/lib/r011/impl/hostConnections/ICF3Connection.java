@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r011.impl.hostConnections;
 
+import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
@@ -28,7 +29,7 @@ import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.validateEmailCont
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.obtainInsurerRefundAccountOrCard;
 import static java.util.Objects.nonNull;
 
-public class ICF3Connection {
+public class ICF3Connection extends AbstractLibrary {
     private static final Logger LOGGER = LoggerFactory.getLogger(ICF3Connection.class);
     protected RBVDR051 rbvdR051;
 
@@ -43,6 +44,7 @@ public class ICF3Connection {
 
         if (icf3Response.getHostAdviceCode() != null) {
             LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - Error at icf3 execution - Host advice code: {}", icf3Response.getHostAdviceCode());
+            this.addAdviceWithDescription("RBVD00000170", icf3Response.getHostMessage());
             return null;
         }
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - End");
@@ -129,7 +131,7 @@ public class ICF3Connection {
         exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
         output.setExchangeRate(exchangeRateDTO);
 
-        if(icf3Response.getIcmf3s0().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3)) {
+        if(icf3Response.getIcmf3s0().getTIPCONT() != null && icf3Response.getIcmf3s0().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3)) {
             output.setNotifications(new NotificationsDTO());
             output.getNotifications().setContactDetails(new ArrayList<>());
 
@@ -139,6 +141,8 @@ public class ICF3Connection {
             contactDetailDTO.getContact().setAddress(icf3Response.getIcmf3s0().getDESCONT());
 
             output.getNotifications().getContactDetails().add(contactDetailDTO);
+        } else {
+            output.setNotifications(null);
         }
 
         return output;
