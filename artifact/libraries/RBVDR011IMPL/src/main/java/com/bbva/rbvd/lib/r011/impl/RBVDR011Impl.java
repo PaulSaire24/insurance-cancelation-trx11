@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
@@ -39,6 +40,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		if (input.getCancellationType() == null) input.setCancellationType(INMEDIATE.name());
 
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
+		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - Policy: {} *****", policy);
 		isRoyal = policy != null;
 
 		if (isStartDateTodayOrAfterToday(isRoyal, policy)) {
@@ -108,7 +110,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		sb.append(".");
 		sb.append(channelId.toLowerCase());
 		sb.append(".");
-		sb.append(policy.get(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue()).toString().toLowerCase());
+		sb.append(Optional.ofNullable(policy.get(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue())).map(Object::toString).orElse(StringUtils.EMPTY).toLowerCase());
 		String flagCancellationRequest = sb.toString();
 		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - property: {}", flagCancellationRequest);
 		boolean isAPXCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty(flagCancellationRequest));
