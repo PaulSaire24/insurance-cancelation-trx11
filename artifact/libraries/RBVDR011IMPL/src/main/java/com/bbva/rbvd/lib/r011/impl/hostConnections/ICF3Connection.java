@@ -4,7 +4,14 @@ import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
-import com.bbva.rbvd.dto.insurancecancelation.commons.*;
+
+import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
@@ -131,7 +138,8 @@ public class ICF3Connection extends AbstractLibrary {
         exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
         output.setExchangeRate(exchangeRateDTO);
 
-        if(icf3Response.getIcmf3s0().getTIPCONT() != null && icf3Response.getIcmf3s0().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3)) {
+        if(icf3Response.getIcmf3s0().getTIPCONT() != null &&
+                icf3Response.getIcmf3s0().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3)) {
             output.setNotifications(new NotificationsDTO());
             output.getNotifications().setContactDetails(new ArrayList<>());
 
