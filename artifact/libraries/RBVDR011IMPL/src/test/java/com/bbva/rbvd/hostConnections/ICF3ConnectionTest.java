@@ -7,6 +7,7 @@ import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection;
 import com.bbva.rbvd.lib.r051.RBVDR051;
 import org.junit.Before;
@@ -45,6 +46,32 @@ public class ICF3ConnectionTest {
         EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
         assertNotNull(out);
     }
+
+    @Test
+    public void validateExecuteICF3TransactionOk2(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        Map<String, Object> policy = buildPolicyMap();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
+        ICF3Response icf3Response = new ICF3Response();
+        ICMF3S0 icmf3s0 = new ICMF3S0();
+        icmf3s0.setIDSTCAN("1");
+        icmf3s0.setDESSTCA("OK");
+        icmf3s0.setIMDECIA(0);
+        icmf3s0.setIMPCLIE(0);
+        icmf3s0.setTIPCAMB(0);
+        icmf3s0.setFETIPCA("2023-11-03");
+        icmf3s0.setDESSTCA("COMPLETED");
+        icmf3s0.setTIPCONT(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3);
+        icmf3s0.setDESCONT("SACARBAJAL@BBVA.COM");
+        icf3Response.setIcmf3s0(icmf3s0);
+        icf3Response.setHostAdviceCode(null);
+
+        when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        assertNotNull(out);
+    }
+
     @Test
     public void validateExecuteICF3TransactionOkWithNull(){
         InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
