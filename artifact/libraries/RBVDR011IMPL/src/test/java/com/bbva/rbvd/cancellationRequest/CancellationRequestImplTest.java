@@ -228,7 +228,7 @@ public class CancellationRequestImplTest {
         GenericIndicatorDTO reason = new GenericIndicatorDTO();
         reason.setId("01");
         input.setReason(reason);
-        input.setCancellationType("IMMEDIATE");
+        input.setCancellationType("INMEDIATE");
         input.setCancellationDate(Calendar.getInstance());
         input.setNotifications(new NotificationsDTO());
         input.getNotifications().setContactDetails(new ArrayList<>());
@@ -259,7 +259,7 @@ public class CancellationRequestImplTest {
         GenericIndicatorDTO reason = new GenericIndicatorDTO();
         reason.setId("01");
         input.setReason(reason);
-        input.setCancellationType("IMMEDIATE");
+        input.setCancellationType("INMEDIATE");
         input.setCancellationDate(Calendar.getInstance());
         input.setIsRefund(true);
         input.setInsurerRefund(new InsurerRefundCancellationDTO());
@@ -280,7 +280,7 @@ public class CancellationRequestImplTest {
         GenericIndicatorDTO reason = new GenericIndicatorDTO();
         reason.setId("01");
         input.setReason(reason);
-        input.setCancellationType("IMMEDIATE");
+        input.setCancellationType("INMEDIATE");
         input.setCancellationDate(Calendar.getInstance());
         input.setNotifications(new NotificationsDTO());
         input.getNotifications().setContactDetails(new ArrayList<>());
@@ -297,7 +297,7 @@ public class CancellationRequestImplTest {
         GenericIndicatorDTO reason = new GenericIndicatorDTO();
         reason.setId("01");
         input.setReason(reason);
-        input.setCancellationType("IMMEDIATE");
+        input.setCancellationType("INMEDIATE");
         input.setCancellationDate(Calendar.getInstance());
         input.setIsRefund(true);
         input.setInsurerRefund(new InsurerRefundCancellationDTO());
@@ -318,7 +318,7 @@ public class CancellationRequestImplTest {
         GenericIndicatorDTO reason = new GenericIndicatorDTO();
         reason.setId("01");
         input.setReason(reason);
-        input.setCancellationType("IMMEDIATE");
+        input.setCancellationType("INMEDIATE");
         input.setCancellationDate(Calendar.getInstance());
         input.setIsRefund(true);
         input.setInsurerRefund(new InsurerRefundCancellationDTO());
