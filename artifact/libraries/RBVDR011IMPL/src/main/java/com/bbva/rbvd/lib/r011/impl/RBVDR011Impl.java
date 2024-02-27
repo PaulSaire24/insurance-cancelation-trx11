@@ -76,12 +76,12 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		}
 
 		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
-		if (isAPXCancellationRequest(productId, input.getChannelId()) &&
-				!isStartDateTodayOrAfterToday(isRoyal, policy) && !input.getCancellationType().equals(INMEDIATE.name())) {
-			//Retornar respuesta con estado PENDIENTE
-			return mapRetentionResponse(policyId, input, RBVDConstants.MOV_PEN, RBVDConstants.TAG_PENDING, input.getCancellationDate());
-		} else { //Seguir el flujo de cancelación
+
+		if ((input.getCancellationType().equals(INMEDIATE.name()) && isAPXCancellationRequest(productId, input.getChannelId(), policy)) || isStartDateTodayOrAfterToday(isRoyal, policy)) {
 			return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal);
+		}
+		else {
+			return mapRetentionResponse(policyId, input, RBVDConstants.MOV_PEN, RBVDConstants.TAG_PENDING, input.getCancellationDate());
 		}
 	}
 
@@ -100,8 +100,16 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return entityOutPolicyCancellationDTO;
 	}
 
-	private boolean isAPXCancellationRequest(String insuranceProductId, String channelId) {
-		String flagCancellationRequest = RBVDConstants.CANCELLATION_REQUEST.concat(StringUtils.defaultString(insuranceProductId)).concat(".").concat(channelId.toLowerCase());
+	private boolean isAPXCancellationRequest(String insuranceProductId, String channelId, Map<String, Object> policy) {
+		if (policy == null) return false;
+		StringBuilder sb = new StringBuilder();
+		sb.append(RBVDConstants.CANCELLATION_REQUEST);
+		sb.append(StringUtils.defaultString(insuranceProductId));
+		sb.append(".");
+		sb.append(channelId.toLowerCase());
+		sb.append(".");
+		sb.append(policy.get(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue()).toString().toLowerCase());
+		String flagCancellationRequest = sb.toString();
 		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - property: {}", flagCancellationRequest);
 		boolean isAPXCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty(flagCancellationRequest));
 		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - isAPXCancellationRequest: {}", isAPXCancellationRequest);
