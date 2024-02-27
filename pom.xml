@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>elara-project</artifactId>
 		<groupId>com.bbva.elara</groupId>
-		<version>7.9.6</version>
+		<version>7.11.8</version>
 	</parent>
 	<artifactId>insurance-cancelation-trx11</artifactId>
 	<groupId>com.bbva.rbvd</groupId>
@@ -13,7 +13,7 @@
 	<name>insurance-cancelation-trx11</name>
 	<description>Deployment unit insurance-cancelation-trx11 of uuaa rbvd</description>
 	<properties>
-		<apx.core.online.version>7.9.6</apx.core.online.version>
+		<apx.core.online.version>7.11.8</apx.core.online.version>
 		<outputDirectoryDTOs>../../../target/dtos</outputDirectoryDTOs>
 		<outputDirectoryLibraries>../../../target/libraries</outputDirectoryLibraries>
 		<outputDirectoryTransactions>../../../target/transactions</outputDirectoryTransactions>

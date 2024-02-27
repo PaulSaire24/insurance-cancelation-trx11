@@ -3,9 +3,31 @@
 		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 	<bean id="rbvdR011" class="com.bbva.rbvd.lib.r011.impl.RBVDR011Impl" parent="rbvdR011Abstract">
 		<property name="pisdR100" ref="pisdR100"/>
-		<property name="rbvdR012" ref="rbvdR012"/>
-		<property name="rbvdR003" ref="rbvdR003"/>
 		<property name="pisdR103" ref="pisdR103"/>
 		<property name="rbvdR042" ref="rbvdR042"/>
+		<property name="rbvdR051" ref="rbvdR051"/>
+		<property name="rbvdR311" ref="rbvdR311"/>
+		<property name="pisdR401" ref="pisdR401"/>
+		<property name="rbvdR310" ref="rbvdR310"/>
+		<property name="cancellationRequestImpl" ref="cancellationRequestImpl"/>
+		<property name="icr4Connection" ref="icr4Connection"/>
+		<property name="icf2Connection" ref="icf2Connection"/>
+		<property name="icf3Connection" ref="icf3Connection"/>
+	</bean>
+	<bean id="cancellationRequestImpl" class="com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl">
+		<property name="rbvdR311" ref="rbvdR311"/>
+		<property name="pisdR103" ref="pisdR103"/>
+		<property name="pisdR100" ref="pisdR100"/>
+		<property name="icr4Connection" ref="icr4Connection"/>
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+	</bean>
+	<bean id="icr4Connection" class="com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection">
+		<property name="rbvdR042" ref="rbvdR042"/>
+	</bean>
+	<bean id="icf2Connection" class="com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection">
+		<property name="rbvdR310" ref="rbvdR310"/>
+	</bean>
+	<bean id="icf3Connection" class="com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection">
+		<property name="rbvdR051" ref="rbvdR051"/>
 	</bean>
 </beans>

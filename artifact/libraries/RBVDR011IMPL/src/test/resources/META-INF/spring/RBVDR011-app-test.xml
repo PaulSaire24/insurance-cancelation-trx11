@@ -4,16 +4,34 @@
 	<bean id="pisdR100" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r100.PISDR100"/>
 	</bean>
-	<bean id="rbvdR012" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.rbvd.lib.r012.RBVDR012"/>
-	</bean>
-	<bean id="rbvdR003" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.rbvd.lib.r003.RBVDR003"/>
-	</bean>
 	<bean id="pisdR103" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r103.PISDR103"/>
 	</bean>
 	<bean id="rbvdR042" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r042.RBVDR042"/>
+	</bean>
+	<bean id="rbvdR051" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r051.RBVDR051"/>
+	</bean>
+	<bean id="rbvdR311" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r311.RBVDR311"/>
+	</bean>
+	<bean id="pisdR401" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.pisd.lib.r401.PISDR401"/>
+	</bean>
+	<bean id="rbvdR310" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r310.RBVDR310"/>
+	</bean>
+	<bean id="cancellationRequestImpl" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl"/>
+	</bean>
+	<bean id="icr4Connection" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection"/>
+	</bean>
+	<bean id="icf2Connection" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection"/>
+	</bean>
+	<bean id="icf3Connection" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection"/>
 	</bean>
 </beans>

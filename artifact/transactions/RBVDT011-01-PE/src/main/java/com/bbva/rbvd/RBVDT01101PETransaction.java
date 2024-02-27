@@ -28,10 +28,13 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 		input.setTransactionId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.TRANSACTIONCODE));
 		input.setUserId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE));
 		input.setCancellationType(this.getCancellationtype());
+		if(this.getIsrefund() != null) {input.setIsRefund(this.getIsrefund());}
+		else{input.setIsRefund(true);}
 		input.setContractId(this.getInsuranceContractId());
 		input.setReason(this.getReason());
 		input.setNotifications(this.getNotifications());
 		input.setCancellationDate(this.getCancellationdate());
+		if(this.getInsurerrefund() != null) input.setInsurerRefund(this.getInsurerrefund());
 		LOGGER.info("input: {}", input);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		if (validation == null) {

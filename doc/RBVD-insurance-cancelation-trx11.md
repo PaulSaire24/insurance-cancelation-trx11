@@ -62,21 +62,12 @@ Orientada a realizar la lógica de negocio de la transacción RBVDT011.
 
 - **Método executePolicyCancellation(InputParametersPolicyCancellationDTO input)**: Método para mapear datos de salida de la transacción.
   - Avisos a retornar: -
-
-#### 3.1.2. Librería RBVDR012
-Orientada a consumir el servicio interno "createInsuranceContractCancellations" haciendo uso de la cabecera "BCS-Operation-Tracer" para acceder al backend host ICF3.
-También consume el servicio externo de Rimac "cancelar".
-
-- **Método executeCancelPolicyHost(String contractId, Calendar cancellationDate, GenericIndicatorDTO reason, NotificationsDTO notifications)**: Método para ejecutar una cancelación de póliza por parte de host.
-  - Avisos a retornar: RBVD00000107, RBVD00000133, RBVD00000135, RBVD00000139, RBVD00000143, RBVD00000144, RBVD00000145 y RBVD00000146.
-- **Método executeCancelPolicyRimac(InputRimacBO input, PolicyCancellationPayloadBO inputPayload)**: Método para ejecutar una cancelación de póliza por parte de Rimac.
-  - Avisos a retornar: RBVD00000102, RBVD00000126 y RBVD00000127
   
 ### 3.2. Librerías Externas
 En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
-
-- **Librería PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
-  - Metodos reutilizados: executeSignatureConstruction().
+- 
+- **Librería PISDR311**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_RBVD_APP-ID-105529_DSG/repos/lib_insurance_cancellation/browse/doc/DOC.md?at=refs%2Fheads%2Frelease%2F0.10)
+  - Metodos reutilizados: executeCancelPolicyRimac(), executeSimulateCancelationRimac().
 - **Librería PISDR100**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib100/browse/doc/PISD_APX_Library_PISDR100.md?at=refs%2Fheads%2Frelease%2F0.5)
   - Metodos reutilizados: executeGetPolicyNumber(), executeSaveContractMovement(), executeSaveContractCancellation(), executeUpdateContractStatus().
 - **Librería RBVDR003**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_RBVD_APP-ID-105529_DSG/repos/insurance-cancelation-lib3/browse/doc/RBVD_APX_Library_RBVDR003.md?at=refs%2Fheads%2Frelease%2F0.2)
