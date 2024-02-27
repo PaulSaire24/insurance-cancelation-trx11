@@ -1,12 +1,17 @@
 package com.bbva.rbvd.lib.r011.impl.hostConnections;
 
+import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
+
 import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
@@ -20,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -30,7 +36,7 @@ import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.validateEmailCont
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.obtainInsurerRefundAccountOrCard;
 import static java.util.Objects.nonNull;
 
-public class ICF3Connection {
+public class ICF3Connection extends AbstractLibrary {
     private static final Logger LOGGER = LoggerFactory.getLogger(ICF3Connection.class);
     protected RBVDR051 rbvdR051;
 
@@ -45,6 +51,7 @@ public class ICF3Connection {
 
         if (icf3Response.getHostAdviceCode() != null) {
             LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - Error at icf3 execution - Host advice code: {}", icf3Response.getHostAdviceCode());
+            this.addAdviceWithDescription("RBVD00000170", icf3Response.getHostMessage());
             return null;
         }
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - End");
@@ -112,7 +119,6 @@ public class ICF3Connection {
         reason.setId(icf3Response.getIcmf3s0().getCODMOCA());
         reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
         output.setReason(reason);
-        output.setNotifications(input.getNotifications());
         InsurerRefundCancellationDTO insurerRefund = new InsurerRefundCancellationDTO();
         insurerRefund.setAmount(icf3Response.getIcmf3s0().getIMDECIA());
         insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
@@ -131,6 +137,22 @@ public class ICF3Connection {
         exchangeRateDTO.setValue(icf3Response.getIcmf3s0().getTIPCAMB());
         exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
         output.setExchangeRate(exchangeRateDTO);
+
+        if(icf3Response.getIcmf3s0().getTIPCONT() != null &&
+                icf3Response.getIcmf3s0().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3)) {
+            output.setNotifications(new NotificationsDTO());
+            output.getNotifications().setContactDetails(new ArrayList<>());
+
+            ContactDetailDTO contactDetailDTO = new ContactDetailDTO();
+            contactDetailDTO.setContact(new GenericContactDTO());
+            contactDetailDTO.getContact().setContactDetailType(icf3Response.getIcmf3s0().getTIPCONT());
+            contactDetailDTO.getContact().setAddress(icf3Response.getIcmf3s0().getDESCONT());
+
+            output.getNotifications().getContactDetails().add(contactDetailDTO);
+        } else {
+            output.setNotifications(null);
+        }
+
         return output;
     }
 
