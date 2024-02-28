@@ -79,7 +79,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
 
-		if ((input.getCancellationType().equals(INMEDIATE.name()) && isAPXCancellationRequest(productId, input.getChannelId(), policy)) || isStartDateTodayOrAfterToday(isRoyal, policy)) {
+		if ((input.getCancellationType().equals(INMEDIATE.name()) && !isAPXCancellationRequest(productId, input.getChannelId(), policy)) || isStartDateTodayOrAfterToday(isRoyal, policy)) {
 			return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal);
 		}
 		else {
