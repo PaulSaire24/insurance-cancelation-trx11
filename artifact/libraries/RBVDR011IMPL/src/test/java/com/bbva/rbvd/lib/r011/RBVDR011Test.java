@@ -328,7 +328,7 @@ public class RBVDR011Test {
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(null);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
-		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("TRUE");
+		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("true").thenReturn("TRUE");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNotNull(validation);
@@ -374,7 +374,7 @@ public class RBVDR011Test {
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3MappedResponse);
-		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("TRUE");
+		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("true");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNull(validation);
@@ -446,7 +446,7 @@ public class RBVDR011Test {
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3MappedResponse);
-		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("true");
+		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("true");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNull(validation);
@@ -463,7 +463,7 @@ public class RBVDR011Test {
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
 		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
-		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false").thenReturn("true");
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true").thenReturn("true");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNotNull(validation);
