@@ -18,6 +18,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
 import com.bbva.rbvd.lib.r311.RBVDR311;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -107,7 +108,7 @@ public class CancellationRequestImplTest {
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
         when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
         when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
-        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, "123456", "1121");
+        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, payload);
         assertTrue(validate);
     }
 
@@ -120,7 +121,7 @@ public class CancellationRequestImplTest {
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
         when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
         when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
-        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, "123456", "1121");
+        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, payload);
         assertTrue(validate);
     }
 
@@ -134,7 +135,7 @@ public class CancellationRequestImplTest {
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
         when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
         when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
-        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, "123456", "1121");
+        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, payload);
         assertTrue(validate);
     }
 
@@ -149,7 +150,7 @@ public class CancellationRequestImplTest {
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
         when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
         when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
-        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, "123456", "1121");
+        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, true, null, payload);
         assertTrue(validate);
     }
 
@@ -162,7 +163,7 @@ public class CancellationRequestImplTest {
         ICF2Response icf2Response = buildICF2ResponseOk();
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
         when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
-        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, false, icf2Response, "123456", "1121");
+        boolean validate = cancellationRequestImpl.executeFirstCancellationRequest(input, policy, false, icf2Response, null);
         assertTrue(validate);
     }
 
@@ -219,6 +220,53 @@ public class CancellationRequestImplTest {
         when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(buildOpenRequestCancellationMovLastOpen());
         Map<String, Object> validate = cancellationRequestImpl.executeGetRequestCancellationMovLast("00110176584000189190");
         assertNotNull(validate);
+    }
+
+    @Test
+    public void getCancellationSimulationResponseRoyalOk(){
+        boolean isRoyal = true;
+        Map<String, Object> policy = buildPolicyMap();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        String policyId = "123";
+        String productCodeForRimac = "123";
+
+        CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
+        when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
+
+        CancelationSimulationPayloadBO cancelationSimulationPayloadBO = cancellationRequestImpl.getCancellationSimulationResponse(isRoyal, policy, input, policyId, productCodeForRimac);
+
+        assertNotNull(cancelationSimulationPayloadBO);
+    }
+
+    @Test
+    public void getCancellationSimulationResponseRoyalRimacNullOk(){
+        boolean isRoyal = true;
+        Map<String, Object> policy = buildPolicyMap();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        String policyId = "123";
+        String productCodeForRimac = "123";
+
+        when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(null);
+
+        CancelationSimulationPayloadBO cancelationSimulationPayloadBO = cancellationRequestImpl.getCancellationSimulationResponse(isRoyal, policy, input, policyId, productCodeForRimac);
+
+        assertNull(cancelationSimulationPayloadBO);
+    }
+
+    @Test
+    public void getCancellationSimulationResponseNoRoyalOk(){
+        boolean isRoyal = false;
+        Map<String, Object> policy = buildPolicyMap();
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+        String policyId = "123";
+        String productCodeForRimac = "123";
+
+        CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
+        when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
+
+        CancelationSimulationPayloadBO cancelationSimulationPayloadBO = cancellationRequestImpl.getCancellationSimulationResponse(isRoyal, policy, input, policyId, productCodeForRimac);
+
+        assertNull(cancelationSimulationPayloadBO);
     }
 
     public static InputParametersPolicyCancellationDTO buildImmediateCancellationInput_EmailContactAndPhoneContact(){

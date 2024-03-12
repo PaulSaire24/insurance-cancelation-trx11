@@ -86,19 +86,9 @@ public class CancellationRequestImpl {
         pisdR100.executeUpdateContractStatusAndAnnulationDate(arguments);
         LOGGER.info("***** CancellationRequestImpl - updateContractStatusToPendingAndPolicyAnnulationDate - newContractStatus: {}", RBVDConstants.TAG_PEN);
     }
-    public boolean executeFirstCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
-                                                   String policyId, String productCodeForRimac) {
+    public boolean executeFirstCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response, CancelationSimulationPayloadBO cancellationSimulationResponse) {
         LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - begin");
         if (!this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_CANCELLATION_REQUEST,RBVDConstants.TAG_CANCELLATION_PENDING_HOST_STATUS))) return false;
-
-        CancelationSimulationPayloadBO cancellationSimulationResponse = null;
-
-        if(!isStartDateTodayOrAfterToday(isRoyal, policy)){
-            InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCodeForRimac);
-            cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
-            if(cancellationSimulationResponse == null) return false;
-            cancellationSimulationResponse.setMoneda(conversor(cancellationSimulationResponse.getMoneda()));
-        }
 
         Map<String, Object> responseGetRequestCancellationId = pisdR103.executeGetRequestCancellationId();
         LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
@@ -182,8 +172,8 @@ public class CancellationRequestImpl {
                 arguments.put(RBVDProperties.FIELD_REQUEST_STATUS_NAME.getValue(), END_OF_VALIDATY.name());
             }else arguments.put(RBVDProperties.FIELD_REQUEST_STATUS_NAME.getValue(), input.getCancellationType());
         }else{
-            String DEFAULT_PRODUCT_ID = "0";
-            Object productId = Optional.ofNullable(policy).map(x -> x.getOrDefault(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), DEFAULT_PRODUCT_ID)).orElse(DEFAULT_PRODUCT_ID);
+            String defaultProductId = applicationConfigurationService.getDefaultProperty("cancellation.default.host.productId", RBVDConstants.TAG_0);
+            Object productId = Optional.ofNullable(policy).map(x -> x.getOrDefault(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), defaultProductId)).orElse(defaultProductId);
             arguments.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), productId);
             arguments.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), null);
             arguments.put(RBVDProperties.FIELD_POLICY_ID.getValue(), null);
@@ -247,7 +237,7 @@ public class CancellationRequestImpl {
         return arguments;
     }
 
-    private InputRimacBO buildRimacSimulationRequest(InputParametersPolicyCancellationDTO input, String policyId, String productCodeForRimac){
+    public InputRimacBO buildRimacSimulationRequest(InputParametersPolicyCancellationDTO input, String policyId, String productCodeForRimac){
         LOGGER.info("***** RBVDR011Impl - buildRimacSimulationRequest - Begin *****");
 
         InputRimacBO rimacSimulationRequest = new InputRimacBO();
@@ -272,6 +262,17 @@ public class CancellationRequestImpl {
             currency = ConstantsUtil.CURRENCY_PEN;
         }
         return currency;
+    }
+
+    public CancelationSimulationPayloadBO getCancellationSimulationResponse(boolean isRoyal, Map<String, Object> policy, InputParametersPolicyCancellationDTO input, String policyId, String productCodeForRimac){
+        CancelationSimulationPayloadBO cancellationSimulationResponse = null;
+        if (!isStartDateTodayOrAfterToday(isRoyal, policy)){
+            InputRimacBO rimacSimulationRequest = buildRimacSimulationRequest(input, policyId, productCodeForRimac);
+            cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
+            if(cancellationSimulationResponse != null) cancellationSimulationResponse.setMoneda(conversor(cancellationSimulationResponse.getMoneda()));
+        }
+
+        return cancellationSimulationResponse;
     }
 
     public void setRbvdR311(RBVDR311 rbvdR311){

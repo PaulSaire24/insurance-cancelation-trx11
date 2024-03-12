@@ -1,6 +1,8 @@
 package com.bbva.rbvd.lib.r011.impl;
 
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
+import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
+import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.lib.r011.impl.business.CancellationBusiness;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import java.util.Calendar;
@@ -35,9 +37,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation Params: {} *****", input);
 		boolean isRoyal;
 		ICF2Response icf2Response = null;
+		boolean isCancellationLegacyFlow = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty("cancellation.legacy.flow"));
 
-		if (input.getCancellationDate() == null) input.setCancellationDate(Calendar.getInstance());
-		if (input.getCancellationType() == null) input.setCancellationType(INMEDIATE.name());
+		setInputToDefault(input);
 
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - Policy: {} *****", policy);
@@ -63,12 +65,15 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		CancellationBusiness cancellationBusiness = new CancellationBusiness(this.pisdR103, this.pisdR100, this.rbvdR311,
 				this.applicationConfigurationService, this.icf3Connection, this.icr4Connection, this.cancellationRequestImpl);
+		cancellationBusiness.setCancellationLegacyFlow(isCancellationLegacyFlow);
 
 		//Validar si se trata de una nueva solicitud de cancelación
-		if (!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac) && this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal)) {
+		if (!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac) && (isCancellationLegacyFlow || this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal))) {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - new cancellation request *****");
-			//Registrar la solicitud de cancelación
-			if (!this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response, policyId, productCodeForRimac)) {
+			CancelationSimulationPayloadBO cancellationSimulationResponse = this.cancellationRequestImpl.getCancellationSimulationResponse(isRoyal, policy, input, policyId, productCodeForRimac);
+			cancellationBusiness.setCancellationSimulationResponse(cancellationSimulationResponse);
+			//Registrar la solicitud de cancelación solo en caso de no seguir el flujo legacy
+			if (!isCancellationLegacyFlow && !this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response, cancellationSimulationResponse)) {
 				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 				return null;
 			}
@@ -77,9 +82,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal);
 		}
 
-		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
-
-		if ((input.getCancellationType().equals(INMEDIATE.name()) && !isAPXCancellationRequest(productId, input.getChannelId(), policy)) || isStartDateTodayOrAfterToday(isRoyal, policy)) {
+		if (isCancellation(isCancellationLegacyFlow, input, productId, policy, isRoyal)) {
 			return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal);
 		}
 		else {
@@ -159,5 +162,15 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		String shortDesc= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC), "");
 		if(isLifeProduct(businessName)) return shortDesc;
 		else return companyProductCode;
+	}
+
+	private void setInputToDefault(InputParametersPolicyCancellationDTO input){
+		if (input.getCancellationDate() == null) input.setCancellationDate(Calendar.getInstance());
+		if (input.getCancellationType() == null) input.setCancellationType(INMEDIATE.name());
+	}
+
+	private boolean isCancellation(boolean isCancellationLegacyFlow, InputParametersPolicyCancellationDTO input, String productId, Map<String, Object> policy, boolean isRoyal){
+		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
+		return isCancellationLegacyFlow || (input.getCancellationType().equals(INMEDIATE.name()) && !isAPXCancellationRequest(productId, input.getChannelId(), policy)) || isStartDateTodayOrAfterToday(isRoyal, policy);
 	}
 }

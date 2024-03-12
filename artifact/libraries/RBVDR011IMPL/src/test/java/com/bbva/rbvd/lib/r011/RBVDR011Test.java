@@ -6,6 +6,7 @@ import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DA
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -13,6 +14,8 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,6 +36,7 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.DatoParticularBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.*;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection;
@@ -42,6 +46,7 @@ import com.bbva.rbvd.lib.r042.RBVDR042;
 import com.bbva.rbvd.lib.r051.RBVDR051;
 import com.bbva.rbvd.lib.r310.RBVDR310;
 import com.bbva.rbvd.lib.r311.RBVDR311;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -176,6 +181,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(applicationConfigurationService.getProperty("cancellation.request.01.pc")).thenReturn("false");
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn(",");
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		when(icf3Connection.executeICF3Transaction(anyObject(),anyMap(), anyMap(), anyObject(), anyString())).thenReturn(null);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
@@ -195,6 +201,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(applicationConfigurationService.getProperty("cancellation.request.01.pc")).thenReturn("false");
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn(",");
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		when(icf3Connection.executeICF3Transaction(anyObject(),anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3Response);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
@@ -214,6 +221,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(applicationConfigurationService.getProperty("cancellation.request.01.pc")).thenReturn("false");
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn(",");
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		when(icf3Connection.executeICF3Transaction(anyObject(),anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3Response);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
@@ -253,6 +261,8 @@ public class RBVDR011Test {
 		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
 		EntityOutPolicyCancellationDTO icf3MappedResponse = buildInsuranceCancellationResponseOk();
 		ICF2Response icf2Response = buildICF2ResponseOk();
+		PolicyCancellationPayloadBO policyCancellationPayloadBO = new PolicyCancellationPayloadBO();
+		policyCancellationPayloadBO.setAutorizarRetiro(RBVDConstants.TAG_S);
 
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
 		List<Advice> advices = new ArrayList<>();
@@ -262,15 +272,105 @@ public class RBVDR011Test {
 		when(spyRbvdR011.getAdviceList()).thenReturn(advices);
 		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
-		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(policyCancellationPayloadBO);
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		when(applicationConfigurationService.getProperty("cancellation.request.01.pc")).thenReturn("false");
+		when(applicationConfigurationService.getProperty("cancellation.legacy.flow")).thenReturn("false");
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, null, false)).thenReturn(false);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3MappedResponse);
 		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
 		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 	}
+
+	@Test
+	public void executeImmediateNoRoyalPolicyCancellationNoProductCode(){
+		LOGGER.info("PISDR011Test - Executing executeImmediateNoRoyalPolicyCancellationTestOK...");
+
+		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
+		ICF2Response icf2Response = buildICF2ResponseOk();
+		icf2Response.getIcmf1S2().setPRODRI(null);
+
+		when(applicationConfigurationService.getProperty("cancellation.legacy.flow")).thenReturn("false");
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
+		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
+		when(cancellationRequestImpl.validateNewCancellationRequest(input, null, false)).thenReturn(false);
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
+
+		assertNull(validation);
+		assertTrue(spyRbvdR011.getAdviceList().stream().anyMatch(x -> x.getCode().equals(RBVDErrors.ERROR_INVALID_INPUT_SIMULATECANCELATION.getAdviceCode())));
+	}
+
+	@Test
+	public void executeImmediateNoRoyalPolicyCancellationRimacFailed(){
+		LOGGER.info("PISDR011Test - Executing executeImmediateNoRoyalPolicyCancellationTestOK...");
+
+		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
+		ICF2Response icf2Response = buildICF2ResponseOk();
+
+		when(applicationConfigurationService.getProperty("cancellation.legacy.flow")).thenReturn("false");
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
+		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
+		when(cancellationRequestImpl.validateNewCancellationRequest(input, null, false)).thenReturn(false);
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(null);
+		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
+
+		assertNull(validation);
+		assertTrue(spyRbvdR011.getAdviceList().stream().anyMatch(x -> x.getCode().equals(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_RIMAC.getAdviceCode())));
+	}
+
+	@Test
+	public void executeImmediateNoRoyalPolicyCancellationRimacNotAuthorizedCancellation(){
+		LOGGER.info("PISDR011Test - Executing executeImmediateNoRoyalPolicyCancellationTestOK...");
+
+		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
+		ICF2Response icf2Response = buildICF2ResponseOk();
+		PolicyCancellationPayloadBO policyCancellationPayloadBO = new PolicyCancellationPayloadBO();
+		policyCancellationPayloadBO.setAutorizarRetiro("N");
+
+		when(applicationConfigurationService.getProperty("cancellation.legacy.flow")).thenReturn("false");
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
+		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
+		when(cancellationRequestImpl.validateNewCancellationRequest(input, null, false)).thenReturn(false);
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(policyCancellationPayloadBO);
+		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
+
+		assertNull(validation);
+		assertTrue(spyRbvdR011.getAdviceList().stream().anyMatch(x -> x.getCode().equals(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_RIMAC.getAdviceCode())));
+	}
+
+	@Test
+	public void executeImmediateNoRoyalPolicyCancellationRimacTestOk(){
+		LOGGER.info("PISDR011Test - Executing executeImmediateNoRoyalPolicyCancellationTestOK...");
+
+		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
+		ICF2Response icf2Response = buildICF2ResponseOk();
+		PolicyCancellationPayloadBO policyCancellationPayloadBO = new PolicyCancellationPayloadBO();
+		policyCancellationPayloadBO.setAutorizarRetiro(RBVDConstants.TAG_S);
+
+		when(applicationConfigurationService.getProperty("cancellation.legacy.flow")).thenReturn("false");
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
+		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
+		when(cancellationRequestImpl.validateNewCancellationRequest(input, null, false)).thenReturn(false);
+		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(policyCancellationPayloadBO);
+		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
+
+		assertNull(validation);
+	}
+
+
 	@Test
 	public void executePolicyCancellationTestOK_Refund(){
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestOK_Refund...");
@@ -304,7 +404,7 @@ public class RBVDR011Test {
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLast.get(0));
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
@@ -324,11 +424,10 @@ public class RBVDR011Test {
 
 		executeCancellationBDoperationsOk(null, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(null);
-		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
-		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("true").thenReturn("TRUE");
+		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("true").thenReturn("TRUE");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNotNull(validation);
@@ -348,7 +447,7 @@ public class RBVDR011Test {
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLast.get(0));
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3MappedResponse);
@@ -370,11 +469,10 @@ public class RBVDR011Test {
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLast.get(0));
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
-		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3MappedResponse);
-		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("true");
+		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("false").thenReturn("true");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNull(validation);
@@ -393,8 +491,8 @@ public class RBVDR011Test {
 		executeCancellationBDoperationsOk(requestCancellationMovLastOpen, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLastOpen.get(0));
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
-		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false").thenReturn("true");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3MappedResponse);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
@@ -418,7 +516,7 @@ public class RBVDR011Test {
 		executeCancellationBDoperationsOk(requestCancellationMovLastOpen, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLastOpen.get(0));
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		when(applicationConfigurationService.getProperty("cancellation.request.1.pc")).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
@@ -441,12 +539,11 @@ public class RBVDR011Test {
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(null);
-		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3MappedResponse);
-		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("true");
+		when(this.applicationConfigurationService.getProperty(Mockito.anyString())).thenReturn("false").thenReturn("false").thenReturn("true");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNull(validation);
@@ -462,8 +559,8 @@ public class RBVDR011Test {
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
-		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true").thenReturn("true");
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false").thenReturn("true").thenReturn("true");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 
 		assertNotNull(validation);
@@ -489,7 +586,7 @@ public class RBVDR011Test {
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyObject())).thenReturn(mapp);
@@ -512,7 +609,7 @@ public class RBVDR011Test {
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLast.get(0));
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
@@ -536,7 +633,7 @@ public class RBVDR011Test {
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
-		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyString(), anyString())).thenReturn(false);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(false);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLast.get(0));
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("false");
 		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
@@ -579,6 +676,8 @@ public class RBVDR011Test {
 		List<Map<String, Object>> requestCancellationMovLast = buildOpenRequestCancellationMovLastOpen();
 		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
 		EntityOutPolicyCancellationDTO icf3Response = new EntityOutPolicyCancellationDTO();
+		PolicyCancellationPayloadBO policyCancellationPayloadBO = new PolicyCancellationPayloadBO();
+		policyCancellationPayloadBO.setAutorizarRetiro(RBVDConstants.TAG_S);
 		List<Advice> advices = new ArrayList<>();
 		Advice advice = new Advice();
 		advices.add(advice);
@@ -592,8 +691,9 @@ public class RBVDR011Test {
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, false)).thenReturn(false);
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(icf3Response);
 		when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
-		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(policyCancellationPayloadBO);
 		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyString())).thenReturn(requestCancellationMovLast.get(0));
+		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(buildICF2Response());
 		EntityOutPolicyCancellationDTO validation = spyRbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 	}
@@ -706,6 +806,78 @@ public class RBVDR011Test {
 		when(applicationConfigurationService.getProperty("cancellation.request.01.pc")).thenReturn("false");
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+	}
+
+	@Test
+	public void executePolicyCancellationTodayLegacyOk(){
+		LOGGER.info("PISDR011Test - Executing executeOnlyCancellationRequestForRoyalOk_WithoutCancellationType...");
+		Map<String, Object> policy = buildPolicyMap();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue(), LocalDateTime.now().format(formatter));
+		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
+		List<Map<String, Object>> requestCancellationMovLast = buildOpenRequestCancellationMovLastOpen();
+		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+		input.setCancellationType(null);
+
+		Map<String, Object> mapp = new HashMap<>();
+		mapp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
+		mapp.put(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue(), "733");
+		mapp.put(RBVDProperties.FIELD_ADDITIONAL_DATA_DESC.getValue(), "descripcion");
+		mapp.put(RBVDProperties.FIELD_SEQ_MOV_NUMBER.getValue(), "122");
+
+		Map<String, Object> mappp = new HashMap<>();
+		mappp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
+		ICF2Response icf2Response = buildICF2Response();
+
+		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
+		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
+		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
+		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyObject())).thenReturn(mapp);
+		when(cancellationRequestImpl.mapInRequestCancellationMov(anyObject(), anyObject(), anyString(), anyInt())).thenReturn(mappp);
+		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
+		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
+
+		assertNotNull(validation);
+	}
+
+
+	@Test
+	public void executePolicyCancellationTodayLegacyICF2FailedOk(){
+		LOGGER.info("PISDR011Test - Executing executeOnlyCancellationRequestForRoyalOk_WithoutCancellationType...");
+		Map<String, Object> policy = buildPolicyMap();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue(), LocalDateTime.now().format(formatter));
+		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
+		List<Map<String, Object>> requestCancellationMovLast = buildOpenRequestCancellationMovLastOpen();
+		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
+		input.setCancellationType(null);
+
+		Map<String, Object> mapp = new HashMap<>();
+		mapp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
+		mapp.put(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue(), "733");
+		mapp.put(RBVDProperties.FIELD_ADDITIONAL_DATA_DESC.getValue(), "descripcion");
+		mapp.put(RBVDProperties.FIELD_SEQ_MOV_NUMBER.getValue(), "122");
+
+		Map<String, Object> mappp = new HashMap<>();
+		mappp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
+		ICF2Response icf2Response = buildICF2Response();
+		icf2Response.setIcmf1S2(null);
+
+		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
+		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
+		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
+		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject())).thenReturn(true);
+		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
+		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(cancellationRequestImpl.executeGetRequestCancellationMovLast(anyObject())).thenReturn(mapp);
+		when(cancellationRequestImpl.mapInRequestCancellationMov(anyObject(), anyObject(), anyString(), anyInt())).thenReturn(mappp);
+		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
+		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
+
 		assertNotNull(validation);
 	}
 
@@ -910,6 +1082,24 @@ public class RBVDR011Test {
 		DatoParticularBO cuenta = new DatoParticularBO();
 		cuenta.setValor("TARJETA||***5085||PEN");
 		response.setCuenta(cuenta);
+		return response;
+	}
+
+	private ICF2Response buildICF2Response(){
+		ICF2Response response = new ICF2Response();
+
+		ICMF1S2 icmf1S2 = new ICMF1S2();
+		icmf1S2.setCODPROD("801");
+		icmf1S2.setIMPCLIE(15.00);
+		icmf1S2.setDIVIMC("PEN");
+		icmf1S2.setCODCLI("12345678");
+		icmf1S2.setIMPCOMI(5.00);
+		icmf1S2.setDIVDCIA("PEN");
+		icmf1S2.setPRODRI("00002121");
+		icmf1S2.setNUMPOL("0000000000");
+		icmf1S2.setTIPCONT("001");
+		icmf1S2.setDESCONT("test@email.com");
+		response.setIcmf1S2(icmf1S2);
 		return response;
 	}
 }
