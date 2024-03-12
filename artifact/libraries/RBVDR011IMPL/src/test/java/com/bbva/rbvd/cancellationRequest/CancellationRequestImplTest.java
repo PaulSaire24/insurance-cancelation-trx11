@@ -26,6 +26,7 @@ import java.util.*;
 
 import static com.bbva.rbvd.hostConnections.ICF2ConnectionTest.buildICF2ResponseOk;
 import static com.bbva.rbvd.lib.r011.RBVDR011Test.*;
+import static com.bbva.rbvd.lib.r011.RBVDR011Test.buildPolicyMap;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
 import static org.junit.Assert.*;
@@ -157,7 +158,7 @@ public class CancellationRequestImplTest {
     public void validateCancellationRequestRegisterForNoRoyalWithEmailContactOk(){
         InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
         Map<String, Object> responseGetRequestCancellationId = buildResponseGetRequestCancellationId();
-        Map<String, Object> policy = null;
+        Map<String, Object> policy = buildPolicyMap();
         ICF2Response icf2Response = buildICF2ResponseOk();
         when(icr4Connection.executeICR4Transaction(anyObject(), anyString())).thenReturn(true);
         when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);

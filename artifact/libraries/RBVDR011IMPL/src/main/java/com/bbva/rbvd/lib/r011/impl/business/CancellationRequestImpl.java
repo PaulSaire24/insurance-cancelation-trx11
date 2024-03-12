@@ -182,7 +182,9 @@ public class CancellationRequestImpl {
                 arguments.put(RBVDProperties.FIELD_REQUEST_STATUS_NAME.getValue(), END_OF_VALIDATY.name());
             }else arguments.put(RBVDProperties.FIELD_REQUEST_STATUS_NAME.getValue(), input.getCancellationType());
         }else{
-            arguments.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), icf2Response.getIcmf1S2().getCODPROD());
+            String DEFAULT_PRODUCT_ID = "0";
+            Object productId = Optional.ofNullable(policy).map(x -> x.getOrDefault(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), DEFAULT_PRODUCT_ID)).orElse(DEFAULT_PRODUCT_ID);
+            arguments.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), productId);
             arguments.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), null);
             arguments.put(RBVDProperties.FIELD_POLICY_ID.getValue(), null);
             arguments.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), icf2Response.getIcmf1S2().getIMPCLIE());
