@@ -3,6 +3,7 @@ package com.bbva.rbvd.hostConnections;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
+import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
@@ -20,6 +21,7 @@ import static com.bbva.rbvd.hostConnections.ICF2ConnectionTest.buildICF2Response
 import static com.bbva.rbvd.lib.r011.RBVDR011Test.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -43,7 +45,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -68,7 +70,7 @@ public class ICF3ConnectionTest {
         icf3Response.setHostAdviceCode(null);
 
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -80,7 +82,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationNull();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "VIDAINVERSION");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "VIDAINVERSION", null);
         assertNotNull(out);
     }
 
@@ -91,7 +93,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -103,7 +105,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -116,7 +118,7 @@ public class ICF3ConnectionTest {
         ICF3Response icf3Response = buildICF3ResponseOk();
         icf3Response.getIcmf3s0().setFETIPCA("");
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, null, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -127,7 +129,7 @@ public class ICF3ConnectionTest {
         ICF2Response icf2Response = buildICF2ResponseOk();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, null, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, null, policy, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -139,7 +141,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -151,7 +153,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -163,7 +165,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -175,7 +177,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNotNull(out);
     }
 
@@ -187,8 +189,17 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
         ICF3Response icf3Response = buildICF3ResponseOk();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNotNull(out);
+    }
+
+    @Test
+    public void buildICF3RequestOkWithoutAuthorizeReturnFlag(){
+        InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_WithAccountPaymentMethod();
+        ICF2Response icf2Response = buildICF2ResponseOk();
+        Map<String, Object> cancellationRequest = buildResponseGetRequestCancellationWithoutCancelPolicyDate();
+        ICF3Request icf3Request = icf3Connection.buildICF3Request(input, cancellationRequest, null, icf2Response, "", RBVDConstants.TAG_N);
+        assertEquals(icf3Request.getINDDEV(), RBVDConstants.TAG_N);
     }
 
     @Test
@@ -199,7 +210,7 @@ public class ICF3ConnectionTest {
         Map<String, Object> cancellationRequest = buildResponseGetRequestCancellation();
         ICF3Response icf3Response = buildICF3ResponseWithError();
         when(rbvdr051.executePolicyCancellation(anyObject())).thenReturn(icf3Response);
-        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "");
+        EntityOutPolicyCancellationDTO out = icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, "", null);
         assertNull(out);
     }
 

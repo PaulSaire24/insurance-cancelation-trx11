@@ -43,9 +43,9 @@ public class ICF3Connection extends AbstractLibrary {
 
     public EntityOutPolicyCancellationDTO executeICF3Transaction(InputParametersPolicyCancellationDTO input,
                                                                  Map<String, Object> cancellationRequest, Map<String, Object> policy,
-                                                                 ICF2Response icf2Response, String productCode) {
+                                                                 ICF2Response icf2Response, String productCode, String authorizeReturnFlag) {
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - Start");
-        ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy, icf2Response, productCode);
+        ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - ICF3Request: {}", icf3DTORequest);
         ICF3Response icf3Response = rbvdR051.executePolicyCancellation(icf3DTORequest);
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - ICF3Response: {}", icf3Response);
@@ -59,7 +59,7 @@ public class ICF3Connection extends AbstractLibrary {
         return mapICF3Response(input, icf3Response, cancellationRequest);
     }
 
-    public ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response, String productCode){
+    public ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response, String productCode, String authorizeReturnFlag){
         ICF3Request icf3DTORequest = new ICF3Request();
         icf3DTORequest.setNUMCER(input.getContractId());
         Date date = getCancellationDate(cancellationRequest, input);
@@ -95,12 +95,13 @@ public class ICF3Connection extends AbstractLibrary {
             icf3DTORequest.setPRODRI(icf2Response.getIcmf1S2().getCODPROD());
         }
 
+        if (authorizeReturnFlag == null) authorizeReturnFlag = RBVDConstants.TAG_S;
         if(!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
-            icf3DTORequest.setINDDEV(RBVDConstants.TAG_S);
+            icf3DTORequest.setINDDEV(authorizeReturnFlag);
             icf3DTORequest.setCTAADEV(obtainInsurerRefundAccountOrCard(input));
         }
         else {
-            icf3DTORequest.setINDDEV(RBVDConstants.TAG_N);
+            icf3DTORequest.setINDDEV(authorizeReturnFlag);
         }
         return icf3DTORequest;
     }

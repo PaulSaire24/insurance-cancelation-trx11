@@ -91,15 +91,14 @@ public class CancellationBusiness extends AbstractLibrary {
         String userCode = input.getUserId();
 
         String email = getEmailFromInput(input, null, icf2Response);
+        String authorizeReturnFlag = RBVDConstants.TAG_S;
 
         if (!isRoyal) {
             LOGGER.info("***** RBVDR011Impl - cancellationPolicy: No royal rimac cancellation");
-            if (!executeRimacCancellationType(input, icf2Response, isChannelEndoso, userCode, cancellationRequest, email)) {
-                return null;
-            }
+            authorizeReturnFlag = executeRimacCancellationType(input, icf2Response, isChannelEndoso, userCode, cancellationRequest, email);
         }
 
-        EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response, productCode);
+        EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
         if (out == null) return null;
         if (!isRoyal) return validatePolicy(out);
 
@@ -210,9 +209,9 @@ public class CancellationBusiness extends AbstractLibrary {
     }
 
     private EntityOutPolicyCancellationDTO validateCancellationType(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest,
-                                                                    Map<String, Object> policy, ICF2Response icf2Response, String productCode) {
+                                                                    Map<String, Object> policy, ICF2Response icf2Response, String productCode, String authorizeReturnFlag) {
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType()) || productCode.equals(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT)) {
-            return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, productCode);
+            return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
         }else{
             boolean icr4RespondsOk = this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_END_OF_VALIDITY,"08"));
             if(!icr4RespondsOk) {
@@ -242,49 +241,43 @@ public class CancellationBusiness extends AbstractLibrary {
         return false;
     }
 
-    private boolean executeRimacCancellationType(InputParametersPolicyCancellationDTO input, ICF2Response icf2Response, String isChannelEndoso, String userCode, Map<String, Object> cancellationRequest, String email){
+    private String executeRimacCancellationType(InputParametersPolicyCancellationDTO input, ICF2Response icf2Response, String isChannelEndoso, String userCode, Map<String, Object> cancellationRequest, String email){
 
         if (icf2Response == null || icf2Response.getIcmf1S2() == null || icf2Response.getIcmf1S2().getPRODRI() == null || icf2Response.getIcmf1S2().getNUMPOL() == null){
             LOGGER.info("***** RBVDR011Impl - executeRimacCancellationType - icf2Response has missing data {}", icf2Response);
             this.addAdvice(RBVDErrors.ERROR_INVALID_INPUT_SIMULATECANCELATION.getAdviceCode());
-            return false;
+            return null;
         }
 
-        boolean successfulExecution = executeRimacCancellationType(input, icf2Response.getIcmf1S2().getNUMPOL() ,icf2Response.getIcmf1S2().getPRODRI(), isChannelEndoso, userCode, cancellationRequest, email);
+        String authorizationFlag = executeRimacCancellationType(input, icf2Response.getIcmf1S2().getNUMPOL() ,icf2Response.getIcmf1S2().getPRODRI(), isChannelEndoso, userCode, cancellationRequest, email);
 
-        if (!successfulExecution) {
+        if (authorizationFlag == null) {
             this.addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_RIMAC.getAdviceCode()); // RBVD00000134
-            return false;
         }
 
-        return true;
+        return authorizationFlag;
     }
 
-    private boolean executeRimacCancellationType(InputParametersPolicyCancellationDTO input, String policyId, String productCode, String isChannelEndoso, String userCode, Map<String, Object> cancellationRequest, String email) {
+    private String executeRimacCancellationType(InputParametersPolicyCancellationDTO input, String policyId, String productCode, String isChannelEndoso, String userCode, Map<String, Object> cancellationRequest, String email) {
         try {
             if(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)){
                 executeRescueCancellationRimac(input,policyId, productCode);
-                return true;
+                return null;
             }
-            else{
-                return evaluateRimacResponse(executeRimacCancellation(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email), policyId);
-            }
+            return getAuthorizeReturnFlag(executeRimacCancellation(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email), policyId);
         } catch (BusinessException exception) {
             this.addAdviceWithDescription(exception.getAdviceCode(), exception.getMessage());
-            return false;
+            return null;
         }
     }
 
-    private boolean evaluateRimacResponse(PolicyCancellationPayloadBO policyCancellationPayloadBO, String policyId){
+    private String getAuthorizeReturnFlag(PolicyCancellationPayloadBO policyCancellationPayloadBO, String policyId){
         if (policyCancellationPayloadBO == null) {
             LOGGER.info("***** RBVDR011Impl - cancellationPolicy: Policy {} could not be cancelled by Rimac. Response was null", policyId);
-            return false;
-        } else if (policyCancellationPayloadBO.getAutorizarRetiro() == null || !policyCancellationPayloadBO.getAutorizarRetiro().equals(RBVDConstants.TAG_S)) {
-            LOGGER.info("***** RBVDR011Impl - cancellationPolicy: Policy {} could not be cancelled by Rimac. Authorization code was {}", policyId, policyCancellationPayloadBO.getAutorizador());
-            return false;
+            return null;
         }
 
-        return true;
+        return policyCancellationPayloadBO.getAutorizarRetiro();
     }
 
     private void executeRescueCancellationRimac(InputParametersPolicyCancellationDTO input, String policyId ,String productCode){
