@@ -48,6 +48,9 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 			this.setInsurerrefund(validation.getInsurerRefund());
 			this.setCustomerrefund(validation.getCustomerRefund());
 			this.setExchangerate(validation.getExchangeRate());
+			this.setCancellationtype(this.getCancellationtype());
+			if(this.getIsrefund() != null) {input.setIsRefund(this.getIsrefund());}
+			else{input.setIsRefund(true);}
 		}
 	}
 
