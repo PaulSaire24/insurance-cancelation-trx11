@@ -77,12 +77,7 @@ public class ICF3Connection extends AbstractLibrary {
             });
         }
 
-        if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue()) != null){
-            icf3DTORequest.setCOMRIMA(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue())).doubleValue());
-        }
-        if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue()) != null){
-            icf3DTORequest.setMONTDEV(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())).doubleValue());
-        }
+        mapAmountsToBeReturned(cancellationRequest, icf3DTORequest);
 
         icf3DTORequest.setNUMPOL("");
         if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()) != null){
@@ -104,6 +99,17 @@ public class ICF3Connection extends AbstractLibrary {
             icf3DTORequest.setINDDEV(authorizeReturnFlag);
         }
         return icf3DTORequest;
+    }
+
+    private void mapAmountsToBeReturned(Map<String, Object> cancellationRequest, ICF3Request icf3DTORequest) {
+        if(cancellationRequest != null ) {
+            if(cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue()) != null){
+                icf3DTORequest.setCOMRIMA(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue())).doubleValue());
+            }
+            if(cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue()) != null){
+                icf3DTORequest.setMONTDEV(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())).doubleValue());
+            }
+        }
     }
 
     public EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response, Map<String, Object> cancellationRequest){

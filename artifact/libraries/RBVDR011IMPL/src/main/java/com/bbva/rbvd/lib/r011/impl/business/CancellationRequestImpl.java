@@ -88,7 +88,13 @@ public class CancellationRequestImpl {
     }
     public boolean executeFirstCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response, CancelationSimulationPayloadBO cancellationSimulationResponse) {
         LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - begin");
-        if (!this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_CANCELLATION_REQUEST,RBVDConstants.TAG_CANCELLATION_PENDING_HOST_STATUS))) return false;
+
+        boolean result = true;
+        String status = this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_CANCELLATION_REQUEST,RBVDConstants.TAG_CANCELLATION_PENDING_HOST_STATUS);
+
+        if (!this.icr4Connection.executeICR4Transaction(input, status)) {
+            result = false;
+        }
 
         Map<String, Object> responseGetRequestCancellationId = pisdR103.executeGetRequestCancellationId();
         LOGGER.info("***** CancellationRequestImpl - executeFirstCancellationRequest - responseGetRequestCancellationId: {}", responseGetRequestCancellationId);
@@ -104,7 +110,7 @@ public class CancellationRequestImpl {
 
         if(isRoyal) updateContractStatusToPendingAndPolicyAnnulationDate(input, policy);
 
-        return true;
+        return result;
     }
     private Map<String, Object> mapInRequestCancellationRescue(BigDecimal requestCancellationId, InputParametersPolicyCancellationDTO input, Boolean isRoyal, Map<String, Object> policyInvestment) {
         Map<String, Object> argumentsInvestment = mapInRequestCancellationCommonFields(requestCancellationId, input,isRoyal ,policyInvestment);
