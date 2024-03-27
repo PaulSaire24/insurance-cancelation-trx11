@@ -84,10 +84,10 @@ public class CancellationBusiness extends AbstractLibrary {
 
         String listCancellation = this.applicationConfigurationService.getProperty(RBVDConstants.CANCELLATION_LIST_ENDOSO);
 
-        String[] channelCancelation = listCancellation.split(",");
+        String[] channelCancellation = listCancellation.split(",");
 
         String channelCode = input.getChannelId();
-        String isChannelEndoso = Arrays.stream(channelCancelation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
+        String isChannelEndoso = Arrays.stream(channelCancellation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
         String userCode = input.getUserId();
 
         String email = getEmailFromInput(input, null, icf2Response);

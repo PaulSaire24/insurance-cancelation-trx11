@@ -1,4 +1,4 @@
-package com.bbva.rbvd.lib.r011.impl.transform.map;
+package com.bbva.rbvd.lib.r011.impl.transform.bean;
 
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;

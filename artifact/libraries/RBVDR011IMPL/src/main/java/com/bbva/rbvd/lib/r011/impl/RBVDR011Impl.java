@@ -2,19 +2,14 @@ package com.bbva.rbvd.lib.r011.impl;
 
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
-import com.bbva.rbvd.dto.insurancecancelation.bo.InputRimacBO;
 import com.bbva.rbvd.lib.r011.impl.business.CancellationBusiness;
-import com.bbva.rbvd.lib.r011.impl.transform.map.CancellationBean;
-import com.bbva.rbvd.lib.r011.impl.transform.map.CancellationMap;
+import com.bbva.rbvd.lib.r011.impl.transform.bean.CancellationBean;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;

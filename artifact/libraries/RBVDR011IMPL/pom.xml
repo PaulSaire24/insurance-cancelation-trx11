@@ -118,6 +118,11 @@
 			<artifactId>RBVDR310</artifactId>
 			<version>0.2.7</version>
 		</dependency>
+		<dependency>
+			<groupId>com.bbva.rbvd</groupId>
+			<artifactId>RBVDR305</artifactId>
+			<version>0.1.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>

@@ -6,12 +6,9 @@ import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.lib.r011.RBVDR011;
-import com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl;
-import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF2Connection;
-import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection;
-import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
 import com.bbva.rbvd.lib.r042.RBVDR042;
 import com.bbva.rbvd.lib.r051.RBVDR051;
+import com.bbva.rbvd.lib.r305.RBVDR305;
 import com.bbva.rbvd.lib.r310.RBVDR310;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 
@@ -35,10 +32,9 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	protected PISDR401 pisdR401;
 
 	protected RBVDR310 rbvdR310;
-	protected CancellationRequestImpl cancellationRequestImpl;
-	protected ICF2Connection icf2Connection;
-	protected ICF3Connection icf3Connection;
-	protected ICR4Connection icr4Connection;
+
+	protected RBVDR305 rbvdR305;
+
 
 	/**
 	* @param applicationConfigurationService the this.applicationConfigurationService to set
@@ -96,19 +92,11 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 		this.rbvdR310 = rbvdR310;
 	}
 
-	public void setCancellationRequestImpl(CancellationRequestImpl cancellationRequestImpl) {
-		this.cancellationRequestImpl = cancellationRequestImpl;
+	/**
+	* @param rbvdR305 the this.rbvdR305 to set
+	*/
+	public void setRbvdR305(RBVDR305 rbvdR305) {
+		this.rbvdR305 = rbvdR305;
 	}
 
-	public void setIcf2Connection(ICF2Connection icf2Connection) {
-		this.icf2Connection = icf2Connection;
-	}
-
-	public void setIcf3Connection(ICF3Connection icf3Connection) {
-		this.icf3Connection = icf3Connection;
-	}
-
-	public void setIcr4Connection(ICR4Connection icr4Connection) {
-		this.icr4Connection = icr4Connection;
-	}
 }

@@ -34,4 +34,7 @@
 	<bean id="icf3Connection" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection"/>
 	</bean>
+	<bean id="rbvdR305" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r305.RBVDR305"/>
+	</bean>
 </beans>
