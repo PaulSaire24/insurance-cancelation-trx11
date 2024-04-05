@@ -25,23 +25,19 @@ import com.bbva.rbvd.lib.r011.impl.transform.map.NotificationMapper;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import com.bbva.rbvd.lib.r305.RBVDR305;
 import com.bbva.rbvd.lib.r311.RBVDR311;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Timestamp;
-import java.util.Map;
-import java.util.Objects;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.HashMap;
+import java.util.*;
 
-import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
+import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.*;
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isOpenCancellationRequest;
+import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isStartDateTodayOrAfterToday;
 
 public class CancellationBusiness extends AbstractLibrary {
 
@@ -297,6 +293,74 @@ public class CancellationBusiness extends AbstractLibrary {
             this.addAdviceWithDescription(exception.getAdviceCode(), exception.getMessage());
             return null;
         }
+    }
+
+    public EntityOutPolicyCancellationDTO executeFirstCancellationOrCancellationOrRetention (boolean isRoyal, Map<String, Object> policy, InputParametersPolicyCancellationDTO input, String policyId,
+                         ICF2Response icf2Response, String productCodeForRimac, boolean isNewCancellation, String insuranceProductId,
+                         String massiveProductsParameter, String email, CancellationBusiness cancellationBusiness, CancellationBean cancellationBean) {
+
+        /**
+         * IF   ( <si no> es un seguro VIDA_INVERSION  <Y>  <si> es el flujo legacy (defecto false) || <si> cumple validación para generar solicitud de cancelación )
+         * 			- Genera una solicitud de cancelación que viaja al Pool de retenciones
+         * ELSE
+         * 			- Ejecuta la cancelación al instante
+         */
+        if (!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac) && (isCancellationLegacyFlow || isNewCancellation)) {
+            LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - new cancellation request *****");
+
+            //Registrar la solicitud de cancelación solo en caso de no seguir el flujo legacy
+            if(!isCancellationLegacyFlow) {
+                boolean isRequestCancellation = this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response,
+                        cancellationSimulationResponse, massiveProductsParameter, email);
+
+                if (!isRequestCancellation) {
+                    this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
+                    return null;
+                }
+            }
+        } else {
+            return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal, massiveProductsParameter);
+        }
+
+
+        /**
+         * IF   ( si es el flujo legacy (defecto false)
+         * 					|| si es cancelación POR RECLAMO
+         * 					|| ( si es cancelación INMEDIATA <Y> si el FLag de canal -- producto -- frecuencia de pago es TRUE )  )
+         * 			- Ejecuta la cancelación al instante
+         * ELSE
+         * 			- Mapea los campos de salida, ya que solo se queda en una solicitud de cancelación
+         */
+        if (isCancellation(isCancellationLegacyFlow, input, insuranceProductId, policy)) {
+            return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal, massiveProductsParameter);
+        }
+        else {
+            return cancellationBean.mapRetentionResponse(policyId, input, RBVDConstants.MOV_PEN, RBVDConstants.TAG_PENDING, input.getCancellationDate());
+        }
+    }
+
+    private boolean isCancellation(boolean isCancellationLegacyFlow, InputParametersPolicyCancellationDTO input, String productId, Map<String, Object> policy) {
+        //Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
+
+        return isCancellationLegacyFlow || input.getCancellationType().equals(INMEDIATE.name()) ||
+                (input.getCancellationType().equals(APPLICATION_DATE.name()) && !isAPXCancellationRequest(productId, input.getChannelId(), policy)) ;
+    }
+
+    // FLag de canal -- producto -- frecuencia de pago
+    private boolean isAPXCancellationRequest(String insuranceProductId, String channelId, Map<String, Object> policy) {
+        if (policy == null) return false;
+        StringBuilder sb = new StringBuilder();
+        sb.append(RBVDConstants.CANCELLATION_REQUEST);
+        sb.append(org.apache.commons.lang.StringUtils.defaultString(insuranceProductId));
+        sb.append(".");
+        sb.append(channelId.toLowerCase());
+        sb.append(".");
+        sb.append(Optional.ofNullable(policy.get(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue())).map(Object::toString).orElse(StringUtils.EMPTY).toLowerCase());
+        String flagCancellationRequest = sb.toString();
+        LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - property: {}", flagCancellationRequest);
+        boolean isAPXCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty(flagCancellationRequest));
+        LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - isAPXCancellationRequest: {}", isAPXCancellationRequest);
+        return isAPXCancellationRequest;
     }
 
     private String getAuthorizeReturnFlag(PolicyCancellationPayloadBO policyCancellationPayloadBO, String policyId){
