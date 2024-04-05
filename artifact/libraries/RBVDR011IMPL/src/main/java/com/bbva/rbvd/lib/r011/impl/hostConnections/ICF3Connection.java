@@ -5,6 +5,7 @@ import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
 
+import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
@@ -42,9 +43,9 @@ public class ICF3Connection extends AbstractLibrary {
 
     public EntityOutPolicyCancellationDTO executeICF3Transaction(InputParametersPolicyCancellationDTO input,
                                                                  Map<String, Object> cancellationRequest, Map<String, Object> policy,
-                                                                 ICF2Response icf2Response, String productCode) {
+                                                                 ICF2Response icf2Response, String productCode, String authorizeReturnFlag) {
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - Start");
-        ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy, icf2Response, productCode);
+        ICF3Request icf3DTORequest = buildICF3Request(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - ICF3Request: {}", icf3DTORequest);
         ICF3Response icf3Response = rbvdR051.executePolicyCancellation(icf3DTORequest);
         LOGGER.info("***** RBVDR011Impl - executeICF3Transaction - ICF3Response: {}", icf3Response);
@@ -58,7 +59,7 @@ public class ICF3Connection extends AbstractLibrary {
         return mapICF3Response(input, icf3Response, cancellationRequest);
     }
 
-    public ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response, String productCode){
+    public ICF3Request buildICF3Request(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest, Map<String, Object> policy, ICF2Response icf2Response, String productCode, String authorizeReturnFlag){
         ICF3Request icf3DTORequest = new ICF3Request();
         icf3DTORequest.setNUMCER(input.getContractId());
         Date date = getCancellationDate(cancellationRequest, input);
@@ -76,12 +77,7 @@ public class ICF3Connection extends AbstractLibrary {
             });
         }
 
-        if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue()) != null){
-            icf3DTORequest.setCOMRIMA(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue())).doubleValue());
-        }
-        if(cancellationRequest != null && cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue()) != null){
-            icf3DTORequest.setMONTDEV(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())).doubleValue());
-        }
+        mapAmountsToBeReturned(cancellationRequest, icf3DTORequest);
 
         icf3DTORequest.setNUMPOL("");
         if(policy != null && policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()) != null){
@@ -94,23 +90,38 @@ public class ICF3Connection extends AbstractLibrary {
             icf3DTORequest.setPRODRI(icf2Response.getIcmf1S2().getCODPROD());
         }
 
+        if (authorizeReturnFlag == null) authorizeReturnFlag = RBVDConstants.TAG_S;
         if(!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
-            icf3DTORequest.setINDDEV(RBVDConstants.TAG_S);
+            icf3DTORequest.setINDDEV(authorizeReturnFlag);
             icf3DTORequest.setCTAADEV(obtainInsurerRefundAccountOrCard(input));
         }
         else {
-            icf3DTORequest.setINDDEV(RBVDConstants.TAG_N);
+            icf3DTORequest.setINDDEV(authorizeReturnFlag);
         }
         return icf3DTORequest;
     }
 
+    private void mapAmountsToBeReturned(Map<String, Object> cancellationRequest, ICF3Request icf3DTORequest) {
+        if(cancellationRequest != null ) {
+            if(cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue()) != null){
+                icf3DTORequest.setCOMRIMA(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue())).doubleValue());
+            }
+            if(cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue()) != null){
+                icf3DTORequest.setMONTDEV(((BigDecimal)cancellationRequest.get(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue())).doubleValue());
+            }
+        }
+    }
+
     public EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response, Map<String, Object> cancellationRequest){
         EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
-        output.setId(icf3Response.getIcmf3s0().getIDCANCE());
+
         GenericStatusDTO status = new GenericStatusDTO();
         status.setId(icf3Response.getIcmf3s0().getDESSTCA());
         status.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
+
+        output.setId(icf3Response.getIcmf3s0().getIDCANCE());
         output.setStatus(status);
+
         Calendar calendarTime = Calendar.getInstance();
         Date date = getCancellationDate(cancellationRequest, input);
         calendarTime.setTime(date);

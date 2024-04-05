@@ -1,16 +1,15 @@
 package com.bbva.rbvd.lib.r011.impl;
 
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
+import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.lib.r011.impl.business.CancellationBusiness;
+import com.bbva.rbvd.lib.r011.impl.service.api.RimacApi;
+import com.bbva.rbvd.lib.r011.impl.transform.bean.CancellationBean;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
+import java.util.*;
+
+import com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
@@ -22,6 +21,7 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 
+import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.INMEDIATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isStartDateTodayOrAfterToday;
 
@@ -31,18 +31,50 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
-		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation START *****");
-		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation Params: {} *****", input);
-		boolean isRoyal;
-		ICF2Response icf2Response = null;
-
+		LOGGER.info("RBVDR011Impl - executePolicyCancellation() - START || input: {}", input);
 		if (input.getCancellationDate() == null) input.setCancellationDate(Calendar.getInstance());
-		if (input.getCancellationType() == null) input.setCancellationType(INMEDIATE.name());
+		if (input.getCancellationType() == null) input.setCancellationType(APPLICATION_DATE.name());
 
+		// Flag que ejecuta el flujo anterior de la cancelación
+		boolean isCancellationLegacyFlow = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty("cancellation.legacy.flow"));
+		LOGGER.info("executePolicyCancellation() - Es el flujo legacy de cancelación?? : {}", ValidationUtil.validationLogger(isCancellationLegacyFlow));
+
+		CancellationBean cancellationBean = new CancellationBean(this.pisdR401, applicationConfigurationService);
+		CancellationBusiness cancellationBusiness = new CancellationBusiness(this.pisdR103, this.pisdR100, this.rbvdR311,
+				this.pisdR401, this.applicationConfigurationService, this.icf3Connection, this.icr4Connection, this.cancellationRequestImpl, this.rbvdR305);
+		cancellationBusiness.setCancellationLegacyFlow(isCancellationLegacyFlow);
+
+		// Objeto que guarda la simulación de Host o Rimac
+		ICF2Response icf2Response = null;
+		CancelationSimulationPayloadBO cancellationSimulationResponse = null;
+
+		String insuranceProductId = "";
+		String policyId = "";
+		String productCompanyId = "";
+		String productCodeForRimac = "";
+
+		// Busca la póliza en Oracle
 		Map<String, Object> policy = this.pisdR100.executeGetPolicyNumber(input.getContractId(), null);
-		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - Policy: {} *****", policy);
-		isRoyal = policy != null;
+		LOGGER.info("executePolicyCancellation() - datos del contrato: {} ", policy);
 
+		// FLag para saber si es un producto royal o no royal
+		boolean isRoyal = policy != null;
+		LOGGER.info("executePolicyCancellation - Es un seguro royal?? : {}", ValidationUtil.validationLogger(isRoyal));
+
+		// Valores a usar
+		if(isRoyal) {
+			insuranceProductId= Objects.toString(policy.get(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue()), "0");
+			policyId= Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
+			productCompanyId= Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
+			productCodeForRimac = cancellationBean.getProductCode(insuranceProductId, productCompanyId);
+		}
+
+		/**
+		 * IF   ( si es un <seguro no royal>  ||  si se intenta cancelar un seguro emitido en el dia <seguro royal> )
+		 * 			- Ejecuta la icf2 (Simulación en Host) para obtener los montos de devolución hacia el cliente
+		 * ELSE ( si es cancelación del dia d + 1 <seguro royal> )
+		 * 			- Ejecuta el servicio simulación de Rimac para obtener los montos de devolución hacia el cliente
+		 */
 		if (isStartDateTodayOrAfterToday(isRoyal, policy)) {
 			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - executeICF2Transaction begin *****");
 			icf2Response = this.icf2Connection.executeICF2Transaction(input);
@@ -51,113 +83,36 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
 				return null;
 			}
+
+			if(!isRoyal) {
+				insuranceProductId = Objects.toString(icf2Response.getIcmf1S2().getCODPROD(), "0");
+				policyId = Objects.toString(icf2Response.getIcmf1S2().getNUMPOL(), "0");
+				productCodeForRimac = Objects.toString(icf2Response.getIcmf1S2().getPRODRI(), "0");
+			}
+
+		} else {
+			RimacApi rimacApi = new RimacApi(this.rbvdR311, this.applicationConfigurationService);
+
+			cancellationSimulationResponse = rimacApi.getCancellationSimulationResponse(input, policyId, productCodeForRimac);
+			cancellationBusiness.setCancellationSimulationResponse(cancellationSimulationResponse);
 		}
 
-		Map<String, Object> policyMap = getPolicyInsuranceData(isRoyal, policy, icf2Response);
-		String policyId = Objects.toString(policyMap.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()));
-		String productId = Objects.toString(policyMap.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()));
-		String productCodeForRimac = Objects.toString(policyMap.get(RBVDConstants.PRODUCT_CODE_FOR_RIMAC));
+		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation insuranceProductId: {} *****", insuranceProductId);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation policyId: {} *****", policyId);
-		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation productId: {} *****", productId);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation productCodeForRimac: {} *****", productCodeForRimac);
 
-		CancellationBusiness cancellationBusiness = new CancellationBusiness(this.pisdR103, this.pisdR100, this.rbvdR311,
-				this.applicationConfigurationService, this.icf3Connection, this.icr4Connection, this.cancellationRequestImpl);
+		// Flag que nos indica que cumple las validaciones para generar una solicitud de cancelación
+		boolean isNewCancellation = this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal);
 
-		//Validar si se trata de una nueva solicitud de cancelación
-		if (!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac) && this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal)) {
-			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - new cancellation request *****");
-			//Registrar la solicitud de cancelación
-			if (!this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response, policyId, productCodeForRimac)) {
-				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
-				return null;
-			}
-		} else {
-			//Seguir el flujo de cancelación
-			return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal);
-		}
+		String massiveProductsParameter = this.applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,",");
 
-		//Si el producto y el canal se encuentran en la parametría de la consola de operaciones, solo se debe insertar la solicitud de cancelación
+		// Obtner el correo
+		String email = cancellationBean.getEmailFromInput(input, null, icf2Response);
 
-		if ((input.getCancellationType().equals(INMEDIATE.name()) && !isAPXCancellationRequest(productId, input.getChannelId(), policy)) || isStartDateTodayOrAfterToday(isRoyal, policy)) {
-			return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal);
-		}
-		else {
-			return mapRetentionResponse(policyId, input, RBVDConstants.MOV_PEN, RBVDConstants.TAG_PENDING, input.getCancellationDate());
-		}
+		// Ejecuta la logica de la cancelacion primera cancelacion o retencion
+		return cancellationBusiness.executeFirstCancellationOrCancellationOrRetention(isRoyal, policy, input, policyId,
+				icf2Response, productCodeForRimac, isNewCancellation, insuranceProductId,
+				massiveProductsParameter, email, cancellationBusiness, cancellationBean);
 	}
 
-	private EntityOutPolicyCancellationDTO mapRetentionResponse(String policyId, InputParametersPolicyCancellationDTO input,
-																String statusId, String statusDescription, Calendar cancellationDate) {
-		LOGGER.info("***** RBVDR011Impl - mapRetentionResponse START *****");
-		EntityOutPolicyCancellationDTO entityOutPolicyCancellationDTO = new EntityOutPolicyCancellationDTO();
-		entityOutPolicyCancellationDTO.setId(policyId);
-		entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
-		entityOutPolicyCancellationDTO.setReason(new GenericIndicatorDTO());
-		entityOutPolicyCancellationDTO.getReason().setId(input.getReason().getId());
-		entityOutPolicyCancellationDTO.setStatus(new GenericStatusDTO());
-		entityOutPolicyCancellationDTO.getStatus().setId(statusId);
-		entityOutPolicyCancellationDTO.getStatus().setDescription(statusDescription);
-		LOGGER.info("***** RBVDR011Impl - mapRetentionResponse END *****");
-		return entityOutPolicyCancellationDTO;
-	}
-
-	private boolean isAPXCancellationRequest(String insuranceProductId, String channelId, Map<String, Object> policy) {
-		if (policy == null) return false;
-		StringBuilder sb = new StringBuilder();
-		sb.append(RBVDConstants.CANCELLATION_REQUEST);
-		sb.append(StringUtils.defaultString(insuranceProductId));
-		sb.append(".");
-		sb.append(channelId.toLowerCase());
-		sb.append(".");
-		sb.append(Optional.ofNullable(policy.get(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue())).map(Object::toString).orElse(StringUtils.EMPTY).toLowerCase());
-		String flagCancellationRequest = sb.toString();
-		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - property: {}", flagCancellationRequest);
-		boolean isAPXCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty(flagCancellationRequest));
-		LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - isAPXCancellationRequest: {}", isAPXCancellationRequest);
-		return isAPXCancellationRequest;
-	}
-
-	private Map<String, Object> getPolicyInsuranceData(boolean isRoyal, Map<String, Object> policy, ICF2Response icf2Response){
-		String policyId;
-		String insuranceProductId;
-		String productCode;
-		String productCompanyId;
-		if(isRoyal){
-			policyId= Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()), "0");
-			insuranceProductId= Objects.toString(policy.get(RBVDProperties.KEY_INSURANCE_PRODUCT_ID.getValue()), "0");
-			productCompanyId= Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()), "0");
-			productCode = getProductCode(insuranceProductId, productCompanyId);
-		}else{
-			insuranceProductId = icf2Response.getIcmf1S2().getCODPROD();
-			policyId = "";
-			productCode = "";
-		}
-
-		Map<String, Object> policyMap = new HashMap<>();
-		policyMap.put(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue(), policyId);
-		policyMap.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(), insuranceProductId);
-		policyMap.put(RBVDConstants.PRODUCT_CODE_FOR_RIMAC, productCode);
-		return policyMap;
-	}
-
-	private Map<String, Object> getProductByProductId(String productId) {
-		Map<String,Object> arguments = new HashMap<>();
-		arguments.put(ConstantsUtil.FIELD_INSURANCE_PRODUCT_ID, productId);
-		return (Map<String,Object>) this.pisdR401.executeGetProductById(ConstantsUtil.QUERY_GET_PRODUCT_BY_PRODUCT_ID, arguments);
-	}
-
-	private boolean isLifeProduct(String businessName){
-		return Objects.nonNull(businessName) && (
-				businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_EASYYES));
-	}
-
-	private String getProductCode(String insuranceProductId, String companyProductCode){
-		Map<String, Object> product = getProductByProductId(insuranceProductId);
-		LOGGER.info("***** RBVDR011Impl - executeSimulateCancelation: product = {} *****", product);
-		String businessName= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME), "");
-		String shortDesc= java.util.Objects.toString(product.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC), "");
-		if(isLifeProduct(businessName)) return shortDesc;
-		else return companyProductCode;
-	}
 }

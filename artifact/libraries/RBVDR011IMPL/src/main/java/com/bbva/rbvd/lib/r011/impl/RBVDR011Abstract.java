@@ -12,6 +12,7 @@ import com.bbva.rbvd.lib.r011.impl.hostConnections.ICF3Connection;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
 import com.bbva.rbvd.lib.r042.RBVDR042;
 import com.bbva.rbvd.lib.r051.RBVDR051;
+import com.bbva.rbvd.lib.r305.RBVDR305;
 import com.bbva.rbvd.lib.r310.RBVDR310;
 import com.bbva.rbvd.lib.r311.RBVDR311;
 
@@ -33,6 +34,8 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	protected RBVDR311 rbvdR311;
 
 	protected PISDR401 pisdR401;
+
+	protected RBVDR305 rbvdR305;
 
 	protected RBVDR310 rbvdR310;
 	protected CancellationRequestImpl cancellationRequestImpl;
@@ -87,6 +90,13 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	*/
 	public void setPisdR401(PISDR401 pisdR401) {
 		this.pisdR401 = pisdR401;
+	}
+
+	/**
+	* @param rbvdR305 the this.rbvdR305 to set
+	*/
+	public void setRbvdR305(RBVDR305 rbvdR305) {
+		this.rbvdR305 = rbvdR305;
 	}
 
 	/**

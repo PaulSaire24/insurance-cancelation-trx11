@@ -52,9 +52,13 @@ public class ICF2ConnectionTest {
         icmf1S2.setCODPROD("801");
         icmf1S2.setIMPCLIE(15.00);
         icmf1S2.setDIVIMC("PEN");
-        icmf1S2.setCODCLI("12345678");
+        icmf1S2.setCODCLI("123");
         icmf1S2.setIMPCOMI(5.00);
         icmf1S2.setDIVDCIA("PEN");
+        icmf1S2.setTIPCONT("001");
+        icmf1S2.setDESCONT("email@prueba.com");
+        icmf1S2.setNUMPOL("1111111111");
+        icmf1S2.setPRODRI("00002101");
         icf2Response.setIcmf1S2(icmf1S2);
         return icf2Response;
     }
