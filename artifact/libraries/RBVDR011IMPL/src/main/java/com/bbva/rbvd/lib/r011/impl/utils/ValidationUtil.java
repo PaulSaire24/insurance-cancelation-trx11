@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
@@ -125,6 +126,13 @@ public class ValidationUtil {
                     zoneStartDate.isAfter(zonedToday.minusDays(RBVDConstants.DAYS_OF_RIGHT_TO_REPENT));
         }
         return false;
+    }
+
+    public static boolean validateMassiveProduct(Map<String, Object> policy, String massiveProductsParameter){
+        String[] massiveProductsList = massiveProductsParameter.split(",");
+        String massiveProduct = Arrays.stream(massiveProductsList).filter(product ->
+                product.equals(policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue()))).findFirst().orElse(null);
+        return massiveProduct != null;
     }
 
 }

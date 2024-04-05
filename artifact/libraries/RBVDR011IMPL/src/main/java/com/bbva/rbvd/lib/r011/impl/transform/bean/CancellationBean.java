@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r011.impl.transform.bean;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
@@ -9,6 +10,7 @@ import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParameters
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +24,11 @@ public class CancellationBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(CancellationBean.class);
 
     private final PISDR401 pisdR401;
+    private final ApplicationConfigurationService applicationConfigurationService;
 
-    public CancellationBean(PISDR401 pisdR401) {
+    public CancellationBean(PISDR401 pisdR401, ApplicationConfigurationService applicationConfigurationService) {
         this.pisdR401 = pisdR401;
+        this.applicationConfigurationService = applicationConfigurationService;
     }
 
     public EntityOutPolicyCancellationDTO mapRetentionResponse(String policyId, InputParametersPolicyCancellationDTO input, String statusId, String statusDescription, Calendar cancellationDate) {
@@ -85,6 +89,24 @@ public class CancellationBean {
     public boolean isLifeProduct(String businessName){
         return Objects.nonNull(businessName) && (
                 businessName.equals(ConstantsUtil.BUSINESS_NAME_VIDA) || businessName.equals(ConstantsUtil.BUSINESS_NAME_EASYYES));
+    }
+
+    public String getEmailFromInput(InputParametersPolicyCancellationDTO input, EntityOutPolicyCancellationDTO policyCancellationDTO, ICF2Response  icf2Response){
+        String email;
+
+        if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
+                && input.getNotifications().getContactDetails().get(0).getContact() != null
+                && !StringUtils.isEmpty(input.getNotifications().getContactDetails().get(0).getContact().getAddress())) {
+            email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
+        } else if(policyCancellationDTO != null && policyCancellationDTO.getNotifications() != null) {
+            email = policyCancellationDTO.getNotifications().getContactDetails().get(0).getContact().getAddress();
+        } else if (icf2Response != null && icf2Response.getIcmf1S2() != null && icf2Response.getIcmf1S2().getTIPCONT() != null && icf2Response.getIcmf1S2().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3) && icf2Response.getIcmf1S2().getDESCONT() != null) {
+            email = icf2Response.getIcmf1S2().getDESCONT();
+        } else {
+            email = this.applicationConfigurationService.getProperty("default.cancellation.email");
+        }
+
+        return email;
     }
 
 }

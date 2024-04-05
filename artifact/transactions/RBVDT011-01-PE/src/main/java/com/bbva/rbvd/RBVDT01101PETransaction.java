@@ -19,8 +19,30 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 
 	@Override
 	public void execute() {
+		LOGGER.info("RBVDT01101PETransaction - START");
+
 		RBVDR011 rbvdR011 = getServiceLibrary(RBVDR011.class);
-		LOGGER.info("Execution of RBVDT01101PETransaction");
+
+		String traceId = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.REQUESTID);
+		LOGGER.info("Cabecera traceId: {}", traceId);
+		String saleChannelId = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.CHANNELCODE);
+		LOGGER.info("Cabecera channel-code: {}", saleChannelId);
+		String user = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE);
+		LOGGER.info("Cabecera user-code: {}", user);
+		String aap = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.AAP);
+		LOGGER.info("Cabecera aap: {}", aap);
+		String ipv4 = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.IPADDRESS);
+		LOGGER.info("Cabecera ipv4: {}", ipv4);
+		String environmentCode = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.ENVIRONCODE);
+		LOGGER.info("Cabecera environmentCode: {}", environmentCode);
+		String productCode = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.PRODUCTCODE);
+		LOGGER.info("Cabecera productCode: {}", productCode);
+		String headerOperationDate = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.OPERATIONDATE);
+		LOGGER.info("Cabecera operationDate: {}", headerOperationDate);
+		String operationTime = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.OPERATIONTIME);
+		LOGGER.info("Cabecera operationTime: {}", operationTime);
+
+
 		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
 		input.setTraceId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.REQUESTID));
 		input.setBranchId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.BRANCHCODE));
@@ -35,6 +57,9 @@ public class RBVDT01101PETransaction extends AbstractRBVDT01101PETransaction {
 		input.setNotifications(this.getNotifications());
 		input.setCancellationDate(this.getCancellationdate());
 		if(this.getInsurerrefund() != null) input.setInsurerRefund(this.getInsurerrefund());
+
+
+
 		LOGGER.info("input: {}", input);
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		if (validation == null) {

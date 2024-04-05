@@ -96,12 +96,12 @@
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR042</artifactId>
-			<version>0.1.11</version>
+			<version>0.1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR051</artifactId>
-			<version>0.2.5</version>
+			<version>0.2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
@@ -115,13 +115,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
-			<artifactId>RBVDR310</artifactId>
-			<version>0.2.7</version>
+			<artifactId>RBVDR305</artifactId>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
-			<artifactId>RBVDR305</artifactId>
-			<version>0.1.0</version>
+			<artifactId>RBVDR310</artifactId>
+			<version>0.2.9</version>
 		</dependency>
 	</dependencies>
 	<build>

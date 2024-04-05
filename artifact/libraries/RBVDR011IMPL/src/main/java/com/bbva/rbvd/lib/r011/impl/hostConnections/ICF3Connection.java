@@ -114,11 +114,14 @@ public class ICF3Connection extends AbstractLibrary {
 
     public EntityOutPolicyCancellationDTO mapICF3Response(InputParametersPolicyCancellationDTO input, ICF3Response icf3Response, Map<String, Object> cancellationRequest){
         EntityOutPolicyCancellationDTO output = new EntityOutPolicyCancellationDTO();
-        output.setId(icf3Response.getIcmf3s0().getIDCANCE());
+
         GenericStatusDTO status = new GenericStatusDTO();
         status.setId(icf3Response.getIcmf3s0().getDESSTCA());
         status.setDescription(icf3Response.getIcmf3s0().getDESSTCA());
+
+        output.setId(icf3Response.getIcmf3s0().getIDCANCE());
         output.setStatus(status);
+
         Calendar calendarTime = Calendar.getInstance();
         Date date = getCancellationDate(cancellationRequest, input);
         calendarTime.setTime(date);

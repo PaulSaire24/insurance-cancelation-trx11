@@ -35,14 +35,13 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 
 	protected PISDR401 pisdR401;
 
-	protected RBVDR310 rbvdR310;
-
 	protected RBVDR305 rbvdR305;
+
+	protected RBVDR310 rbvdR310;
 	protected CancellationRequestImpl cancellationRequestImpl;
 	protected ICF2Connection icf2Connection;
 	protected ICF3Connection icf3Connection;
 	protected ICR4Connection icr4Connection;
-
 
 	/**
 	* @param applicationConfigurationService the this.applicationConfigurationService to set
@@ -94,17 +93,17 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	}
 
 	/**
-	* @param rbvdR310 the this.rbvdR310 to set
-	*/
-	public void setRbvdR310(RBVDR310 rbvdR310) {
-		this.rbvdR310 = rbvdR310;
-	}
-
-	/**
 	* @param rbvdR305 the this.rbvdR305 to set
 	*/
 	public void setRbvdR305(RBVDR305 rbvdR305) {
 		this.rbvdR305 = rbvdR305;
+	}
+
+	/**
+	* @param rbvdR310 the this.rbvdR310 to set
+	*/
+	public void setRbvdR310(RBVDR310 rbvdR310) {
+		this.rbvdR310 = rbvdR310;
 	}
 
 	public void setCancellationRequestImpl(CancellationRequestImpl cancellationRequestImpl) {
@@ -122,5 +121,4 @@ public abstract class RBVDR011Abstract extends AbstractLibrary implements RBVDR0
 	public void setIcr4Connection(ICR4Connection icr4Connection) {
 		this.icr4Connection = icr4Connection;
 	}
-
 }

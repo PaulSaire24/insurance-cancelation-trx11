@@ -8,17 +8,18 @@
 		<property name="rbvdR051" ref="rbvdR051"/>
 		<property name="rbvdR311" ref="rbvdR311"/>
 		<property name="pisdR401" ref="pisdR401"/>
-		<property name="rbvdR310" ref="rbvdR310"/>
 		<property name="cancellationRequestImpl" ref="cancellationRequestImpl"/>
 		<property name="icr4Connection" ref="icr4Connection"/>
 		<property name="icf2Connection" ref="icf2Connection"/>
 		<property name="icf3Connection" ref="icf3Connection"/>
 		<property name="rbvdR305" ref="rbvdR305"/>
+		<property name="rbvdR310" ref="rbvdR310"/>
 	</bean>
 	<bean id="cancellationRequestImpl" class="com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl">
 		<property name="rbvdR311" ref="rbvdR311"/>
 		<property name="pisdR103" ref="pisdR103"/>
 		<property name="pisdR100" ref="pisdR100"/>
+		<property name="rbvdR305" ref="rbvdR305"/>
 		<property name="icr4Connection" ref="icr4Connection"/>
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>

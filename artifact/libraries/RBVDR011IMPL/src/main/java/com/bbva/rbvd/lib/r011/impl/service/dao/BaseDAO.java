@@ -1,5 +1,6 @@
-package com.bbva.rbvd.lib.r011.impl.dao;
+package com.bbva.rbvd.lib.r011.impl.service.dao;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.lib.r100.PISDR100;
 import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
@@ -7,6 +8,8 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDUtils;
 import com.bbva.rbvd.lib.r011.impl.business.CancellationRequestImpl;
+import com.bbva.rbvd.lib.r011.impl.transform.map.CancellationMapper;
+import com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +23,7 @@ import java.util.Map;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.END_OF_VALIDATY;
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.obtainInsurerRefundAccountOrCard;
+import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.validateDaysOfRightToRepent;
 
 public class BaseDAO {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseDAO.class);
@@ -27,11 +31,13 @@ public class BaseDAO {
     private final PISDR103 pisdR103;
     private final PISDR100 pisdR100;
     private final CancellationRequestImpl cancellationRequestImpl;
+    private final ApplicationConfigurationService applicationConfigurationService;
 
-    public BaseDAO(PISDR103 pisdR103, PISDR100 pisdR100, CancellationRequestImpl cancellationRequestImpl) {
+    public BaseDAO(PISDR103 pisdR103, PISDR100 pisdR100, CancellationRequestImpl cancellationRequestImpl, ApplicationConfigurationService applicationConfigurationService) {
         this.pisdR103 = pisdR103;
         this.pisdR100 = pisdR100;
         this.cancellationRequestImpl = cancellationRequestImpl;
+        this.applicationConfigurationService = applicationConfigurationService;
     }
 
     public Map<String, Object> executeGetRequestCancellation(InputParametersPolicyCancellationDTO input){
@@ -122,7 +128,6 @@ public class BaseDAO {
         LOGGER.info("[BaseDAO] executeUpdateCancellationRequest() :: Start");
 
         Map<String, Object> arguments = new HashMap<>();
-        //actualizar policy annulation date y request status name de la solicitud de acuerdo al tipo de cancelación escogido
         arguments.put(RBVDProperties.FIELD_REQUEST_STATUS_NAME.getValue(), input.getCancellationType());
         arguments.put(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue(), cancellationRequest.get(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue()));
         arguments.put(RBVDProperties.FIELD_RL_ACCOUNT_ID.getValue(), obtainInsurerRefundAccountOrCard(input));
@@ -161,7 +166,7 @@ public class BaseDAO {
         String reasonId = (String) requestCancellationMovLast.get(RBVDProperties.FIELD_ADDITIONAL_DATA_DESC.getValue());
         input.getReason().setId(reasonId);
 
-        Map<String, Object> argumentsForSaveRequestCancellationMov = this.cancellationRequestImpl.mapInRequestCancellationMov(requestCancellationId, input, RBVDConstants.MOV_BAJ, new Integer(requestCancellationMovLast.get(RBVDProperties.FIELD_SEQ_MOV_NUMBER.getValue()).toString()) + 1);
+        Map<String, Object> argumentsForSaveRequestCancellationMov = CancellationMapper.mapInRequestCancellationMov(requestCancellationId, input, RBVDConstants.MOV_BAJ, new Integer(requestCancellationMovLast.get(RBVDProperties.FIELD_SEQ_MOV_NUMBER.getValue()).toString()) + 1);
         LOGGER.info("***** BaseDAO - argumentsForSaveRequestCancellationMov: {}", argumentsForSaveRequestCancellationMov);
 
         int isInsertedMov = this.pisdR103.executeSaveInsuranceRequestCancellationMov(argumentsForSaveRequestCancellationMov);
@@ -169,6 +174,31 @@ public class BaseDAO {
         LOGGER.info("[BaseDAO] executeSaveInsuranceRequestCancellationMov() :: End :: result - {}", isInsertedMov);
 
         return isInsertedMov;
+    }
+
+    public void updateContractStatusToPendingAndPolicyAnnulationDate(InputParametersPolicyCancellationDTO input, Map<String, Object> policy){
+        Map<String, Object> arguments = RBVDUtils.getMapContractNumber(input.getContractId());
+        arguments.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
+        arguments.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_PEN);
+        if(input.getCancellationType().equals(END_OF_VALIDATY.name()) || (ValidationUtil.validateMassiveProduct(policy,  applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST, ",")) && !validateDaysOfRightToRepent(policy))) {
+            arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(RBVDConstants.DATEFORMAT_ANNULATION_DATE).format(input.getCancellationDate().getTime()));
+        }
+        else arguments.put(RBVDProperties.KEY_RESPONSE_POLICY_ANNULATION_DATE.getValue(), new SimpleDateFormat(RBVDConstants.DATEFORMAT_ANNULATION_DATE).format(new Date()));
+        pisdR100.executeUpdateContractStatusAndAnnulationDate(arguments);
+        LOGGER.info("***** CancellationRequestImpl - updateContractStatusToPendingAndPolicyAnnulationDate - newContractStatus: {}", RBVDConstants.TAG_PEN);
+    }
+
+    public Map<String, Object> executeGetRequestCancellationMovLast(String contractId) {
+        LOGGER.info("***** CancellationRequestImpl - contractId: {}", contractId);
+        Map<String, Object> argumentsRequest = new HashMap<>();
+        argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), contractId.substring(0, 4));
+        argumentsRequest.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), contractId.substring(4, 8));
+        argumentsRequest.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), contractId.substring(10));
+        List<Map<String, Object>> requestCancellationMovLast = pisdR103.executeGetRequestCancellationMovLast(argumentsRequest);
+        if (requestCancellationMovLast != null && !requestCancellationMovLast.isEmpty()) {
+            return requestCancellationMovLast.get(requestCancellationMovLast.size()-1);
+        }
+        return null;
     }
 
 }
