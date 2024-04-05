@@ -135,4 +135,8 @@ public class ValidationUtil {
         return massiveProduct != null;
     }
 
+    public static String validationLogger(boolean input) {
+        return input ? "si": "no";
+    }
+
 }

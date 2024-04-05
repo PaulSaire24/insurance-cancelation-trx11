@@ -9,6 +9,7 @@ import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 
 import java.util.*;
 
+import com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		// Flag que ejecuta el flujo anterior de la cancelación
 		boolean isCancellationLegacyFlow = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty("cancellation.legacy.flow"));
-		LOGGER.info("executePolicyCancellation() - Es el flujo legacy de cancelación?? : {}", isCancellationLegacyFlow ? "si": "no");
+		LOGGER.info("executePolicyCancellation() - Es el flujo legacy de cancelación?? : {}", ValidationUtil.validationLogger(isCancellationLegacyFlow));
 
 		CancellationBean cancellationBean = new CancellationBean(this.pisdR401, applicationConfigurationService);
 		CancellationBusiness cancellationBusiness = new CancellationBusiness(this.pisdR103, this.pisdR100, this.rbvdR311,
@@ -58,7 +59,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		// FLag para saber si es un producto royal o no royal
 		boolean isRoyal = policy != null;
-		LOGGER.info("executePolicyCancellation - Es un seguro royal?? : {}", isRoyal ? "si": "no");
+		LOGGER.info("executePolicyCancellation - Es un seguro royal?? : {}", ValidationUtil.validationLogger(isRoyal));
 
 		// Valores a usar
 		if(isRoyal) {
