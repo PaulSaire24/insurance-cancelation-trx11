@@ -74,9 +74,11 @@ public class CancellationBusiness extends AbstractLibrary {
         // Configuraciones Iniciales del Envío de correos
         PropertiesConf properties = new PropertiesConf(this.applicationConfigurationService);
         Map<Object, String> propertiesEmail = properties.emailProperties();
+        LOGGER.info("RBVDR011Impl - cancellationPolicy() - propertiesEmail: {}", propertiesEmail);
 
         // CONSULTA PARA OBTENER DATOS DE LA TABLA DE SOLICITUDES DE CANCELACIÓN
         Map<String, Object> cancellationRequest = getRequestCancellationRequest(input, policy, isRoyal, productCode, icf2Response, massiveProductsParameter);
+        LOGGER.info("RBVDR011Impl - cancellationPolicy() - cancellationRequest: {}", cancellationRequest);
 
         String listCancellation = this.applicationConfigurationService.getProperty(RBVDConstants.CANCELLATION_LIST_ENDOSO);
         String[] channelCancellation = listCancellation.split(",");
@@ -91,10 +93,12 @@ public class CancellationBusiness extends AbstractLibrary {
         if (!isRoyal) {
             LOGGER.info("***** RBVDR011Impl - cancellationPolicy: No royal rimac cancellation");
             authorizeReturnFlag = executeRimacCancellationTypeNoRoyal(input, icf2Response, isChannelEndoso, userCode, cancellationRequest, email, false);
+            LOGGER.info("RBVDR011Impl - cancellationPolicy() - authorizeReturnFlag: {}", authorizeReturnFlag);
         }
 
         // Dependiendo del tipo de cancelación elegimos si ejecutar la icf3 o la icr4
         EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
+        LOGGER.info("RBVDR011Impl - cancellationPolicy() - out: {}", out);
         if (out == null) return null;
 
 
@@ -110,14 +114,16 @@ public class CancellationBusiness extends AbstractLibrary {
 
         // Se inserta un registro en la tabla de movimiento de cancelaciones
         Map<String, Object> requestCancellationMovLast = baseDAO.executeGetRequestCancellationMovLast(input.getContractId());
-        // Dato que se saca para enviar en el correo - el id de la secuencia de un seguro en solicitud de cancelacion
+        LOGGER.info("RBVDR011Impl - cancellationPolicy() - requestCancellationMovLast: {}", requestCancellationMovLast);
         if(requestCancellationMovLast==null){
             return null;
         }
+        // Dato que se saca para enviar en el correo - el id de la secuencia de un seguro en solicitud de cancelacion
         String requestCancellationId = requestCancellationMovLast.get(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue()).toString();
         LOGGER.info("***** RBVDR011Impl - executePolicyCancellation requestCancellationId: {} *****", requestCancellationId);
 
         boolean isInsertMovCancel = executeCancellationRequestMov(input, requestCancellationMovLast);
+        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
 
         if(!isCancellationLegacyFlow && !ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode) && !isInsertMovCancel){
             this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
@@ -126,15 +132,19 @@ public class CancellationBusiness extends AbstractLibrary {
 
         // Se mapeo el correo del cliente
         email = cancellationBean.getEmailFromInput(input, out, icf2Response);
+        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation email: {} *****", email);
 
         // SI ES UN SEGURO NO ROYAL TERMINA EL FLUJO PQ YA EJECUTO LA
         // CANCELACIÓN EN RIMAC Y LA ICF3 Y YA INSERTO EN LA TABLA DE MOV CANCELACIÓN
         if (!isRoyal) {
+            LOGGER.info("***** RBVDR011Impl - executePolicyCancellation validatePolicy ");
             return validatePolicy(out, requestCancellationId, input, policy, icf2Response, email, propertiesEmail);
         }
 
         Double totalDebt = NumberUtils.toDouble(Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
+        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation totalDebt: {} *****", totalDebt);
         Double pendingAmount = NumberUtils.toDouble(Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
+        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation pendingAmount: {} *****", pendingAmount);
 
         String statusId = RBVDConstants.TAG_BAJ;
         String movementType = RBVDConstants.MOV_BAJ;
@@ -208,8 +218,11 @@ public class CancellationBusiness extends AbstractLibrary {
             }
 
             cancellationRequest.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
+
+            LOGGER.info("RBVDR011Impl - getRequestCancellationRequest() - cancellationRequest: {}", cancellationRequest);
             return cancellationRequest;
         }
+
         return baseDAO.executeGetRequestCancellation(input);
     }
 
@@ -218,8 +231,10 @@ public class CancellationBusiness extends AbstractLibrary {
         CancellationBean cancellationBean = new CancellationBean(this.pisdR401, applicationConfigurationService);
 
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType()) || productCode.equals(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT)) {
+            LOGGER.info("RBVDR011Impl - validateCancellationType() - ICF3");
             return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
         }else{
+            LOGGER.info("RBVDR011Impl - validateCancellationType() - ICF4");
             boolean icr4RespondsOk = this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_END_OF_VALIDITY,"08"));
             if(!icr4RespondsOk) {
                 this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
@@ -312,6 +327,7 @@ public class CancellationBusiness extends AbstractLibrary {
             if(!isCancellationLegacyFlow) {
                 boolean isRequestCancellation = this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response,
                         cancellationSimulationResponse, massiveProductsParameter, email);
+                LOGGER.info("RBVDR011Impl - executeFirstCancellationOrCancellationOrRetention() - isRequestCancellation: {}", isRequestCancellation);
 
                 if (!isRequestCancellation) {
                     this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());

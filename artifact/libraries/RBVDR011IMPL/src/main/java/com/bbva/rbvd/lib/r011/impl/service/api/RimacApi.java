@@ -44,11 +44,16 @@ public class RimacApi {
         CancelationSimulationPayloadBO cancellationSimulationResponse = null;
 
         InputRimacBO rimacSimulationRequest = RequestRimacBean.buildRimacSimulationRequest(input, policyId, productCodeForRimac);
+        LOGGER.info("RBVDR011Impl - getCancellationSimulationResponse() - rimacSimulationRequest: {}", rimacSimulationRequest);
 
         cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
+        LOGGER.info("RBVDR011Impl - getCancellationSimulationResponse() - cancellationSimulationResponse: {}", cancellationSimulationResponse);
 
-        if(cancellationSimulationResponse != null) cancellationSimulationResponse.setMoneda(conversor(cancellationSimulationResponse.getMoneda()));
+        if(cancellationSimulationResponse != null) {
+            cancellationSimulationResponse.setMoneda(conversor(cancellationSimulationResponse.getMoneda()));
+        }
 
+        LOGGER.info("RBVDR011Impl - executePolicyCancellation() - END - cancellationSimulationResponse: {}", cancellationSimulationResponse);
 
         return cancellationSimulationResponse;
     }

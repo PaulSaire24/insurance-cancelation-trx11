@@ -43,7 +43,7 @@ public class CancellationBean {
         entityOutPolicyCancellationDTO.getStatus().setId(statusId);
         entityOutPolicyCancellationDTO.getStatus().setDescription(statusDescription);
 
-        LOGGER.info("***** RBVDR011Impl - mapRetentionResponse END *****");
+        LOGGER.info("***** RBVDR011Impl - mapRetentionResponse END - {}", entityOutPolicyCancellationDTO);
         return entityOutPolicyCancellationDTO;
     }
 
@@ -97,12 +97,16 @@ public class CancellationBean {
         if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
                 && input.getNotifications().getContactDetails().get(0).getContact() != null
                 && !StringUtils.isEmpty(input.getNotifications().getContactDetails().get(0).getContact().getAddress())) {
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email1");
             email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
         } else if(policyCancellationDTO != null && policyCancellationDTO.getNotifications() != null) {
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email2");
             email = policyCancellationDTO.getNotifications().getContactDetails().get(0).getContact().getAddress();
         } else if (icf2Response != null && icf2Response.getIcmf1S2() != null && icf2Response.getIcmf1S2().getTIPCONT() != null && icf2Response.getIcmf1S2().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3) && icf2Response.getIcmf1S2().getDESCONT() != null) {
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email3");
             email = icf2Response.getIcmf1S2().getDESCONT();
         } else {
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email4");
             email = this.applicationConfigurationService.getProperty("default.cancellation.email");
         }
 
