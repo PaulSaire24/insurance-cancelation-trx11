@@ -35,10 +35,6 @@ public class NotificationMapper {
     private static final String ADVICE_EMAIL = "advice";
     private static final String ADDITIONAL_INFORMATION_EMAIL = "additionalInformation";
 
-    private NotificationMapper() {
-        throw new IllegalStateException("Utility class");
-    }
-
     public static SendNotificationsDTO buildEmail(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
                                                   String email, String requestCancellationId, Map<Object, String> propertiesEmail) {
         LOGGER.info("RBVDR011Impl - buildEmail() - START :: email - {}", email);

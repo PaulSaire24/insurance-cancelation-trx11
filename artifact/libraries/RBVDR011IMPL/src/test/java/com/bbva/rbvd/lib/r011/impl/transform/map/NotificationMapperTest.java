@@ -13,6 +13,7 @@ import com.bbva.rbvd.dto.notification.events.SendNotificationsDTO;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
