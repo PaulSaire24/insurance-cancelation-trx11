@@ -315,6 +315,10 @@ public class CancellationRequestImplTest {
         input.getNotifications().getContactDetails().get(1).setContact(new GenericContactDTO());
         input.getNotifications().getContactDetails().get(1).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
         input.getNotifications().getContactDetails().get(1).getContact().setNumber("999888777");
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(2).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(2).getContact().setContactDetailType("SOCIAL_MEDIA");
+        input.getNotifications().getContactDetails().get(2).getContact().setUsername("SERGIO");
         input.setIsRefund(true);
         input.setInsurerRefund(new InsurerRefundCancellationDTO());
         input.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());

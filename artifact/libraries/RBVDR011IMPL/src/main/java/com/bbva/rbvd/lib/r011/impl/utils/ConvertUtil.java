@@ -17,6 +17,12 @@ public class ConvertUtil {
         input = input.replace("ó", "&oacute;");
         input = input.replace("ú", "&uacute;");
         input = input.replace("ñ", "&ntilde;");
+        input = input.replace("Á", "&Aacute;");
+        input = input.replace("É", "&Eacute;");
+        input = input.replace("Í", "&Iacute;");
+        input = input.replace("Ó", "&Oacute;");
+        input = input.replace("Ú", "&Uacute;");
+        input = input.replace("Ñ", "&Ntilde;");
         // Agregar reemplazos para más caracteres si es necesario
 
         LOGGER.info("***** ConvertUtil - escapeSpecialCharacters - END");
