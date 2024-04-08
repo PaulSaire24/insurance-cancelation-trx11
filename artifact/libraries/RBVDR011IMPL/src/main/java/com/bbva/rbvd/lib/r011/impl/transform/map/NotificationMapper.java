@@ -10,9 +10,11 @@ import com.bbva.rbvd.dto.notification.events.SendNotificationsDTO;
 import com.bbva.rbvd.dto.notification.events.ValueDTO;
 import com.bbva.rbvd.dto.notification.utils.DeliveryChannelEnum;
 import com.bbva.rbvd.dto.notification.utils.UserTypeEnum;
+import com.bbva.rbvd.lib.r011.impl.transform.bean.CancellationBean;
 import com.bbva.rbvd.lib.r011.impl.utils.ConvertUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 public class NotificationMapper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMapper.class);
 
     private static final String CUSTOMER_NAME_EMAIL = "name";
     private static final String DESCRIPTION_EMAIL = "description";
@@ -38,13 +41,16 @@ public class NotificationMapper {
 
     public static SendNotificationsDTO buildEmail(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
                                                   String email, String requestCancellationId, Map<Object, String> propertiesEmail) {
+        LOGGER.info("RBVDR011Impl - buildEmail() - START");
+
         ReceiverDTO receiver = new ReceiverDTO();
         receiver.setUserType(UserTypeEnum.CUSTOMER.getValue());
         receiver.setUserId("PE00150".concat(isRoyal
                 ? policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()).toString()
                 : icf2Response.getIcmf1S2().getCODCLI()));
         receiver.setRecipientType("TO");
-        receiver.setEmail(email);
+        /*receiver.setEmail(email);*/
+        receiver.setEmail("SACARBAJAL@BBVA.COM");
         receiver.setContractId(input.getContractId());
 
         List<ReceiverDTO> receivers = new ArrayList<>();
@@ -146,6 +152,8 @@ public class NotificationMapper {
 
         SendNotificationsDTO sendNotifications = new SendNotificationsDTO();
         sendNotifications.setNotifications(notifications);
+
+        LOGGER.info("RBVDR011Impl - executeFirstCancellationRequest() - sendNotifications: {}", sendNotifications);
 
         return sendNotifications;
     }

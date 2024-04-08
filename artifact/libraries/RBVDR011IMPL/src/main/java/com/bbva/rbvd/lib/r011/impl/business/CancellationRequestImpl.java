@@ -63,8 +63,11 @@ public class CancellationRequestImpl {
 
         // Valor del estado del contrato en Host -> PS
         String status = this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_CANCELLATION_REQUEST,RBVDConstants.TAG_CANCELLATION_PENDING_HOST_STATUS);
+        LOGGER.info("RBVDR011Impl - executeFirstCancellationRequest() - status: {}", status);
+
         // Valor por defecto del tipo de producto del seguro <no royal>
         String defaultProductId = applicationConfigurationService.getDefaultProperty("cancellation.default.host.productId", RBVDConstants.TAG_0);
+        LOGGER.info("RBVDR011Impl - executeFirstCancellationRequest() - defaultProductId: {}", defaultProductId);
 
         // Marcamos en Host el estado del contrato como pendiente
         if (!this.icr4Connection.executeICR4Transaction(input, status)) {

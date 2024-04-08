@@ -5,12 +5,10 @@ import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.lib.r011.impl.business.CancellationBusiness;
 import com.bbva.rbvd.lib.r011.impl.service.api.RimacApi;
 import com.bbva.rbvd.lib.r011.impl.transform.bean.CancellationBean;
-import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 
 import java.util.*;
 
 import com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +20,6 @@ import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.APPLICATION_DATE;
-import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.INMEDIATE;
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isStartDateTodayOrAfterToday;
 
 public class RBVDR011Impl extends RBVDR011Abstract {
@@ -76,8 +73,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		 * 			- Ejecuta el servicio simulación de Rimac para obtener los montos de devolución hacia el cliente
 		 */
 		if (isStartDateTodayOrAfterToday(isRoyal, policy)) {
-			LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - executeICF2Transaction begin *****");
+			LOGGER.info("RBVDR011Impl - executePolicyCancellation() - executeICF2Transaction begin *****");
 			icf2Response = this.icf2Connection.executeICF2Transaction(input);
+			LOGGER.info("RBVDR011Impl - executePolicyCancellation() - icf2Response: {}", icf2Response);
 
 			if (icf2Response == null) {
 				this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
@@ -94,6 +92,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			RimacApi rimacApi = new RimacApi(this.rbvdR311, this.applicationConfigurationService);
 
 			cancellationSimulationResponse = rimacApi.getCancellationSimulationResponse(input, policyId, productCodeForRimac);
+			LOGGER.info("RBVDR011Impl - executePolicyCancellation() - cancellationSimulationResponse: {}", cancellationSimulationResponse);
 			cancellationBusiness.setCancellationSimulationResponse(cancellationSimulationResponse);
 		}
 
@@ -103,11 +102,14 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		// Flag que nos indica que cumple las validaciones para generar una solicitud de cancelación
 		boolean isNewCancellation = this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal);
+		LOGGER.info("RBVDR011Impl - executePolicyCancellation() - isNewCancellation: {}", isNewCancellation);
 
 		String massiveProductsParameter = this.applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,",");
+		LOGGER.info("RBVDR011Impl - executePolicyCancellation() - massiveProductsParameter: {}", massiveProductsParameter);
 
 		// Obtner el correo
 		String email = cancellationBean.getEmailFromInput(input, null, icf2Response);
+		LOGGER.info("RBVDR011Impl - executePolicyCancellation() - email: {}", email);
 
 		// Ejecuta la logica de la cancelacion primera cancelacion o retencion
 		return cancellationBusiness.executeFirstCancellationOrCancellationOrRetention(isRoyal, policy, input, policyId,
