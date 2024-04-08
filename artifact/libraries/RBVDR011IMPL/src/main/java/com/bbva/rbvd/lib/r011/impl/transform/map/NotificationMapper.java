@@ -15,7 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 
 public class NotificationMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMapper.class);
@@ -34,6 +38,8 @@ public class NotificationMapper {
     private static final String PLAN_TYPE_VALUE_EMAIL = "planTypeValue";
     private static final String ADVICE_EMAIL = "advice";
     private static final String ADDITIONAL_INFORMATION_EMAIL = "additionalInformation";
+
+    private NotificationMapper() {}
 
     public static SendNotificationsDTO buildEmail(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
                                                   String email, String requestCancellationId, Map<Object, String> propertiesEmail) {
