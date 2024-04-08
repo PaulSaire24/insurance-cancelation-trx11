@@ -16,10 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.validateEmailContact;
+import static java.util.Objects.nonNull;
 
 public class NotificationMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMapper.class);
@@ -58,10 +58,13 @@ public class NotificationMapper {
 
         ValueDTO value2 = new ValueDTO();
         value2.setId(CUSTOMER_NAME_EMAIL);
+
         if(input.getNotifications() != null
                 && !input.getNotifications().getContactDetails().isEmpty()
-                && input.getNotifications().getContactDetails().get(0).getContact() != null) {
-            value2.setName(ConvertUtil.escapeSpecialCharacters(input.getNotifications().getContactDetails().get(0).getContact().getUsername()));
+                && input.getNotifications().getContactDetails().get(1).getContact() != null
+                && input.getNotifications().getContactDetails().get(1).getContact().getUsername() != null
+        ) {
+            value2.setName(ConvertUtil.escapeSpecialCharacters(input.getNotifications().getContactDetails().get(1).getContact().getUsername()));
         } else {
             value2.setName("CLIENTE");
         }
