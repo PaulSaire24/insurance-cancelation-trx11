@@ -980,6 +980,10 @@ public class RBVDR011Test {
 		input.getNotifications().getContactDetails().get(1).setContact(new GenericContactDTO());
 		input.getNotifications().getContactDetails().get(1).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
 		input.getNotifications().getContactDetails().get(1).getContact().setNumber("998877669");
+		input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+		input.getNotifications().getContactDetails().get(2).setContact(new GenericContactDTO());
+		input.getNotifications().getContactDetails().get(2).getContact().setContactDetailType("SOCIAL_MEDIA");
+		input.getNotifications().getContactDetails().get(2).getContact().setUsername("SERGIO");
 		input.setIsRefund(true);
 		return input;
 	}

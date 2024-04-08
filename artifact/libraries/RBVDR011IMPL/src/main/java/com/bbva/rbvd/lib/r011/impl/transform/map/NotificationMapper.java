@@ -10,7 +10,6 @@ import com.bbva.rbvd.dto.notification.events.SendNotificationsDTO;
 import com.bbva.rbvd.dto.notification.events.ValueDTO;
 import com.bbva.rbvd.dto.notification.utils.DeliveryChannelEnum;
 import com.bbva.rbvd.dto.notification.utils.UserTypeEnum;
-import com.bbva.rbvd.lib.r011.impl.transform.bean.CancellationBean;
 import com.bbva.rbvd.lib.r011.impl.utils.ConvertUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 
 public class NotificationMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMapper.class);
@@ -39,9 +39,11 @@ public class NotificationMapper {
     private static final String ADVICE_EMAIL = "advice";
     private static final String ADDITIONAL_INFORMATION_EMAIL = "additionalInformation";
 
+    private NotificationMapper() {}
+
     public static SendNotificationsDTO buildEmail(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
                                                   String email, String requestCancellationId, Map<Object, String> propertiesEmail) {
-        LOGGER.info("RBVDR011Impl - buildEmail() - START");
+        LOGGER.info("RBVDR011Impl - buildEmail() - START :: email - {}", email);
 
         ReceiverDTO receiver = new ReceiverDTO();
         receiver.setUserType(UserTypeEnum.CUSTOMER.getValue());
@@ -49,7 +51,6 @@ public class NotificationMapper {
                 ? policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()).toString()
                 : icf2Response.getIcmf1S2().getCODCLI()));
         receiver.setRecipientType("TO");
-        /*receiver.setEmail(email);*/
         receiver.setEmail("SACARBAJAL@BBVA.COM");
         receiver.setContractId(input.getContractId());
 
@@ -58,10 +59,14 @@ public class NotificationMapper {
 
         ValueDTO value2 = new ValueDTO();
         value2.setId(CUSTOMER_NAME_EMAIL);
+
         if(input.getNotifications() != null
                 && !input.getNotifications().getContactDetails().isEmpty()
-                && input.getNotifications().getContactDetails().get(0).getContact() != null) {
-            value2.setName(ConvertUtil.escapeSpecialCharacters(input.getNotifications().getContactDetails().get(0).getContact().getUsername()));
+                && input.getNotifications().getContactDetails().size() > 2
+                && input.getNotifications().getContactDetails().get(2).getContact() != null
+                && input.getNotifications().getContactDetails().get(2).getContact().getUsername() != null
+        ) {
+            value2.setName(ConvertUtil.escapeSpecialCharacters(input.getNotifications().getContactDetails().get(2).getContact().getUsername()));
         } else {
             value2.setName("CLIENTE");
         }
