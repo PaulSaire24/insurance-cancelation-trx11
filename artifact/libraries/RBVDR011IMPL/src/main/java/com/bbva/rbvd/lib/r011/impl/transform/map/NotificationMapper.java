@@ -60,6 +60,7 @@ public class NotificationMapper {
 
         if(input.getNotifications() != null
                 && !input.getNotifications().getContactDetails().isEmpty()
+                && input.getNotifications().getContactDetails().size() > 2
                 && input.getNotifications().getContactDetails().get(2).getContact() != null
                 && input.getNotifications().getContactDetails().get(2).getContact().getUsername() != null
         ) {
