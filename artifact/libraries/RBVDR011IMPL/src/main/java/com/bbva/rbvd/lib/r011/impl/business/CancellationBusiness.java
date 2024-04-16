@@ -67,18 +67,18 @@ public class CancellationBusiness extends AbstractLibrary {
 
     public EntityOutPolicyCancellationDTO cancellationPolicy(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, String policyId, String productCode,
                                                              ICF2Response icf2Response, boolean isRoyal, String massiveProductsParameter){
-        LOGGER.info("***** RBVDR011Impl - cancellationPolicy: Policy cancellation start");
+        LOGGER.info("***** CancellationBusiness - cancellationPolicy: Policy cancellation start");
 
         CancellationBean cancellationBean = new CancellationBean(this.pisdR401, applicationConfigurationService);
 
         // Configuraciones Iniciales del Envío de correos
         PropertiesConf properties = new PropertiesConf(this.applicationConfigurationService);
         Map<Object, String> propertiesEmail = properties.emailProperties();
-        LOGGER.info("RBVDR011Impl - cancellationPolicy() - propertiesEmail: {}", propertiesEmail);
+        LOGGER.info("CancellationBusiness - cancellationPolicy() - propertiesEmail: {}", propertiesEmail);
 
         // CONSULTA PARA OBTENER DATOS DE LA TABLA DE SOLICITUDES DE CANCELACIÓN
         Map<String, Object> cancellationRequest = getRequestCancellationRequest(input, policy, isRoyal, productCode, icf2Response, massiveProductsParameter);
-        LOGGER.info("RBVDR011Impl - cancellationPolicy() - cancellationRequest: {}", cancellationRequest);
+        LOGGER.info("CancellationBusiness - cancellationPolicy() - cancellationRequest: {}", cancellationRequest);
 
         String listCancellation = this.applicationConfigurationService.getProperty(RBVDConstants.CANCELLATION_LIST_ENDOSO);
         String[] channelCancellation = listCancellation.split(",");
@@ -91,14 +91,14 @@ public class CancellationBusiness extends AbstractLibrary {
 
         // CANCELACIÓN DE PRODUCTOS NO ROYAL
         if (!isRoyal) {
-            LOGGER.info("***** RBVDR011Impl - cancellationPolicy: No royal rimac cancellation");
+            LOGGER.info("***** CancellationBusiness - cancellationPolicy: No royal rimac cancellation");
             authorizeReturnFlag = executeRimacCancellationTypeNoRoyal(input, icf2Response, isChannelEndoso, userCode, cancellationRequest, email, false);
             LOGGER.info("RBVDR011Impl - cancellationPolicy() - authorizeReturnFlag: {}", authorizeReturnFlag);
         }
 
         // Dependiendo del tipo de cancelación elegimos si ejecutar la icf3 o la icr4
         EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
-        LOGGER.info("RBVDR011Impl - cancellationPolicy() - out: {}", out);
+        LOGGER.info("CancellationBusiness - cancellationPolicy() - out: {}", out);
         if (out == null) return null;
 
 
@@ -114,16 +114,16 @@ public class CancellationBusiness extends AbstractLibrary {
 
         // Se inserta un registro en la tabla de movimiento de cancelaciones
         Map<String, Object> requestCancellationMovLast = baseDAO.executeGetRequestCancellationMovLast(input.getContractId());
-        LOGGER.info("RBVDR011Impl - cancellationPolicy() - requestCancellationMovLast: {}", requestCancellationMovLast);
+        LOGGER.info("CancellationBusiness - cancellationPolicy() - requestCancellationMovLast: {}", requestCancellationMovLast);
         if(requestCancellationMovLast==null){
             return null;
         }
         // Dato que se saca para enviar en el correo - el id de la secuencia de un seguro en solicitud de cancelacion
         String requestCancellationId = requestCancellationMovLast.get(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue()).toString();
-        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation requestCancellationId: {} *****", requestCancellationId);
+        LOGGER.info("***** CancellationBusiness - executePolicyCancellation requestCancellationId: {} *****", requestCancellationId);
 
         boolean isInsertMovCancel = executeCancellationRequestMov(input, requestCancellationMovLast);
-        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
+        LOGGER.info("***** CancellationBusiness - executePolicyCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
 
         if(!isCancellationLegacyFlow && !ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode) && !isInsertMovCancel){
             this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
@@ -132,19 +132,19 @@ public class CancellationBusiness extends AbstractLibrary {
 
         // Se mapeo el correo del cliente
         email = cancellationBean.getEmailFromInput(input, out, icf2Response);
-        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation email: {} *****", email);
+        LOGGER.info("***** CancellationBusiness - executePolicyCancellation email: {} *****", email);
 
         // SI ES UN SEGURO NO ROYAL TERMINA EL FLUJO PQ YA EJECUTO LA
         // CANCELACIÓN EN RIMAC Y LA ICF3 Y YA INSERTO EN LA TABLA DE MOV CANCELACIÓN
         if (!isRoyal) {
-            LOGGER.info("***** RBVDR011Impl - executePolicyCancellation validatePolicy ");
+            LOGGER.info("***** CancellationBusiness - executePolicyCancellation validatePolicy ");
             return validatePolicy(out, requestCancellationId, input, policy, icf2Response, email, propertiesEmail);
         }
 
         Double totalDebt = NumberUtils.toDouble(Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
-        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation totalDebt: {} *****", totalDebt);
+        LOGGER.info("***** CancellationBusiness - executePolicyCancellation totalDebt: {} *****", totalDebt);
         Double pendingAmount = NumberUtils.toDouble(Objects.toString(policy.get(RBVDProperties.KEY_REQUEST_CNCL_SETTLE_PENDING_PREMIUM_AMOUNT.getValue()), "0"));
-        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation pendingAmount: {} *****", pendingAmount);
+        LOGGER.info("***** CancellationBusiness - executePolicyCancellation pendingAmount: {} *****", pendingAmount);
 
         String statusId = RBVDConstants.TAG_BAJ;
         String movementType = RBVDConstants.MOV_BAJ;
@@ -169,9 +169,9 @@ public class CancellationBusiness extends AbstractLibrary {
             baseDAO.executeUpdateReceiptsStatusV2(input, statusId, receiptStatusList);
         }
 
-        LOGGER.info("***** RBVDR011Impl - cancellationPolicy: input - {}", input);
-        LOGGER.info("***** RBVDR011Impl - cancellationPolicy: statusId - {}", statusId);
-        LOGGER.info("***** RBVDR011Impl - cancellationPolicy: cancellationRequest - {}", cancellationRequest);
+        LOGGER.info("***** CancellationBusiness - cancellationPolicy: input - {}", input);
+        LOGGER.info("***** CancellationBusiness - cancellationPolicy: statusId - {}", statusId);
+        LOGGER.info("***** CancellationBusiness - cancellationPolicy: cancellationRequest - {}", cancellationRequest);
 
         // ACTUALIZA EL ESTADO DEL CONTRATO Y FECHA DE ANULACIÓN EN LA TABLA DE CONTRATOS
         // sI ES PEN O PEB LA FECHA DE ANULACIÓN SE SETEA CON LA QUE LE ENVIAMOS Y SINO SETEA LA FECHA DE ANULACIÓN DEL CONTRATO
@@ -185,24 +185,24 @@ public class CancellationBusiness extends AbstractLibrary {
         executeRimacCancellationType(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email);
 
         validateResponse(out, policyId);
-        LOGGER.info("***** RBVDR011Impl - cancellationPolicy - PRODUCTO ROYAL ***** Response: {}", out);
+        LOGGER.info("***** CancellationBusiness - cancellationPolicy - PRODUCTO ROYAL ***** Response: {}", out);
 
 
 
         // Enviar correo por solicitud de cancelación
         int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(input, policy, isRoyal, icf2Response, email,
                 requestCancellationId, propertiesEmail));
-        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation resultEvent: {} *****", resultEvent);
+        LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
 
-        LOGGER.info("***** RBVDR011Impl - cancellationPolicy END *****");
+        LOGGER.info("***** CancellationBusiness - cancellationPolicy END *****");
         return out;
     }
 
     private Map<String, Object> getRequestCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal,
                                                               String productCode, ICF2Response icf2Response, String massiveProductsParameter) {
 
-        LOGGER.info("***** RBVDR011Impl - executePolicyCancellation ICF2Response: {} *****", icf2Response);
+        LOGGER.info("***** CancellationBusiness - executePolicyCancellation ICF2Response: {} *****", icf2Response);
         if(productCode.equals(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT)){
             cancellationRequestImpl.executeRescueCancellationRequest(input, policy, isRoyal, massiveProductsParameter);
         }
@@ -219,7 +219,7 @@ public class CancellationBusiness extends AbstractLibrary {
 
             cancellationRequest.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(), new Timestamp(System.currentTimeMillis()));
 
-            LOGGER.info("RBVDR011Impl - getRequestCancellationRequest() - cancellationRequest: {}", cancellationRequest);
+            LOGGER.info("CancellationBusiness - getRequestCancellationRequest() - cancellationRequest: {}", cancellationRequest);
             return cancellationRequest;
         }
 
@@ -231,10 +231,10 @@ public class CancellationBusiness extends AbstractLibrary {
         CancellationBean cancellationBean = new CancellationBean(this.pisdR401, applicationConfigurationService);
 
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType()) || productCode.equals(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT)) {
-            LOGGER.info("RBVDR011Impl - validateCancellationType() - ICF3");
+            LOGGER.info("CancellationBusiness - validateCancellationType() - ICF3");
             return this.icf3Connection.executeICF3Transaction(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
         }else{
-            LOGGER.info("RBVDR011Impl - validateCancellationType() - ICF4");
+            LOGGER.info("CancellationBusiness - validateCancellationType() - ICF4");
             boolean icr4RespondsOk = this.icr4Connection.executeICR4Transaction(input, this.applicationConfigurationService.getDefaultProperty(RBVDConstants.CONTRACT_STATUS_HOST_END_OF_VALIDITY,"08"));
             if(!icr4RespondsOk) {
                 this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
@@ -248,13 +248,13 @@ public class CancellationBusiness extends AbstractLibrary {
     private EntityOutPolicyCancellationDTO validatePolicy(EntityOutPolicyCancellationDTO out, String requestCancellationId, InputParametersPolicyCancellationDTO input,
                                                           Map<String, Object> policy, ICF2Response icf2Response, String email, Map<Object, String> propertiesEmail) {
         if (CollectionUtils.isEmpty(this.getAdviceList()) || this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
-            LOGGER.info("***** RBVDR011Impl - validatePolicy - PRODUCTO NO ROYAL - Response = {} *****", out);
+            LOGGER.info("***** CancellationBusiness - validatePolicy - PRODUCTO NO ROYAL - Response = {} *****", out);
             this.getAdviceList().clear();
 
             // Enviar correo por solicitud de cancelación
             int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(input, policy, false, icf2Response, email,
                     requestCancellationId, propertiesEmail));
-            LOGGER.info("***** RBVDR011Impl - executePolicyCancellation resultEvent: {} *****", resultEvent);
+            LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
             return out;
         }
@@ -273,7 +273,7 @@ public class CancellationBusiness extends AbstractLibrary {
         RimacApi rimacApi = new RimacApi(this.rbvdR311, this.applicationConfigurationService);
 
         if (icf2Response == null || icf2Response.getIcmf1S2() == null || icf2Response.getIcmf1S2().getPRODRI() == null || icf2Response.getIcmf1S2().getNUMPOL() == null){
-            LOGGER.info("***** RBVDR011Impl - executeRimacCancellationType - icf2Response has missing data {}", icf2Response);
+            LOGGER.info("***** CancellationBusiness - executeRimacCancellationTypeNoRoyal - icf2Response has missing data {}", icf2Response);
             this.addAdvice(RBVDErrors.ERROR_INVALID_INPUT_SIMULATECANCELATION.getAdviceCode());
             return null;
         }
@@ -282,11 +282,14 @@ public class CancellationBusiness extends AbstractLibrary {
         String productCode = icf2Response.getIcmf1S2().getPRODRI();
 
         PolicyCancellationPayloadBO responseCancellationRimac = rimacApi.executeRimacCancellation(input, policyId, productCode, isChannelEndoso, userCode, cancellationRequest, email, isRoyal, icf2Response);
+        LOGGER.info("***** CancellationBusiness - executeRimacCancellationTypeNoRoyal - responseCancellationRimac :: {}", responseCancellationRimac);
 
         String authorizationFlag = getAuthorizeReturnFlag(responseCancellationRimac, policyId);
+        LOGGER.info("***** CancellationBusiness - executeRimacCancellationTypeNoRoyal - authorizationFlag :: {}", authorizationFlag);
 
         if (authorizationFlag == null) {
             this.addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_POLICYCANCELLATION_RIMAC.getAdviceCode()); // RBVD00000134
+            return null;
         }
 
         return authorizationFlag;
@@ -315,24 +318,21 @@ public class CancellationBusiness extends AbstractLibrary {
                          String massiveProductsParameter, String email, CancellationBusiness cancellationBusiness, CancellationBean cancellationBean) {
 
         /**
-         * IF   ( <si no> es un seguro VIDA_INVERSION  <Y>  <si> es el flujo legacy (defecto false) || <si> cumple validación para generar solicitud de cancelación )
+         * IF   ( <si no> es un seguro VIDA_INVERSION  <Y>  <si> cumple validación para generar solicitud de cancelación )
          * 			- Genera una solicitud de cancelación que viaja al Pool de retenciones
          * ELSE
          * 			- Ejecuta la cancelación al instante
          */
-        if (!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac) && (isCancellationLegacyFlow || isNewCancellation)) {
-            LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - new cancellation request *****");
+        if (!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac) && isNewCancellation) {
+            LOGGER.info("***** CancellationBusiness - executePolicyCancellation - new cancellation request *****");
 
             //Registrar la solicitud de cancelación solo en caso de no seguir el flujo legacy
-            if(!isCancellationLegacyFlow) {
-                boolean isRequestCancellation = this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response,
-                        cancellationSimulationResponse, massiveProductsParameter, email);
-                LOGGER.info("RBVDR011Impl - executeFirstCancellationOrCancellationOrRetention() - isRequestCancellation: {}", isRequestCancellation);
+            boolean isRequestCancellation = this.cancellationRequestImpl.executeFirstCancellationRequest(input, policy, isRoyal, icf2Response, cancellationSimulationResponse, massiveProductsParameter, email);
+            LOGGER.info("CancellationBusiness - executeFirstCancellationOrCancellationOrRetention() - isRequestCancellation: {}", isRequestCancellation);
 
-                if (!isRequestCancellation) {
-                    this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
-                    return null;
-                }
+            if (!isRequestCancellation) {
+                this.addAdvice(RBVDErrors.ERROR_CICS_CONNECTION.getAdviceCode());
+                return null;
             }
         } else {
             return cancellationBusiness.cancellationPolicy(input, policy, policyId, productCodeForRimac, icf2Response, isRoyal, massiveProductsParameter);
@@ -373,15 +373,15 @@ public class CancellationBusiness extends AbstractLibrary {
         sb.append(".");
         sb.append(Optional.ofNullable(policy.get(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue())).map(Object::toString).orElse(StringUtils.EMPTY).toLowerCase());
         String flagCancellationRequest = sb.toString();
-        LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - property: {}", flagCancellationRequest);
+        LOGGER.info("***** CancellationBusiness - isAPXCancellationRequest - property: {}", flagCancellationRequest);
         boolean isAPXCancellationRequest = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty(flagCancellationRequest));
-        LOGGER.info("***** RBVDR011Impl - isAPXCancellationRequest - isAPXCancellationRequest: {}", isAPXCancellationRequest);
+        LOGGER.info("***** CancellationBusiness - isAPXCancellationRequest - isAPXCancellationRequest: {}", isAPXCancellationRequest);
         return isAPXCancellationRequest;
     }
 
     private String getAuthorizeReturnFlag(PolicyCancellationPayloadBO policyCancellationPayloadBO, String policyId){
         if (policyCancellationPayloadBO == null) {
-            LOGGER.info("***** RBVDR011Impl - cancellationPolicy: Policy {} could not be cancelled by Rimac. Response was null", policyId);
+            LOGGER.info("***** CancellationBusiness - cancellationPolicy: Policy {} could not be cancelled by Rimac. Response was null", policyId);
             return null;
         }
 
