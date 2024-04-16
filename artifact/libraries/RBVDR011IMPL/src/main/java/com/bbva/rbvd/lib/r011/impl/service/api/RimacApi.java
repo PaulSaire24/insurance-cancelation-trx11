@@ -67,7 +67,6 @@ public class RimacApi {
         inputrimac.setCodProducto(productCode);
         PolicyCancellationPayloadBO inputPayload = new PolicyCancellationPayloadBO();
 
-
         if(!Strings.isNullOrEmpty(isChannelEndoso)){
             LOGGER.info("***** RBVDR011Impl - CANAL: {} ACCEPTED  *****", isChannelEndoso);
             AutorizadorDTO autorizadorDTO = new AutorizadorDTO();
@@ -124,6 +123,8 @@ public class RimacApi {
 
         inputPayload.setPoliza(poliza);
         inputPayload.setContratante(contratante);
+
+        LOGGER.info("RBVDR011Impl - executePolicyCancellation() - inputrimac: {} - {}", inputrimac, inputPayload);
 
         return rbvdR311.executeCancelPolicyRimac(inputrimac, inputPayload);
     }
