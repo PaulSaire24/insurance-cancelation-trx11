@@ -100,8 +100,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation policyId: {} *****", policyId);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation productCodeForRimac: {} *****", productCodeForRimac);
 
-		// Flag que nos indica que cumple las validaciones para generar una solicitud de cancelación
-		boolean isNewCancellation = this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal);
+		// Flag que nos indica que cumple las validaciones para generar una solicitud de cancelación pero si el flag isCancellationLegacyFlow es true
+		// siempre sera falso pq representa el flujo legacy donde no se insertaba en tablas de solicitud de cancelación
+		boolean isNewCancellation = isCancellationLegacyFlow ? false : this.cancellationRequestImpl.validateNewCancellationRequest(input, policy, isRoyal);
 		LOGGER.info("RBVDR011Impl - executePolicyCancellation() - isNewCancellation: {}", isNewCancellation);
 
 		String massiveProductsParameter = this.applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,",");
