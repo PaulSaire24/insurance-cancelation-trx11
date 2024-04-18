@@ -102,7 +102,7 @@ public class CancellationRequestImpl {
         Map<Object, String> propertiesEmail = properties.emailProperties();
 
         // Enviar correo por solicitud de cancelación
-        int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(input, policy, isRoyal, icf2Response, email, requestCancellationId.toString(), propertiesEmail));
+        int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail("REQUEST_CANCELLATION", input, policy, isRoyal, icf2Response, email, requestCancellationId.toString(), propertiesEmail, new HashMap<>()));
         LOGGER.info("***** RBVDR011Impl - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
         return result;

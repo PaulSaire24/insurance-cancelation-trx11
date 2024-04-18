@@ -97,7 +97,7 @@ public class CancellationBusiness extends AbstractLibrary {
         }
 
         // Dependiendo del tipo de cancelación elegimos si ejecutar la icf3 o la icr4
-        EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag);
+        EntityOutPolicyCancellationDTO out = validateCancellationType(input, cancellationRequest, policy, icf2Response, productCode, authorizeReturnFlag, isRoyal);
         LOGGER.info("CancellationBusiness - cancellationPolicy() - out: {}", out);
         if (out == null) return null;
 
@@ -138,7 +138,7 @@ public class CancellationBusiness extends AbstractLibrary {
         // CANCELACIÓN EN RIMAC Y LA ICF3 Y YA INSERTO EN LA TABLA DE MOV CANCELACIÓN
         if (!isRoyal) {
             LOGGER.info("***** CancellationBusiness - executePolicyCancellation validatePolicy ");
-            return validatePolicy(out, requestCancellationId, input, policy, icf2Response, email, propertiesEmail);
+            return validatePolicy(out, requestCancellationId, input, policy, icf2Response, email, propertiesEmail, cancellationRequest);
         }
 
         Double totalDebt = NumberUtils.toDouble(Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
@@ -187,11 +187,11 @@ public class CancellationBusiness extends AbstractLibrary {
         validateResponse(out, policyId);
         LOGGER.info("***** CancellationBusiness - cancellationPolicy - PRODUCTO ROYAL ***** Response: {}", out);
 
-
-
         // Enviar correo por solicitud de cancelación
-        int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(input, policy, isRoyal, icf2Response, email,
-                requestCancellationId, propertiesEmail));
+        String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
+
+        int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, isRoyal, icf2Response, email,
+                requestCancellationId, propertiesEmail, cancellationRequest));
         LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
 
@@ -227,7 +227,7 @@ public class CancellationBusiness extends AbstractLibrary {
     }
 
     private EntityOutPolicyCancellationDTO validateCancellationType(InputParametersPolicyCancellationDTO input, Map<String, Object> cancellationRequest,
-                                                                    Map<String, Object> policy, ICF2Response icf2Response, String productCode, String authorizeReturnFlag) {
+                                                                    Map<String, Object> policy, ICF2Response icf2Response, String productCode, String authorizeReturnFlag, boolean isRoyal) {
         CancellationBean cancellationBean = new CancellationBean(this.pisdR401, applicationConfigurationService);
 
         if (!END_OF_VALIDATY.name().equals(input.getCancellationType()) || productCode.equals(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT)) {
@@ -242,18 +242,22 @@ public class CancellationBusiness extends AbstractLibrary {
             }
         }
 
-        return cancellationBean.mapRetentionResponse(icf2Response.getIcmf1S2().getNUMPOL(), input, input.getCancellationType(), input.getCancellationType(), input.getCancellationDate());
+        String policyId = isRoyal ? policy.get(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue()).toString() : icf2Response.getIcmf1S2().getNUMPOL();
+
+        return cancellationBean.mapRetentionResponse(policyId, input, input.getCancellationType(), input.getCancellationType(), input.getCancellationDate());
     }
 
     private EntityOutPolicyCancellationDTO validatePolicy(EntityOutPolicyCancellationDTO out, String requestCancellationId, InputParametersPolicyCancellationDTO input,
-                                                          Map<String, Object> policy, ICF2Response icf2Response, String email, Map<Object, String> propertiesEmail) {
+                                                          Map<String, Object> policy, ICF2Response icf2Response, String email, Map<Object, String> propertiesEmail, Map<String, Object> cancellationRequest) {
         if (CollectionUtils.isEmpty(this.getAdviceList()) || this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
             LOGGER.info("***** CancellationBusiness - validatePolicy - PRODUCTO NO ROYAL - Response = {} *****", out);
             this.getAdviceList().clear();
 
+            String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
+
             // Enviar correo por solicitud de cancelación
-            int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(input, policy, false, icf2Response, email,
-                    requestCancellationId, propertiesEmail));
+            int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, false, icf2Response, email,
+                    requestCancellationId, propertiesEmail, cancellationRequest));
             LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
             return out;
