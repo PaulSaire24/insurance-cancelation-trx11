@@ -3,6 +3,8 @@ package com.bbva.rbvd.lib.r011.impl.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 public class ConvertUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConvertUtil.class);
@@ -28,6 +30,26 @@ public class ConvertUtil {
         LOGGER.info("***** ConvertUtil - escapeSpecialCharacters - END");
 
         return input;
+    }
+
+    public static String convertReasonCancellation(String index) {
+
+        LOGGER.info("***** ConvertUtil - escapeSpecialCharacters - START");
+        String result;
+
+        if(Objects.equals(index, "60")) {
+            result = "Disconforme con el precio";
+        } else if (Objects.equals(index, "61")) {
+            result = " ";
+        } else if (Objects.equals(index, "62")) {
+            result = "Insatisfacción con el servicio";
+        } else {
+            result = "Otro motivo de cancelación";
+        }
+
+        LOGGER.info("***** ConvertUtil - escapeSpecialCharacters - END");
+
+        return result;
     }
 
 }

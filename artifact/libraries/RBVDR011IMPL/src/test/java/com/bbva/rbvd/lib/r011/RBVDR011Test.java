@@ -943,7 +943,7 @@ public class RBVDR011Test {
 		Map<String, Object> mappp = new HashMap<>();
 		mappp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
 		ICF2Response icf2Response = buildICF2Response();
-		icf2Response.setIcmf1S2(null);
+		//icf2Response.setIcmf1S2(null);
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
@@ -999,6 +999,7 @@ public class RBVDR011Test {
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue(), "08-09-2021 00:00:00");
 		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(),"2101");
 		policy.put(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue(), "MENSUAL");
+		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue(), "SEGURO VEHICULAR BBVA");
 		return policy;
 	}
 	public static Map<String, Object> buildPolicyMapNull(){
@@ -1196,6 +1197,7 @@ public class RBVDR011Test {
 		icmf1S2.setNUMPOL("0000000000");
 		icmf1S2.setTIPCONT("001");
 		icmf1S2.setDESCONT("test@email.com");
+		icmf1S2.setNOMSEGU("SEGURO VIDA RENTA");
 		response.setIcmf1S2(icmf1S2);
 		return response;
 	}

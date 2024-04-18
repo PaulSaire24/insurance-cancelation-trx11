@@ -72,9 +72,6 @@ public class CancellationRequestImplTest {
         when(applicationConfigurationService.getDefaultProperty(RBVDConstants.MASSIVE_PRODUCTS_LIST,",")).thenReturn("1121,");
 
         when(applicationConfigurationService.getProperty("notification.config.email.notificationTypeRequestCancellation")).thenReturn("65fc61d0233e735e5ba80031");
-        when(applicationConfigurationService.getProperty("notificationTypeRequestCancellation.description.email")).thenReturn("Recibimos tu solicitud de cancelación del seguro 86600, la cual está siendo procesada y será atendida en un plazo máximo de 1 día hábil.");
-        when(applicationConfigurationService.getProperty("notificationTypeRequestCancellation.addDescription.email")).thenReturn("¡Te mantendremos informado!");
-        when(applicationConfigurationService.getProperty("notificationTypeRequestCancellation.title.email")).thenReturn("Datos importantes");
         when(applicationConfigurationService.getProperty("notificationTypeRequestCancellation.applicationDate.email")).thenReturn("Fecha de solicitud");
         when(applicationConfigurationService.getProperty("notificationTypeRequestCancellation.applicationNumber.email")).thenReturn("Número de Solicitud");
         when(applicationConfigurationService.getProperty("notificationTypeRequestCancellation.certificateNumber.email")).thenReturn("Número de Certificado");
