@@ -30,7 +30,7 @@ public class NotificationMapper {
     private static final String CERTIFICATE_NUMBER_VALUE_EMAIL = "certificateNumberValue";
     private static final String CANCELLATION_REASON_VALUE_EMAIL = "cancellationReasonValue";
     private static final String PLAN_NAME_EMAIL = "planName";
-
+    private static final String CLIENTE_DEFAULT_NAME = "CLIENTE";
     private static final String AMOUNT_RETURNED_EMAIL = "amountReturned";
     private static final String DOMICILIE_ACCOUNT_EMAIL = "domicilieAccount";
 
@@ -103,7 +103,7 @@ public class NotificationMapper {
         ) {
             value1.setName(ConvertUtil.escapeSpecialCharacters(input.getNotifications().getContactDetails().get(2).getContact().getUsername()));
         } else {
-            value1.setName("CLIENTE");
+            value1.setName(CLIENTE_DEFAULT_NAME);
         }
 
         ValueDTO value2 = new ValueDTO();
@@ -159,7 +159,7 @@ public class NotificationMapper {
         ) {
             value1.setName(ConvertUtil.escapeSpecialCharacters(input.getNotifications().getContactDetails().get(2).getContact().getUsername()));
         } else {
-            value1.setName("CLIENTE");
+            value1.setName(CLIENTE_DEFAULT_NAME);
         }
 
         ValueDTO value2 = new ValueDTO();
@@ -236,7 +236,7 @@ public class NotificationMapper {
         ) {
             value1.setName(ConvertUtil.escapeSpecialCharacters(input.getNotifications().getContactDetails().get(2).getContact().getUsername()));
         } else {
-            value1.setName("CLIENTE");
+            value1.setName(CLIENTE_DEFAULT_NAME);
         }
 
         ValueDTO value2 = new ValueDTO();
