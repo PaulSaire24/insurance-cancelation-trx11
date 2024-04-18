@@ -37,8 +37,10 @@ public class CancellationBean {
         EntityOutPolicyCancellationDTO entityOutPolicyCancellationDTO = new EntityOutPolicyCancellationDTO();
         entityOutPolicyCancellationDTO.setId(policyId);
         entityOutPolicyCancellationDTO.setCancellationDate(cancellationDate);
+
         entityOutPolicyCancellationDTO.setReason(new GenericIndicatorDTO());
         entityOutPolicyCancellationDTO.getReason().setId(input.getReason().getId());
+
         entityOutPolicyCancellationDTO.setStatus(new GenericStatusDTO());
         entityOutPolicyCancellationDTO.getStatus().setId(statusId);
         entityOutPolicyCancellationDTO.getStatus().setDescription(statusDescription);

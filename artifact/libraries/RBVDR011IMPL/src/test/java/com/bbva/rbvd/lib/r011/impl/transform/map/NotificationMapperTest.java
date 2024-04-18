@@ -27,8 +27,8 @@ public class NotificationMapperTest {
     @Test
     public void buildEmail() {
 
-        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail(input(), policy(), true, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties());
+        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION", input(), policy(), true, buildICF2Response(),
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>());
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -36,8 +36,8 @@ public class NotificationMapperTest {
     @Test
     public void buildEmailNoRoyal() {
 
-        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail(input(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties());
+        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION", input(), policy(), false, buildICF2Response(),
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>());
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -45,8 +45,8 @@ public class NotificationMapperTest {
     @Test
     public void buildEmailNot() {
 
-        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail(input2(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties());
+        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION",input2(), policy(), false, buildICF2Response(),
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>());
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -82,6 +82,7 @@ public class NotificationMapperTest {
         icmf1S2.setNUMPOL("0000000000");
         icmf1S2.setTIPCONT("001");
         icmf1S2.setDESCONT("test@email.com");
+        icmf1S2.setNOMSEGU("SEGURO VIDA RENTA");
         response.setIcmf1S2(icmf1S2);
         return response;
     }
@@ -97,6 +98,7 @@ public class NotificationMapperTest {
         policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_START_DATE_FORMATTED.getValue(), "08-09-2021 00:00:00");
         policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(),"2101");
         policy.put(RBVDProperties.KEY_RESPONSE_PAYMENT_FREQUENCY_NAME.getValue(), "MENSUAL");
+        policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue(), "SEGURO VEHICULAR BBVA");
         return policy;
     }
 

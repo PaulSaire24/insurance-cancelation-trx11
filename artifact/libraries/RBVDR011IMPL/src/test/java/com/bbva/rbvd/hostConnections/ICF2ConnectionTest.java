@@ -59,6 +59,7 @@ public class ICF2ConnectionTest {
         icmf1S2.setDESCONT("email@prueba.com");
         icmf1S2.setNUMPOL("1111111111");
         icmf1S2.setPRODRI("00002101");
+        icmf1S2.setNOMSEGU("SEGURO VIDA RENTA");
         icf2Response.setIcmf1S2(icmf1S2);
         return icf2Response;
     }

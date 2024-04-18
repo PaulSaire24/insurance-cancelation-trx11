@@ -21,16 +21,9 @@ public class PropertiesConf {
 
         Map<Object, String> propertiesEmail = new HashMap<>();
 
-        propertiesEmail.put("notificationTypeRequestCancellationId", this.applicationConfigurationService.getProperty("notification.config.email.notificationTypeRequestCancellation"));
-        propertiesEmail.put("descriptionEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.description.email"));
-        propertiesEmail.put("addDescriptionEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.addDescription.email"));
-        propertiesEmail.put("titleEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.title.email"));
-        propertiesEmail.put("applicationDateEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.applicationDate.email"));
-        propertiesEmail.put("applicationNumberEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.applicationNumber.email"));
-        propertiesEmail.put("certificateNumberEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.certificateNumber.email"));
-        propertiesEmail.put("planTypeEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.planType.email"));
-        propertiesEmail.put("adviceEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.advice.email"));
-        propertiesEmail.put("additionalInformationEmail", this.applicationConfigurationService.getProperty("notificationTypeRequestCancellation.additionalInformation.email"));
+        propertiesEmail.put("notificationTypeRequestCancellationId", this.applicationConfigurationService.getProperty("notification.config.notificationTypeRequestCancellation"));
+        propertiesEmail.put("notificationTypeCancellationInmediateId", this.applicationConfigurationService.getProperty("notification.config.notificationTypeCancellationInmediate"));
+        propertiesEmail.put("notificationTypeCancellationEndOfValidityId", this.applicationConfigurationService.getProperty("notification.config.notificationTypeCancellationEndOfValidity"));
 
         LOGGER.info("***** PropertiesConf emailProperties END *****");
 
