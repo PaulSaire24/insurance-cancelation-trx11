@@ -113,7 +113,7 @@ public class CancellationBusiness extends AbstractLibrary {
 
 
         String requestCancellationId = "11111";// Default
-        if(!isCancellationLegacyFlow) {
+        if(!isCancellationLegacyFlow && !ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
             // Obtiene datos de la tabla de solicitud y movimiento
             Map<String, Object> requestCancellationMovLast = baseDAO.executeGetRequestCancellationMovLast(input.getContractId());
             LOGGER.info("CancellationBusiness - cancellationPolicy() - requestCancellationMovLast: {}", requestCancellationMovLast);
@@ -127,7 +127,7 @@ public class CancellationBusiness extends AbstractLibrary {
             boolean isInsertMovCancel = executeCancellationRequestMov(input, requestCancellationMovLast);
             LOGGER.info("***** CancellationBusiness - executePolicyCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
 
-            if(!isCancellationLegacyFlow && !ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode) && !isInsertMovCancel){
+            if(!isInsertMovCancel){
                 this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
                 return null;
             }

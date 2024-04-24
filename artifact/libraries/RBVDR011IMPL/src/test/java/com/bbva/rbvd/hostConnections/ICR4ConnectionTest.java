@@ -2,6 +2,7 @@ package com.bbva.rbvd.hostConnections;
 
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
+import com.bbva.rbvd.dto.cicsconnection.icr4.ICR4Response;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.lib.r011.impl.hostConnections.ICR4Connection;
 import com.bbva.rbvd.lib.r042.RBVDR042;
@@ -34,7 +35,10 @@ public class ICR4ConnectionTest {
     @Test
     public void validateExecuteICR4TransactionOk(){
         InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
-        when(rbvdr042.executeICR4(anyObject())).thenReturn(OK);
+        ICR4Response icr4Response = new ICR4Response();
+        icr4Response.setCodeMessage(OK);
+
+        when(rbvdr042.executeICR4(anyObject())).thenReturn(icr4Response);
         boolean validate = icr4Connection.executeICR4Transaction(input, CANCELLATION_REQUEST_STATUS);
         assertTrue(validate);
     }
@@ -42,7 +46,10 @@ public class ICR4ConnectionTest {
     @Test
     public void validateExecuteICR4TransactionOkWarn(){
         InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
-        when(rbvdr042.executeICR4(anyObject())).thenReturn(OK_WARN);
+        ICR4Response icr4Response = new ICR4Response();
+        icr4Response.setCodeMessage(OK_WARN);
+
+        when(rbvdr042.executeICR4(anyObject())).thenReturn(icr4Response);
         boolean validate = icr4Connection.executeICR4Transaction(input, CANCELLATION_REQUEST_STATUS);
         assertTrue(validate);
     }
@@ -50,7 +57,10 @@ public class ICR4ConnectionTest {
     @Test
     public void validateExecuteICR4TransactionError(){
         InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
-        when(rbvdr042.executeICR4(anyObject())).thenReturn(ERROR_CODE);
+        ICR4Response icr4Response = new ICR4Response();
+        icr4Response.setCodeMessage(ERROR_CODE);
+
+        when(rbvdr042.executeICR4(anyObject())).thenReturn(icr4Response);
         boolean validate = icr4Connection.executeICR4Transaction(input, CANCELLATION_REQUEST_STATUS);
         assertFalse(validate);
     }
