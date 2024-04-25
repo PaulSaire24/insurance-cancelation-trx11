@@ -112,21 +112,8 @@ public class CancellationBusiness extends AbstractLibrary {
         }
 
 
-        // Se inserta un registro en la tabla de movimiento de cancelaciones
-        Map<String, Object> requestCancellationMovLast = baseDAO.executeGetRequestCancellationMovLast(input.getContractId());
-        LOGGER.info("CancellationBusiness - cancellationPolicy() - requestCancellationMovLast: {}", requestCancellationMovLast);
-        if(requestCancellationMovLast==null){
-            return null;
-        }
-        // Dato que se saca para enviar en el correo - el id de la secuencia de un seguro en solicitud de cancelacion
-        String requestCancellationId = requestCancellationMovLast.get(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue()).toString();
-        LOGGER.info("***** CancellationBusiness - executePolicyCancellation requestCancellationId: {} *****", requestCancellationId);
-
-        boolean isInsertMovCancel = executeCancellationRequestMov(input, requestCancellationMovLast);
-        LOGGER.info("***** CancellationBusiness - executePolicyCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
-
-        if(!isCancellationLegacyFlow && !ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode) && !isInsertMovCancel){
-            this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
+        String requestCancellationId = insertREquestCancellation(productCode, input);
+        if(requestCancellationId == null) {
             return null;
         }
 
@@ -197,6 +184,31 @@ public class CancellationBusiness extends AbstractLibrary {
 
         LOGGER.info("***** CancellationBusiness - cancellationPolicy END *****");
         return out;
+    }
+
+    private String insertREquestCancellation(String productCode, InputParametersPolicyCancellationDTO input) {
+        String requestCancellationId = "11111";
+        if(!isCancellationLegacyFlow && !ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
+            // Obtiene datos de la tabla de solicitud y movimiento
+            Map<String, Object> requestCancellationMovLast = baseDAO.executeGetRequestCancellationMovLast(input.getContractId());
+            LOGGER.info("CancellationBusiness - cancellationPolicy() - requestCancellationMovLast: {}", requestCancellationMovLast);
+            if (requestCancellationMovLast == null) {
+                return null;
+            }
+            // Dato que se saca para enviar en el correo - el id de la secuencia de un seguro en solicitud de cancelacion
+            requestCancellationId = requestCancellationMovLast.get(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue()).toString();
+            LOGGER.info("***** CancellationBusiness - executePolicyCancellation requestCancellationId: {} *****", requestCancellationId);
+
+            boolean isInsertMovCancel = executeCancellationRequestMov(input, requestCancellationMovLast);
+            LOGGER.info("***** CancellationBusiness - executePolicyCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
+
+            if(!isInsertMovCancel){
+                this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
+                return null;
+            }
+
+        }
+        return requestCancellationId;
     }
 
     private Map<String, Object> getRequestCancellationRequest(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal,
