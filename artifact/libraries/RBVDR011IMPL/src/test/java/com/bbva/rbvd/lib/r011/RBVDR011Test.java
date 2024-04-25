@@ -35,6 +35,7 @@ import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICMF1S2;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
+import com.bbva.rbvd.dto.cicsconnection.icr4.ICR4Response;
 import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.bo.DatoParticularBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.*;
@@ -171,9 +172,12 @@ public class RBVDR011Test {
 		icmf1S2.setCODPROD("801");
 		icf2Response.setIcmf1S2(icmf1S2);
 
+		ICR4Response icr4Response = new ICR4Response();
+		icr4Response.setCodeMessage("OK");
+
 
 		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
-		when(rbvdR042.executeICR4(anyObject())).thenReturn("OK");
+		when(rbvdR042.executeICR4(anyObject())).thenReturn(icr4Response);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
 		when(rbvdR310.executeICF2(anyObject())).thenReturn(icf2Response);
