@@ -26,6 +26,7 @@ public class NotificationMapper {
     private static final String CUSTOMER_NAME_EMAIL = "name";
     private static final String INSURANCE_NAME_EMAIL = "insuranceName";
     private static final String CANCELLATION_DATE_VALUE_EMAIL = "cancellationDateValue";
+    private static final String CANCELLATION_HOUR_VALUE_EMAIL = "cancellationHourValue";
     private static final String APPLICATION_NUMBER_VALUE_EMAIL = "applicationNumberValue";
     private static final String CERTIFICATE_NUMBER_VALUE_EMAIL = "certificateNumberValue";
     private static final String CANCELLATION_REASON_VALUE_EMAIL = "cancellationReasonValue";
@@ -33,11 +34,13 @@ public class NotificationMapper {
     private static final String CLIENTE_DEFAULT_NAME = "CLIENTE";
     private static final String AMOUNT_RETURNED_EMAIL = "amountReturned";
     private static final String DOMICILIE_ACCOUNT_EMAIL = "domicilieAccount";
+    private static final String DATE_FORMAT_HH_MM_SS = "HH:mm:ss";
 
     private NotificationMapper() {}
 
-    public static SendNotificationsDTO buildEmail(String typeCancellation, InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
-                                                  String email, String requestCancellationId, Map<Object, String> propertiesEmail, Map<String, Object> cancellationRequest) {
+    public static SendNotificationsDTO buildEmail(String typeCancellation, InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal,
+                                                  ICF2Response icf2Response, String email, String requestCancellationId, Map<Object, String> propertiesEmail,
+                                                  Map<String, Object> cancellationRequest, boolean contactEmailTest) {
         LOGGER.info("RBVDR011Impl - buildEmail() - START :: email - {}", email);
 
         NotificationDTO notification = new NotificationDTO();
@@ -48,7 +51,7 @@ public class NotificationMapper {
                 ? policy.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()).toString()
                 : icf2Response.getIcmf1S2().getCODCLI()));
         receiver.setRecipientType("TO");
-        receiver.setEmail("SACARBAJAL@BBVA.COM");
+        receiver.setEmail(contactEmailTest ? "SACARBAJAL@BBVA.COM" : email);
         receiver.setContractId(input.getContractId());
 
         List<ReceiverDTO> receivers = new ArrayList<>();
@@ -113,24 +116,35 @@ public class NotificationMapper {
                 : icf2Response.getIcmf1S2().getNOMSEGU()));
 
         ValueDTO value3 = new ValueDTO();
-        value3.setId(CANCELLATION_DATE_VALUE_EMAIL);
-        value3.setName(new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD).format(new Date())); //"05 de marzo del 2024"
+        value3.setId(PLAN_NAME_EMAIL);
+        value3.setName(isRoyal
+                ? policy.get(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue()).toString()
+                : icf2Response.getIcmf1S2().getPLANELE());
 
+        Date date = new Date();
         ValueDTO value4 = new ValueDTO();
-        value4.setId(APPLICATION_NUMBER_VALUE_EMAIL);
-        value4.setName(requestCancellationId);
+        value4.setId(CANCELLATION_DATE_VALUE_EMAIL);
+        value4.setName(new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD).format(date)); //"05 de marzo del 2024"
 
         ValueDTO value5 = new ValueDTO();
-        value5.setId(CERTIFICATE_NUMBER_VALUE_EMAIL);
-        value5.setName((input.getContractId().substring(0, 4))
+        value5.setId(CANCELLATION_HOUR_VALUE_EMAIL);
+        value5.setName(new SimpleDateFormat(DATE_FORMAT_HH_MM_SS).format(date)); // 11:08:48
+
+        ValueDTO value6 = new ValueDTO();
+        value6.setId(APPLICATION_NUMBER_VALUE_EMAIL);
+        value6.setName(requestCancellationId);
+
+        ValueDTO value7 = new ValueDTO();
+        value7.setId(CERTIFICATE_NUMBER_VALUE_EMAIL);
+        value7.setName((input.getContractId().substring(0, 4))
                 .concat("-")
                 .concat(input.getContractId().substring(4, 8))
                 .concat("-")
                 .concat(input.getContractId().substring(10))); //"0011-0176-4000188860"
 
-        ValueDTO value6 = new ValueDTO();
-        value6.setId(CANCELLATION_REASON_VALUE_EMAIL);
-        value6.setName(ConvertUtil.escapeSpecialCharacters(ConvertUtil.convertReasonCancellation(input.getReason().getId())));
+        ValueDTO value8 = new ValueDTO();
+        value8.setId(CANCELLATION_REASON_VALUE_EMAIL);
+        value8.setName(ConvertUtil.escapeSpecialCharacters(ConvertUtil.convertReasonCancellation(input.getReason().getId())));
 
 
         values.add(value1);
@@ -139,6 +153,8 @@ public class NotificationMapper {
         values.add(value4);
         values.add(value5);
         values.add(value6);
+        values.add(value7);
+        values.add(value8);
 
         return values;
 
@@ -184,27 +200,30 @@ public class NotificationMapper {
         value5.setId(DOMICILIE_ACCOUNT_EMAIL);
         value5.setName(input.getInsurerRefund().getPaymentMethod().getContract().getId()); // 00110130000210499196
 
+        Date date = new Date();
         ValueDTO value6 = new ValueDTO();
         value6.setId(CANCELLATION_DATE_VALUE_EMAIL);
-        Timestamp dateTimestamp = (Timestamp) cancellationRequest.get(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue());
-        Date date = new Date(dateTimestamp.getTime());
         value6.setName(new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD).format(date)); //"05 de marzo del 2024"
 
         ValueDTO value7 = new ValueDTO();
-        value7.setId(APPLICATION_NUMBER_VALUE_EMAIL);
-        value7.setName(requestCancellationId);
+        value7.setId(CANCELLATION_HOUR_VALUE_EMAIL);
+        value7.setName(new SimpleDateFormat(DATE_FORMAT_HH_MM_SS).format(date)); // 11:08:48
 
         ValueDTO value8 = new ValueDTO();
-        value8.setId(CERTIFICATE_NUMBER_VALUE_EMAIL);
-        value8.setName((input.getContractId().substring(0, 4))
+        value8.setId(APPLICATION_NUMBER_VALUE_EMAIL);
+        value8.setName(requestCancellationId);
+
+        ValueDTO value9 = new ValueDTO();
+        value9.setId(CERTIFICATE_NUMBER_VALUE_EMAIL);
+        value9.setName((input.getContractId().substring(0, 4))
                 .concat("-")
                 .concat(input.getContractId().substring(4, 8))
                 .concat("-")
                 .concat(input.getContractId().substring(10))); //"0011-0176-4000188860"
 
-        ValueDTO value9 = new ValueDTO();
-        value9.setId(CANCELLATION_REASON_VALUE_EMAIL);
-        value9.setName(ConvertUtil.escapeSpecialCharacters(ConvertUtil.convertReasonCancellation(input.getReason().getId())));
+        ValueDTO value10 = new ValueDTO();
+        value10.setId(CANCELLATION_REASON_VALUE_EMAIL);
+        value10.setName(ConvertUtil.escapeSpecialCharacters(ConvertUtil.convertReasonCancellation(input.getReason().getId())));
 
 
         values.add(value1);
@@ -216,6 +235,7 @@ public class NotificationMapper {
         values.add(value7);
         values.add(value8);
         values.add(value9);
+        values.add(value10);
 
         return values;
 
@@ -251,25 +271,30 @@ public class NotificationMapper {
                 ? policy.get(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue()).toString()
                 : icf2Response.getIcmf1S2().getPLANELE());
 
+        Date date = new Date();
         ValueDTO value4 = new ValueDTO();
         value4.setId(CANCELLATION_DATE_VALUE_EMAIL);
-        value4.setName(new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD).format(input.getCancellationDate().getTime())); //"05 de marzo del 2024"
+        value4.setName(new SimpleDateFormat(RBVDConstants.DATEFORMAT_YYYYMMDD).format(date)); //"05 de marzo del 2024"
 
         ValueDTO value5 = new ValueDTO();
-        value5.setId(APPLICATION_NUMBER_VALUE_EMAIL);
-        value5.setName(requestCancellationId);
+        value5.setId(CANCELLATION_HOUR_VALUE_EMAIL);
+        value5.setName(new SimpleDateFormat(DATE_FORMAT_HH_MM_SS).format(date)); // 11:08:48
 
         ValueDTO value6 = new ValueDTO();
-        value6.setId(CERTIFICATE_NUMBER_VALUE_EMAIL);
-        value6.setName((input.getContractId().substring(0, 4))
+        value6.setId(APPLICATION_NUMBER_VALUE_EMAIL);
+        value6.setName(requestCancellationId);
+
+        ValueDTO value7 = new ValueDTO();
+        value7.setId(CERTIFICATE_NUMBER_VALUE_EMAIL);
+        value7.setName((input.getContractId().substring(0, 4))
                 .concat("-")
                 .concat(input.getContractId().substring(4, 8))
                 .concat("-")
                 .concat(input.getContractId().substring(10))); //"0011-0176-4000188860"
 
-        ValueDTO value7 = new ValueDTO();
-        value7.setId(CANCELLATION_REASON_VALUE_EMAIL);
-        value7.setName(ConvertUtil.escapeSpecialCharacters(ConvertUtil.convertReasonCancellation(input.getReason().getId())));
+        ValueDTO value8 = new ValueDTO();
+        value8.setId(CANCELLATION_REASON_VALUE_EMAIL);
+        value8.setName(ConvertUtil.escapeSpecialCharacters(ConvertUtil.convertReasonCancellation(input.getReason().getId())));
 
 
         values.add(value1);
@@ -279,6 +304,7 @@ public class NotificationMapper {
         values.add(value5);
         values.add(value6);
         values.add(value7);
+        values.add(value8);
 
         return values;
 
