@@ -8,6 +8,7 @@ import com.bbva.rbvd.lib.r011.impl.transform.bean.CancellationBean;
 
 import java.util.*;
 
+import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
 import com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
@@ -72,7 +73,9 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		 * ELSE ( si es cancelación del dia d + 1 <seguro royal> )
 		 * 			- Ejecuta el servicio simulación de Rimac para obtener los montos de devolución hacia el cliente
 		 */
-		if (isStartDateTodayOrAfterToday(isRoyal, policy)) {
+		if(ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCodeForRimac)){
+			LOGGER.info("RBVDR011Impl - executePolicyCancellation() - no entra en esto flujos *****");
+		} else if (isStartDateTodayOrAfterToday(isRoyal, policy)) {
 			LOGGER.info("RBVDR011Impl - executePolicyCancellation() - executeICF2Transaction begin *****");
 			icf2Response = this.icf2Connection.executeICF2Transaction(input);
 			LOGGER.info("RBVDR011Impl - executePolicyCancellation() - icf2Response: {}", icf2Response);
