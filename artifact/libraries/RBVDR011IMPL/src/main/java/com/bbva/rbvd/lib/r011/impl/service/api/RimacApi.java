@@ -49,7 +49,9 @@ public class RimacApi {
         cancellationSimulationResponse = rbvdR311.executeSimulateCancelationRimac(rimacSimulationRequest);
         LOGGER.info("RBVDR011Impl - getCancellationSimulationResponse() - cancellationSimulationResponse: {}", cancellationSimulationResponse);
 
-        if(cancellationSimulationResponse != null) {
+        if(cancellationSimulationResponse == null) {
+            return null;
+        } else {
             cancellationSimulationResponse.setMoneda(conversor(cancellationSimulationResponse.getMoneda()));
         }
 

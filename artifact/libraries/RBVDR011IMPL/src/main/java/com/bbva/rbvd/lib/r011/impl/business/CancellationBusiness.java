@@ -37,7 +37,6 @@ import java.util.*;
 
 import static com.bbva.rbvd.lib.r011.impl.utils.CancellationTypes.*;
 import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isOpenCancellationRequest;
-import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.isStartDateTodayOrAfterToday;
 
 public class CancellationBusiness extends AbstractLibrary {
 
@@ -82,6 +81,7 @@ public class CancellationBusiness extends AbstractLibrary {
 
         String listCancellation = this.applicationConfigurationService.getProperty(RBVDConstants.CANCELLATION_LIST_ENDOSO);
         String[] channelCancellation = listCancellation.split(",");
+        LOGGER.info("CancellationBusiness - cancellationPolicy() - channelCancellation: {}", channelCancellation);
 
         String channelCode = input.getChannelId();
         String isChannelEndoso = Arrays.stream(channelCancellation).filter(channel -> channel.equals(channelCode)).findFirst().orElse(null);
@@ -91,9 +91,9 @@ public class CancellationBusiness extends AbstractLibrary {
 
         // CANCELACIÓN DE PRODUCTOS NO ROYAL
         if (!isRoyal) {
-            LOGGER.info("***** CancellationBusiness - cancellationPolicy: No royal rimac cancellation");
+            LOGGER.info("CancellationBusiness - cancellationPolicy(): No royal rimac cancellation");
             authorizeReturnFlag = executeRimacCancellationTypeNoRoyal(input, icf2Response, isChannelEndoso, userCode, cancellationRequest, email, false);
-            LOGGER.info("RBVDR011Impl - cancellationPolicy() - authorizeReturnFlag: {}", authorizeReturnFlag);
+            LOGGER.info("CancellationBusiness - cancellationPolicy() - authorizeReturnFlag: {}", authorizeReturnFlag);
         }
 
         // Dependiendo del tipo de cancelación elegimos si ejecutar la icf3 o la icr4
@@ -112,7 +112,7 @@ public class CancellationBusiness extends AbstractLibrary {
         }
 
 
-        String requestCancellationId = insertREquestCancellation(productCode, input);
+        String requestCancellationId = insertRequestCancellation(productCode, input);
         if(requestCancellationId == null) {
             return null;
         }
@@ -145,6 +145,9 @@ public class CancellationBusiness extends AbstractLibrary {
             movementType = RBVDConstants.MOV_ANU;
         }
 
+        LOGGER.info("CancellationBusiness - cancellationPolicy() - statusId: {}", statusId);
+        LOGGER.info("CancellationBusiness - cancellationPolicy() - movementType: {}", movementType);
+
         // INSERTA UN REGISTRO DE MOVIMIENTO EN LA TABLA DE MOVIMIENTOS DE CONTRATO
         baseDAO.executeSaveContractMovement(input, movementType, statusId);
 
@@ -176,9 +179,11 @@ public class CancellationBusiness extends AbstractLibrary {
 
         // Enviar correo por solicitud de cancelación
         String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
+        // Contact email test
+        boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
 
         int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, isRoyal, icf2Response, email,
-                requestCancellationId, propertiesEmail, cancellationRequest));
+                requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest));
         LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
 
@@ -186,21 +191,21 @@ public class CancellationBusiness extends AbstractLibrary {
         return out;
     }
 
-    private String insertREquestCancellation(String productCode, InputParametersPolicyCancellationDTO input) {
+    private String insertRequestCancellation(String productCode, InputParametersPolicyCancellationDTO input) {
         String requestCancellationId = "11111";
         if(!isCancellationLegacyFlow && !ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
             // Obtiene datos de la tabla de solicitud y movimiento
             Map<String, Object> requestCancellationMovLast = baseDAO.executeGetRequestCancellationMovLast(input.getContractId());
-            LOGGER.info("CancellationBusiness - cancellationPolicy() - requestCancellationMovLast: {}", requestCancellationMovLast);
+            LOGGER.info("CancellationBusiness - insertRequestCancellation() - requestCancellationMovLast: {}", requestCancellationMovLast);
             if (requestCancellationMovLast == null) {
                 return null;
             }
             // Dato que se saca para enviar en el correo - el id de la secuencia de un seguro en solicitud de cancelacion
             requestCancellationId = requestCancellationMovLast.get(RBVDProperties.FIELD_REQUEST_SEQUENCE_ID.getValue()).toString();
-            LOGGER.info("***** CancellationBusiness - executePolicyCancellation requestCancellationId: {} *****", requestCancellationId);
+            LOGGER.info("***** CancellationBusiness - insertRequestCancellation requestCancellationId: {} *****", requestCancellationId);
 
             boolean isInsertMovCancel = executeCancellationRequestMov(input, requestCancellationMovLast);
-            LOGGER.info("***** CancellationBusiness - executePolicyCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
+            LOGGER.info("***** CancellationBusiness - insertRequestCancellation isInsertMovCancel: {} *****", isInsertMovCancel);
 
             if(!isInsertMovCancel){
                 this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
@@ -266,10 +271,12 @@ public class CancellationBusiness extends AbstractLibrary {
             this.getAdviceList().clear();
 
             String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
+            // Contact email test
+            boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
 
             // Enviar correo por solicitud de cancelación
             int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, false, icf2Response, email,
-                    requestCancellationId, propertiesEmail, cancellationRequest));
+                    requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest));
             LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
             return out;

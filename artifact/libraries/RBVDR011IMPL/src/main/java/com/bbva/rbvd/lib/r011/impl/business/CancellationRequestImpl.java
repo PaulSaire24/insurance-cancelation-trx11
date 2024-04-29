@@ -16,6 +16,7 @@ import com.bbva.rbvd.lib.r011.impl.transform.map.CancellationMapper;
 import com.bbva.rbvd.lib.r011.impl.transform.map.NotificationMapper;
 import com.bbva.rbvd.lib.r305.RBVDR305;
 import com.bbva.rbvd.lib.r311.RBVDR311;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,8 +102,12 @@ public class CancellationRequestImpl {
         PropertiesConf properties = new PropertiesConf(this.applicationConfigurationService);
         Map<Object, String> propertiesEmail = properties.emailProperties();
 
+        // Contact email test
+        boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
+
         // Enviar correo por solicitud de cancelación
-        int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail("REQUEST_CANCELLATION", input, policy, isRoyal, icf2Response, email, requestCancellationId.toString(), propertiesEmail, new HashMap<>()));
+        int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail("REQUEST_CANCELLATION", input, policy, isRoyal, icf2Response, email,
+                requestCancellationId.toString(), propertiesEmail, new HashMap<>(), contactEmailTest));
         LOGGER.info("***** RBVDR011Impl - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
         return result;

@@ -28,7 +28,7 @@ public class NotificationMapperTest {
     public void buildEmail() {
 
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION", input(), policy(), true, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>());
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -37,7 +37,7 @@ public class NotificationMapperTest {
     public void buildEmailNoRoyal() {
 
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION", input(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>());
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -46,7 +46,7 @@ public class NotificationMapperTest {
     public void buildEmailNot() {
 
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION",input2(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>());
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }

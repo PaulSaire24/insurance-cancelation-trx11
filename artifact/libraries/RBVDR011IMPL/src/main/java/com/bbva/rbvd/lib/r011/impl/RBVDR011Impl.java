@@ -92,6 +92,10 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			RimacApi rimacApi = new RimacApi(this.rbvdR311, this.applicationConfigurationService);
 
 			cancellationSimulationResponse = rimacApi.getCancellationSimulationResponse(input, policyId, productCodeForRimac);
+			if(cancellationSimulationResponse == null){
+				this.addAdvice(RBVDErrors.ERROR_TO_CONNECT_SERVICE_CANCELATIONSIMULATION_RIMAC.getAdviceCode());
+				return null;
+			}
 			LOGGER.info("RBVDR011Impl - executePolicyCancellation() - cancellationSimulationResponse: {}", cancellationSimulationResponse);
 			cancellationBusiness.setCancellationSimulationResponse(cancellationSimulationResponse);
 		}

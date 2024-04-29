@@ -284,6 +284,7 @@ public class RBVDR011Test {
 		Map<String,Object> product = buildProductMap();
 		InputParametersPolicyCancellationDTO input = buildImmediateCancellationInput_EmailContactAndPhoneContact();
 		Map<String, Object> policy = buildPolicyMap();
+		CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
 		List<Map<String, Object>> requestCancellationMovLast = buildOpenRequestCancellationMovLastOpen();
 		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
 		EntityOutPolicyCancellationDTO icf3Response = new EntityOutPolicyCancellationDTO();
@@ -293,6 +294,7 @@ public class RBVDR011Test {
 		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		when(applicationConfigurationService.getProperty("cancellation.request.01.pc")).thenReturn("false");
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(false);
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(buildOpenRequestCancellationMovLastOpen());
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(icf3Response);
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
@@ -457,6 +459,8 @@ public class RBVDR011Test {
 		EntityOutPolicyCancellationDTO icf3MappedResponse = buildInsuranceCancellationResponseRefundOk();
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
+		CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(rbvdr311.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(false);
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(buildOpenRequestCancellationMovLastOpen());
@@ -814,6 +818,8 @@ public class RBVDR011Test {
 		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC, "VIDAINVERSION");
 		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
+		CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(icf3MappedResponse);
@@ -837,6 +843,8 @@ public class RBVDR011Test {
 		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC, "VIDAINVERSION");
 		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
+		CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(icf3MappedResponse);
@@ -859,6 +867,8 @@ public class RBVDR011Test {
 		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC, "VIDAINVERSION");
 		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
+		CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(icf3MappedResponse);
@@ -882,6 +892,8 @@ public class RBVDR011Test {
 		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC, "VIDAINVERSION");
 		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
+		CancelationSimulationPayloadBO payload = buildCancelationSimulationResponse();
+		when(rbvdr311.executeSimulateCancelationRimac(anyObject())).thenReturn(payload);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
 		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(icf3MappedResponse);
