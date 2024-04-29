@@ -34,6 +34,7 @@ public class NotificationMapper {
     private static final String CLIENTE_DEFAULT_NAME = "CLIENTE";
     private static final String AMOUNT_RETURNED_EMAIL = "amountReturned";
     private static final String DOMICILIE_ACCOUNT_EMAIL = "domicilieAccount";
+    private static final String DATE_FORMAT_HH_MM_SS = "HH:mm:ss";
 
     private NotificationMapper() {}
 
@@ -127,7 +128,7 @@ public class NotificationMapper {
 
         ValueDTO value5 = new ValueDTO();
         value5.setId(CANCELLATION_HOUR_VALUE_EMAIL);
-        value5.setName(new SimpleDateFormat("HH:mm:ss").format(date)); // 11:08:48
+        value5.setName(new SimpleDateFormat(DATE_FORMAT_HH_MM_SS).format(date)); // 11:08:48
 
         ValueDTO value6 = new ValueDTO();
         value6.setId(APPLICATION_NUMBER_VALUE_EMAIL);
@@ -206,7 +207,7 @@ public class NotificationMapper {
 
         ValueDTO value7 = new ValueDTO();
         value7.setId(CANCELLATION_HOUR_VALUE_EMAIL);
-        value7.setName(new SimpleDateFormat("HH:mm:ss").format(date)); // 11:08:48
+        value7.setName(new SimpleDateFormat(DATE_FORMAT_HH_MM_SS).format(date)); // 11:08:48
 
         ValueDTO value8 = new ValueDTO();
         value8.setId(APPLICATION_NUMBER_VALUE_EMAIL);
@@ -277,7 +278,7 @@ public class NotificationMapper {
 
         ValueDTO value5 = new ValueDTO();
         value5.setId(CANCELLATION_HOUR_VALUE_EMAIL);
-        value5.setName(new SimpleDateFormat("HH:mm:ss").format(date)); // 11:08:48
+        value5.setName(new SimpleDateFormat(DATE_FORMAT_HH_MM_SS).format(date)); // 11:08:48
 
         ValueDTO value6 = new ValueDTO();
         value6.setId(APPLICATION_NUMBER_VALUE_EMAIL);
