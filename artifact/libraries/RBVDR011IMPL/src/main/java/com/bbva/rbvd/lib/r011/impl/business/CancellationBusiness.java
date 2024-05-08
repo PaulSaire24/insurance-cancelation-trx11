@@ -387,7 +387,6 @@ public class CancellationBusiness extends AbstractLibrary {
 
     // FLag de canal -- producto -- frecuencia de pago
     private boolean isAPXCancellationRequest(String insuranceProductId, String channelId, Map<String, Object> policy) {
-        if (policy == null) return false;
         StringBuilder sb = new StringBuilder();
         sb.append(RBVDConstants.CANCELLATION_REQUEST);
         sb.append(org.apache.commons.lang.StringUtils.defaultString(insuranceProductId));
