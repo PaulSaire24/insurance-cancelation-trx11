@@ -112,8 +112,8 @@ public class NotificationMapper {
         ValueDTO value2 = new ValueDTO();
         value2.setId(INSURANCE_NAME_EMAIL);
         value2.setName(ConvertUtil.escapeSpecialCharacters( isRoyal
-                ? policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue()).toString()
-                : icf2Response.getIcmf1S2().getNOMSEGU()));
+                ? policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue()).toString().toUpperCase()
+                : icf2Response.getIcmf1S2().getNOMSEGU().toUpperCase()));
 
         ValueDTO value3 = new ValueDTO();
         value3.setId(PLAN_NAME_EMAIL);
@@ -181,8 +181,8 @@ public class NotificationMapper {
         ValueDTO value2 = new ValueDTO();
         value2.setId(INSURANCE_NAME_EMAIL);
         value2.setName(ConvertUtil.escapeSpecialCharacters( isRoyal
-                ? policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue()).toString()
-                : icf2Response.getIcmf1S2().getNOMSEGU()));
+                ? policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue()).toString().toUpperCase()
+                : icf2Response.getIcmf1S2().getNOMSEGU().toUpperCase()));
 
         ValueDTO value3 = new ValueDTO();
         value3.setId(PLAN_NAME_EMAIL);
@@ -262,8 +262,8 @@ public class NotificationMapper {
         ValueDTO value2 = new ValueDTO();
         value2.setId(INSURANCE_NAME_EMAIL);
         value2.setName(ConvertUtil.escapeSpecialCharacters( isRoyal
-                ? policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue()).toString()
-                : icf2Response.getIcmf1S2().getNOMSEGU()));
+                ? policy.get(RBVDProperties.KEY_RESPONSE_PRODUCT_DESC.getValue()).toString().toUpperCase()
+                : icf2Response.getIcmf1S2().getNOMSEGU().toUpperCase()));
 
         ValueDTO value3 = new ValueDTO();
         value3.setId(PLAN_NAME_EMAIL);
