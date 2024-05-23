@@ -16,7 +16,7 @@ public abstract class AbstractRBVDT01101PETransaction extends AbstractTransactio
 
 	public AbstractRBVDT01101PETransaction(){
 	}
-
+	
 
 	/**
 	 * Return value for input parameter insurance-contract-id
