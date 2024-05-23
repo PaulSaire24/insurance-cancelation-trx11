@@ -90,7 +90,6 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			statusId = RBVDConstants.TAG_ANU;
 			movementType = RBVDConstants.MOV_ANU;
 		}
-		String email = "";
 
 		Map<String, Object> mapContract = RBVDUtils.getMapContractNumber(input.getContractId());
 		mapContract.put(RBVDProperties.KEY_REQUEST_USER_AUDIT_ID.getValue(), input.getUserId());
@@ -102,23 +101,8 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		this.pisdR100.executeSaveContractMovement(arguments);
 
-		String activeEmailHost = this.applicationConfigurationService.getDefaultProperty("active.email.host", "false");
+		String email = getEmailFromNotifications(input, out);
 
-		if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
-				&& input.getNotifications().getContactDetails().get(0).getContact() != null) {
-			email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
-
-			if(Boolean.parseBoolean(activeEmailHost) && email.isEmpty()) {
-				LOGGER.info("***** RBVDR011Impl - activeEmailHost Start  *****");
-				email = Optional.ofNullable(out.getNotifications())
-						.map(NotificationsDTO::getContactDetails)
-						.filter(list -> !list.isEmpty())
-						.map(list -> list.get(0).getContact())
-						.map(GenericContactDTO::getAddress)
-						.orElse(email);
-				LOGGER.info("***** RBVDR011Impl - emailHost: {} *****", email);
-			}
-		}
 		arguments.clear();
 		arguments.putAll(mapContract);
 		arguments.put(RBVDProperties.KEY_REQUEST_INSRCCONTRACT_ORIGIN_BRANCH.getValue(), input.getBranchId());
@@ -194,6 +178,29 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation - PRODUCTO ROYAL ***** Response: {}", out);
 		LOGGER.info("***** RBVDR011Impl - executePolicyCancellation END *****");
 		return out;
+	}
+
+	private String getEmailFromNotifications(InputParametersPolicyCancellationDTO input, EntityOutPolicyCancellationDTO out) {
+
+		String email = "";
+		String activeEmailHost = this.applicationConfigurationService.getDefaultProperty("active.email.host", "false");
+
+		if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
+				&& input.getNotifications().getContactDetails().get(0).getContact() != null) {
+			email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
+
+			if(Boolean.parseBoolean(activeEmailHost) && email.isEmpty()) {
+				LOGGER.info("***** RBVDR011Impl - activeEmailHost Start  *****");
+				email = Optional.ofNullable(out.getNotifications())
+						.map(NotificationsDTO::getContactDetails)
+						.filter(list -> !list.isEmpty())
+						.map(list -> list.get(0).getContact())
+						.map(GenericContactDTO::getAddress)
+						.orElse(email);
+				LOGGER.info("***** RBVDR011Impl - emailHost: {} *****", email);
+			}
+		}
+		return email;
 	}
 
 	private Map<String, Object> getProductByProductId(String productId) {
