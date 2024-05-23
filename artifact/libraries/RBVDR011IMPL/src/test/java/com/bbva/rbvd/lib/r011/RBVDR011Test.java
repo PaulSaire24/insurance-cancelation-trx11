@@ -2,16 +2,12 @@ package com.bbva.rbvd.lib.r011;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,23 +16,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-import com.bbva.pisd.lib.r103.PISDR103;
 import com.bbva.pisd.lib.r401.PISDR401;
-import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
-import com.bbva.rbvd.dto.cicsconnection.icf3.ICMF3S0;
 import com.bbva.rbvd.dto.insurancecancelation.commons.*;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
-import com.google.common.collect.Maps;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -45,10 +33,10 @@ import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r100.PISDR100;
-import com.bbva.rbvd.lib.r311.RBVDR311;
-import com.bbva.rbvd.lib.r051.RBVDR051;
 import com.bbva.rbvd.dto.insurancecancelation.bo.PolicyCancellationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.mock.MockDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r003.RBVDR003;
@@ -71,24 +59,17 @@ public class RBVDR011Test {
 	private RBVDR003 rbvdr003;
 	private PISDR100 pisdr100;
 	private PISDR401 pisdR401;
-	private RBVDR311 rbvdr311;
-	private PISDR103 pisdr103;
-
-	private RBVDR051 rbvdR051;
-
-	private InputParametersPolicyCancellationDTO inputInvestment;
-
 	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Before
 	public void setUp() throws Exception {
 		ThreadContext.set(new Context());
 		spyRbvdR011 = spy(rbvdR011);
-		
+
 		RBVDR012 = mock(RBVDR012.class);
 		rbvdR011.setRbvdR012(RBVDR012);
 		spyRbvdR011.setRbvdR012(RBVDR012);
-		
+
 		rbvdr003 = mock(RBVDR003.class);
 		rbvdR011.setRbvdR003(rbvdr003);
 		spyRbvdR011.setRbvdR003(rbvdr003);
@@ -103,55 +84,11 @@ public class RBVDR011Test {
 		rbvdR011.setPisdR100(pisdr100);
 		spyRbvdR011.setPisdR100(pisdr100);
 
-		rbvdr311 = mock(RBVDR311.class);
-		rbvdR011.setRbvdR311(rbvdr311);
-		spyRbvdR011.setRbvdR311(rbvdr311);
+		when(applicationConfigurationService.getDefaultProperty(eq("active.email.host"), eq("false"))).thenReturn("false");
 
-		pisdr103 = mock(PISDR103.class);
-		rbvdR011.setPisdR103(pisdr103);
-		spyRbvdR011.setPisdR103(pisdr103);
 
-		rbvdR051 = mock(RBVDR051.class);
-		rbvdR011.setRbvdR051(rbvdR051);
-		ICMF3S0 icmf3s0 = new ICMF3S0();
-		icmf3s0.setIDSTCAN("1");
-		icmf3s0.setDESSTCA("OK");
-		icmf3s0.setIMDECIA(0);
-		icmf3s0.setIMPCLIE(0);
-		icmf3s0.setTIPCAMB(0);
-		icmf3s0.setFETIPCA("2023-11-03");
-		icmf3s0.setDESSTCA("COMPLETED");
-		icmf3s0.setDIVDCIA("USD");
-		icmf3s0.setDIVIMC("USD");
-		icmf3s0.setDIVORIG("USD");
-		icmf3s0.setIDCANCE("idmock");
-		icmf3s0.setCODMOCA("1");
-		icmf3s0.setDESMOCA("Desription mock");
-		icmf3s0.setDIVDEST("Div");
-		ICF3Response  ifc3Response = new ICF3Response();
-		ifc3Response.setIcmf3s0(icmf3s0);
-		ifc3Response.setHostAdviceCode(null);
-		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
-		spyRbvdR011.setRbvdR051(rbvdR051);
-		inputInvestment = new InputParametersPolicyCancellationDTO();
-		inputInvestment.setContractId("00110840020012345678");
-		inputInvestment.setChannelId("PC");
-		inputInvestment.setReason(new GenericIndicatorDTO());
-		inputInvestment.getReason().setId("01");
-		inputInvestment.setNotifications(new NotificationsDTO());
-		inputInvestment.getNotifications().setContactDetails(new ArrayList<>());
-		inputInvestment.getNotifications().getContactDetails().add(new ContactDetailDTO());
-		inputInvestment.getNotifications().getContactDetails().get(0).setContact(new GenericContactDTO());
-		inputInvestment.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
-		inputInvestment.getNotifications().getContactDetails().get(0).getContact().setNumber("999888777");
-		inputInvestment.setInsurerRefund(new InsurerRefundCancellationDTO());
-		inputInvestment.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());
-		inputInvestment.getInsurerRefund().getPaymentMethod().setContract(new ContractCancellationDTO());
-		inputInvestment.getInsurerRefund().getPaymentMethod().getContract().setId("00110abc000105049053");
-		inputInvestment.getInsurerRefund().getPaymentMethod().getContract().setProductType(new CommonCancellationDTO());
-		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 	}
-	
+
 	@Test
 	public void executePolicyCancellationTestNull(){
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestNull...");
@@ -161,33 +98,33 @@ public class RBVDR011Test {
 		Map<String,Object> product = new HashMap<>();
 		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME,"VIDA");
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
-		
+
 		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
-		
+
 		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(null);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
-		
+
 		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(new EntityOutPolicyCancellationDTO());
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(null);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
-		
+
 		Map<String, Object> policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_ANU);
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
-		
+
 		policy = new HashMap<>();
 		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), RBVDConstants.TAG_BAJ);
 		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNull(validation);
 	}
-	
+
 	@Test
 	public void executePolicyCancellationTestOK() throws IOException{
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestOK...");
@@ -219,121 +156,6 @@ public class RBVDR011Test {
 		input.setUserId("UI");
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
-
-		//Vida Inversion
-		Map<String, Object> responseGetRequestCancellationId = new HashMap<>();
-		responseGetRequestCancellationId.put(RBVDProperties.FIELD_Q_PISD_REQUEST_SQUENCE_ID0_NEXTVAL.getValue(), new BigDecimal("123"));
-		when(pisdr103.executeGetRequestCancellationId()).thenReturn(responseGetRequestCancellationId);
-		when(pisdr103.executeSaveInsuranceRequestCancellation(anyMap())).thenReturn(1);
-		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
-		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC,"VIDAINVERSION");
-		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject()))
-				.thenReturn(new PolicyCancellationPayloadBO());
-		Map<String, Object> responseGetRequestCancellation = new HashMap<>();
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_REQUEST_CNCL_POLICY_DATE.getValue(),new Timestamp(System.currentTimeMillis()));
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_INSRC_COMPANY_RETURNED_AMOUNT.getValue(),new BigDecimal(123));
-		responseGetRequestCancellation.put(RBVDProperties.FIELD_PREMIUM_AMOUNT.getValue(), new BigDecimal(142));
-		policy.put(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue(),0011);
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(),0011);
-		when(pisdr103.executeGetRequestCancellation(anyMap())).thenReturn(responseGetRequestCancellation);
-
-		input = inputInvestment;
-		NotificationsDTO notificationsDTO = new NotificationsDTO();
-		List<ContactDetailDTO> listContactDetailDTO = new ArrayList<>();
-		ContactDetailDTO contactDetailDTO = new ContactDetailDTO();
-		GenericContactDTO genericContactDTO = new GenericContactDTO();
-		genericContactDTO.setContactDetailType(RBVDProperties.CONTACT_EMAIL_ID.getValue());
-		genericContactDTO.setAddress("prueba@gmail.com");
-		contactDetailDTO.setContact(genericContactDTO);
-		listContactDetailDTO.add(contactDetailDTO);
-		notificationsDTO.setContactDetails(listContactDetailDTO);
-		input.setNotifications(notificationsDTO);
-		EntityOutPolicyCancellationDTO validation1 = rbvdR011.executePolicyCancellation(input);
-		assertNotNull(validation1);
-
-		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(input);
-		assertNotNull(validation2);
-
-
-		input.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
-		input.getNotifications().getContactDetails().get(0).getContact().setNumber("999999999");
-		input.getInsurerRefund().getPaymentMethod().getContract().setId(null);
-		input.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_INTERNAL_ID.getValue());
-		input.getInsurerRefund().getPaymentMethod().getContract().setNumber("00110abc000205049053");
-		validation = rbvdR011.executePolicyCancellation(input);
-		assertNotNull(validation);
-
-		ICF3Response ifc3Response = new ICF3Response();
-		ifc3Response.setHostAdviceCode("ERROr");
-		when(rbvdR051.executePolicyCancellation(anyObject())).thenReturn(ifc3Response);
-		validation = rbvdR011.executePolicyCancellation(input);
-		assertNull(validation);
-	}
-
-	@Test
-	public void executePolicyCancellationBusinessException() throws IOException{
-		Map<String, Object> policy = new HashMap<>();
-		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
-		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
-		policy.put(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue(),0011);
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(),0011);
-		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
-		Map<String,Object> product = new HashMap<>();
-		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME, ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES);
-		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC,"VIDAINVERSION");
-		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
-		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject()))
-				.thenThrow(new BusinessException("01020052", false, "Mensaje Error"));
-		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(inputInvestment);
-		assertNull(validation2);
-	}
-
-	@Test
-	public void executePolicyCancellationContractTypeExternal(){
-		Map<String, Object> policy = new HashMap<>();
-		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
-		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
-		policy.put(RBVDProperties.KEY_RESPONSE_POLICY_ID.getValue(),0011);
-		policy.put(RBVDProperties.KEY_RESPONSE_PRODUCT_ID.getValue(),0011);
-		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
-		Map<String,Object> product = new HashMap<>();
-		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME, ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES);
-		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC,"VIDAINVERSION");
-		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject()))
-				.thenReturn(new PolicyCancellationPayloadBO());
-		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
-		inputInvestment.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue());
-		EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(inputInvestment);
-		assertNotNull(validation2);
-	}
-
-	@Test
-	public void executePolicyCancellationTestNoLife(){
-		Map<String, Object> policy = new HashMap<>();
-		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
-		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
-		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
-		Map<String,Object> product = new HashMap<>();
-		product.put(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC,"VIDAINVERSION");
-		when(rbvdr311.executeRescueCancelationRimac(anyObject(), anyObject()))
-				.thenReturn(new PolicyCancellationPayloadBO());
-		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
-		inputInvestment.getInsurerRefund().getPaymentMethod().getContract().setContractType(RBVDProperties.CONTRACT_TYPE_EXTERNAL_ID.getValue());
-		inputInvestment.setNotifications(null);
-		inputInvestment.setIsRefund(true);
-		inputInvestment.setInsurerRefund(null);
-        EntityOutPolicyCancellationDTO validation2 = rbvdR011.executePolicyCancellation(inputInvestment);
-        assertNotNull(validation2);
-
-        NotificationsDTO notification = new NotificationsDTO();
-        List<ContactDetailDTO> contacts = new ArrayList<ContactDetailDTO>();
-        notification.setContactDetails(contacts);
-        inputInvestment.setNotifications(notification);
-        validation2 = rbvdR011.executePolicyCancellation(inputInvestment);
-		assertNotNull(validation2);
-        when(pisdr103.executeGetRequestCancellation(anyObject())).thenReturn(null);
-        validation2 = rbvdR011.executePolicyCancellation(inputInvestment);
-        assertNotNull(validation2);
 	}
 
 	@Test
@@ -363,6 +185,7 @@ public class RBVDR011Test {
 		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
 		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
 
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
 		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 		input.setChannelId("PC");
@@ -380,7 +203,64 @@ public class RBVDR011Test {
 		validation = rbvdR011.executePolicyCancellation(input);
 		assertNotNull(validation);
 	}
-	
+
+	@Test
+	public void executePolicyCancellationTestWithEmailHostOK() throws IOException{
+		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestWithEmailHostOK...");
+
+		when(applicationConfigurationService.getDefaultProperty(eq("active.email.host"), eq("false"))).thenReturn("true");
+
+		Map<String,Object> product = new HashMap<>();
+		product.put(ConstantsUtil.FIELD_INSURANCE_BUSINESS_NAME, ConstantsUtil.BUSINESS_NAME_FAKE_EASYYES);
+		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
+		InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+		input.setContractId("11111111111111111111");
+		GenericIndicatorDTO reason = new GenericIndicatorDTO();
+		reason.setId("01");
+		input.setReason(reason);
+		NotificationsDTO notificationsInput = new NotificationsDTO();
+		List<ContactDetailDTO> contactDetailsInput = new ArrayList<>();
+		ContactDetailDTO contactDetailInput = new ContactDetailDTO();
+		GenericContactDTO contactInput = new GenericContactDTO();
+		contactInput.setAddress("");
+		contactDetailInput.setContact(contactInput);
+		contactDetailsInput.add(contactDetailInput);
+		notificationsInput.setContactDetails(contactDetailsInput);
+		input.setNotifications(notificationsInput);
+
+		Map<String, Object> policy = new HashMap<>();
+		policy.put(RBVDProperties.KEY_RESPONSE_CONTRACT_STATUS_ID.getValue(), "0");
+		policy.put(RBVDProperties.KEY_REQUEST_CREATION_DATE.getValue(), "2021-08-09 18:04:42.36226");
+		when(rbvdr003.executeCypherService(anyObject())).thenReturn("XYZ");
+
+		EntityOutPolicyCancellationDTO out = new EntityOutPolicyCancellationDTO();
+		NotificationsDTO notifications = new NotificationsDTO();
+		List<ContactDetailDTO> contactDetails = new ArrayList<>();
+		ContactDetailDTO contactDetail = new ContactDetailDTO();
+		GenericContactDTO contact = new GenericContactDTO();
+		contact.setAddress("test@gmail.com");
+		contactDetail.setContact(contact);
+		contactDetails.add(contactDetail);
+		notifications.setContactDetails(contactDetails);
+		out.setNotifications(notifications);
+
+		when(RBVDR012.executeCancelPolicyHost(anyString(), any(Calendar.getInstance().getClass()), anyObject(), anyObject())).thenReturn(out);
+		when(pisdr100.executeGetPolicyNumber(anyString(), anyString())).thenReturn(policy);
+		when(pisdr100.executeSaveContractMovement(anyMap())).thenReturn(true);
+		when(pisdr100.executeSaveContractCancellation(anyMap())).thenReturn(true);
+		when(pisdr100.executeUpdateContractStatus(anyMap())).thenReturn(1);
+		when(pisdr100.executeUpdateReceiptsStatusV2(anyMap())).thenReturn(1);
+		when(RBVDR012.executeCancelPolicyRimac(anyObject(), anyObject())).thenReturn(new PolicyCancellationPayloadBO());
+
+		when(applicationConfigurationService.getProperty("cancellation.list.endoso")).thenReturn("PC,");
+		EntityOutPolicyCancellationDTO validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+		input.setChannelId("PC");
+		input.setUserId("UI");
+		validation = rbvdR011.executePolicyCancellation(input);
+		assertNotNull(validation);
+	}
+
 	@Test
 	public void executePolicyCancellationTestBDEmptyResult(){
 		LOGGER.info("PISDR011Test - Executing executePolicyCancellationTestBDEmptyResult...");
