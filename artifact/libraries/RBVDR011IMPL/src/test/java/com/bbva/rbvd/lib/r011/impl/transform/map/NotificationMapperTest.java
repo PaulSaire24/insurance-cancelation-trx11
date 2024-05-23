@@ -51,6 +51,43 @@ public class NotificationMapperTest {
         Assert.assertNotNull(sendNotificationsDTO);
     }
 
+    @Test
+    public void buildEmailNoRoyalCancellationInmediateOK() {
+
+        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input2(), policy(), false, buildICF2Response(),
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+
+        Assert.assertNotNull(sendNotificationsDTO);
+    }
+
+
+    @Test
+    public void buildEmailNoRoyalCancellationInmediateNullInsurerRefund() {
+
+        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input3(), policy(), false, buildICF2Response(),
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+
+        Assert.assertNotNull(sendNotificationsDTO);
+    }
+
+    @Test
+    public void buildEmailNoRoyalCancellationInmediateNullPaymentMethod() {
+
+        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input4(), policy(), false, buildICF2Response(),
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+
+        Assert.assertNotNull(sendNotificationsDTO);
+    }
+
+    @Test
+    public void buildEmailNoRoyalCancellationInmediateNullContract() {
+
+        SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input5(), policy(), false, buildICF2Response(),
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+
+        Assert.assertNotNull(sendNotificationsDTO);
+    }
+
     private Map<Object, String> emailProperties() {
         Map<Object, String> propertiesEmail = new HashMap<>();
 
@@ -168,4 +205,83 @@ public class NotificationMapperTest {
         input.getInsurerRefund().getPaymentMethod().getContract().setId("00110130220210452319");
         return input;
     }
+
+    public static InputParametersPolicyCancellationDTO input3(){
+        InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+        input.setContractId("11111111111111111111");
+        input.setChannelId("PC");
+        input.setUserId("user");
+        GenericIndicatorDTO reason = new GenericIndicatorDTO();
+        reason.setId("01");
+        input.setReason(reason);
+        input.setCancellationType("INMEDIATE");
+        input.setCancellationDate(Calendar.getInstance());
+        input.setNotifications(new NotificationsDTO());
+        input.getNotifications().setContactDetails(new ArrayList<>());
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(0).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_EMAIL_ID.getValue());
+        input.getNotifications().getContactDetails().get(0).getContact().setAddress("CARLOS.CARRILLO.DELGADO@BBVA.COM");
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(1).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(1).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
+        input.getNotifications().getContactDetails().get(1).getContact().setNumber("999888777");
+        input.setIsRefund(true);
+        input.setInsurerRefund(null);
+        return input;
+    }
+
+    public static InputParametersPolicyCancellationDTO input4(){
+        InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+        input.setContractId("11111111111111111111");
+        input.setChannelId("PC");
+        input.setUserId("user");
+        GenericIndicatorDTO reason = new GenericIndicatorDTO();
+        reason.setId("01");
+        input.setReason(reason);
+        input.setCancellationType("INMEDIATE");
+        input.setCancellationDate(Calendar.getInstance());
+        input.setNotifications(new NotificationsDTO());
+        input.getNotifications().setContactDetails(new ArrayList<>());
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(0).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_EMAIL_ID.getValue());
+        input.getNotifications().getContactDetails().get(0).getContact().setAddress("CARLOS.CARRILLO.DELGADO@BBVA.COM");
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(1).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(1).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
+        input.getNotifications().getContactDetails().get(1).getContact().setNumber("999888777");
+        input.setIsRefund(true);
+        input.setInsurerRefund(new InsurerRefundCancellationDTO());
+        input.getInsurerRefund().setPaymentMethod(null);
+        return input;
+    }
+
+    public static InputParametersPolicyCancellationDTO input5(){
+        InputParametersPolicyCancellationDTO input = new InputParametersPolicyCancellationDTO();
+        input.setContractId("11111111111111111111");
+        input.setChannelId("PC");
+        input.setUserId("user");
+        GenericIndicatorDTO reason = new GenericIndicatorDTO();
+        reason.setId("01");
+        input.setReason(reason);
+        input.setCancellationType("INMEDIATE");
+        input.setCancellationDate(Calendar.getInstance());
+        input.setNotifications(new NotificationsDTO());
+        input.getNotifications().setContactDetails(new ArrayList<>());
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(0).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(0).getContact().setContactDetailType(RBVDProperties.CONTACT_EMAIL_ID.getValue());
+        input.getNotifications().getContactDetails().get(0).getContact().setAddress("CARLOS.CARRILLO.DELGADO@BBVA.COM");
+        input.getNotifications().getContactDetails().add(new ContactDetailDTO());
+        input.getNotifications().getContactDetails().get(1).setContact(new GenericContactDTO());
+        input.getNotifications().getContactDetails().get(1).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
+        input.getNotifications().getContactDetails().get(1).getContact().setNumber("999888777");
+        input.setIsRefund(true);
+        input.setInsurerRefund(new InsurerRefundCancellationDTO());
+        input.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());
+        input.getInsurerRefund().getPaymentMethod().setContract(null);
+        return input;
+    }
+
 }

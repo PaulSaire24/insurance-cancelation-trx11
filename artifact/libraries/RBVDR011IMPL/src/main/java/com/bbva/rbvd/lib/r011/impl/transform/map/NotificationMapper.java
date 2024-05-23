@@ -198,8 +198,7 @@ public class NotificationMapper {
 
         ValueDTO value5 = new ValueDTO();
         value5.setId(DOMICILIE_ACCOUNT_EMAIL);
-        if(input != null 
-        && input.getInsurerRefund() != null 
+        if(input.getInsurerRefund() != null 
         && input.getInsurerRefund().getPaymentMethod() != null 
         && input.getInsurerRefund().getPaymentMethod().getContract() != null){
                 value5.setName(input.getInsurerRefund().getPaymentMethod().getContract().getId()); // 00110130000210499196
