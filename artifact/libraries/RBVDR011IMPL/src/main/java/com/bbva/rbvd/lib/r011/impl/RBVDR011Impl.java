@@ -184,22 +184,25 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 		String email = "";
 		String activeEmailHost = this.applicationConfigurationService.getDefaultProperty("active.email.host", "false");
+		String emailDefault = this.applicationConfigurationService.getDefaultProperty("active.email.default", "");
+
 
 		if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
 				&& input.getNotifications().getContactDetails().get(0).getContact() != null) {
 			email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
-
-			if(Boolean.parseBoolean(activeEmailHost) && email.isEmpty()) {
-				LOGGER.info("***** RBVDR011Impl - activeEmailHost Start  *****");
-				email = Optional.ofNullable(out.getNotifications())
-						.map(NotificationsDTO::getContactDetails)
-						.filter(list -> !list.isEmpty())
-						.map(list -> list.get(0).getContact())
-						.map(GenericContactDTO::getAddress)
-						.orElse(email);
-				LOGGER.info("***** RBVDR011Impl - emailHost: {} *****", email);
-			}
 		}
+
+		if(Boolean.parseBoolean(activeEmailHost) && email.isEmpty()) {
+			LOGGER.info("***** RBVDR011Impl - activeEmailHost Start  *****");
+			email = Optional.ofNullable(out.getNotifications())
+					.map(NotificationsDTO::getContactDetails)
+					.filter(list -> !list.isEmpty())
+					.map(list -> list.get(0).getContact())
+					.map(GenericContactDTO::getAddress)
+					.orElse(emailDefault);
+			LOGGER.info("***** RBVDR011Impl - emailHost: {} *****", email);
+		}
+
 		return email;
 	}
 
