@@ -16,7 +16,6 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
-import com.ctc.wstx.util.StringUtil;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
