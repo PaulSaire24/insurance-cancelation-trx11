@@ -16,7 +16,9 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.AutorizadorDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.lib.r011.impl.util.ConstantsUtil;
+import com.ctc.wstx.util.StringUtil;
 import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,7 +194,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 			email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
 		}
 
-		if(Boolean.parseBoolean(activeEmailHost) && email.isEmpty()) {
+		if(Boolean.parseBoolean(activeEmailHost) && StringUtils.isEmpty(email)) {
 			LOGGER.info("***** RBVDR011Impl - activeEmailHost Start  *****");
 			email = Optional.ofNullable(out.getNotifications())
 					.map(NotificationsDTO::getContactDetails)
