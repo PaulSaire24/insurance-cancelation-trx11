@@ -5,7 +5,6 @@ import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
 
-import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
@@ -13,7 +12,12 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
+
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
@@ -22,10 +26,14 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+
 
 import static com.bbva.rbvd.lib.r011.impl.utils.DateUtil.convertStringToDate;
 import static com.bbva.rbvd.lib.r011.impl.utils.DateUtil.getCancellationDate;
