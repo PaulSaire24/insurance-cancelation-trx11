@@ -5,7 +5,6 @@ import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Request;
 import com.bbva.rbvd.dto.cicsconnection.icf3.ICF3Response;
 
-import com.bbva.rbvd.dto.insurancecancelation.bo.CancelationSimulationPayloadBO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericAmountDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
@@ -13,8 +12,11 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.GenericStatusDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
+
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
@@ -24,10 +26,14 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+
 
 import static com.bbva.rbvd.lib.r011.impl.utils.DateUtil.convertStringToDate;
 import static com.bbva.rbvd.lib.r011.impl.utils.DateUtil.getCancellationDate;
@@ -133,10 +139,20 @@ public class ICF3Connection extends AbstractLibrary {
         reason.setId(icf3Response.getIcmf3s0().getCODMOCA());
         reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
         output.setReason(reason);
+
+        ContractCancellationDTO contractCancellation = new ContractCancellationDTO();
+        contractCancellation.setId(icf3Response.getIcmf3s0().getCTAADEV());
+
+        PaymentMethodCancellationDTO paymentMethod = new PaymentMethodCancellationDTO();
+        paymentMethod.setContract(contractCancellation);
+
         InsurerRefundCancellationDTO insurerRefund = new InsurerRefundCancellationDTO();
         insurerRefund.setAmount(icf3Response.getIcmf3s0().getIMDECIA());
         insurerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVDCIA());
+        insurerRefund.setPaymentMethod(paymentMethod);
+
         output.setInsurerRefund(insurerRefund);
+
         GenericAmountDTO customerRefund = new GenericAmountDTO();
         customerRefund.setAmount(icf3Response.getIcmf3s0().getIMPCLIE());
         customerRefund.setCurrency(icf3Response.getIcmf3s0().getDIVIMC());
@@ -152,7 +168,7 @@ public class ICF3Connection extends AbstractLibrary {
         exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
         output.setExchangeRate(exchangeRateDTO);
 
-        if(icf3Response.getIcmf3s0().getTIPCONT() != null &&
+        if(icf3Response.getIcmf3s0().getTIPCONT() != null && icf3Response.getIcmf3s0().getDESCONT() != null &&
                 icf3Response.getIcmf3s0().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3)) {
             output.setNotifications(new NotificationsDTO());
             output.getNotifications().setContactDetails(new ArrayList<>());
