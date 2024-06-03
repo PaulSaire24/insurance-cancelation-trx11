@@ -1,6 +1,7 @@
 package com.bbva.rbvd.lib.r011.impl.transform.map;
 
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
@@ -18,6 +19,8 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.bbva.rbvd.lib.r011.impl.utils.ValidationUtil.obtainInsurerRefundAccountOrCard;
 
 
 public class NotificationMapper {
@@ -40,7 +43,7 @@ public class NotificationMapper {
 
     public static SendNotificationsDTO buildEmail(String typeCancellation, InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal,
                                                   ICF2Response icf2Response, String email, String requestCancellationId, Map<Object, String> propertiesEmail,
-                                                  Map<String, Object> cancellationRequest, boolean contactEmailTest) {
+                                                  Map<String, Object> cancellationRequest, boolean contactEmailTest, EntityOutPolicyCancellationDTO out) {
         LOGGER.info("RBVDR011Impl - buildEmail() - START :: email - {}", email);
 
         NotificationDTO notification = new NotificationDTO();
@@ -64,7 +67,7 @@ public class NotificationMapper {
             notification.setNotificationTypeId(propertiesEmail.get("notificationTypeRequestCancellationId"));
 
         } else if (typeCancellation.equalsIgnoreCase("CANCELLATION_IMMEDIATE")) {
-            values = valuesCancellationImmediate(input, policy, isRoyal, icf2Response, requestCancellationId, cancellationRequest);
+            values = valuesCancellationImmediate(input, policy, isRoyal, icf2Response, requestCancellationId, cancellationRequest, out);
 
             notification.setNotificationTypeId(propertiesEmail.get("notificationTypeCancellationInmediateId"));
 
@@ -160,7 +163,8 @@ public class NotificationMapper {
 
     }
 
-    public static List<ValueDTO> valuesCancellationImmediate(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response, String requestCancellationId, Map<String, Object> cancellationRequest) {
+    public static List<ValueDTO> valuesCancellationImmediate(InputParametersPolicyCancellationDTO input, Map<String, Object> policy, boolean isRoyal, ICF2Response icf2Response,
+                                                             String requestCancellationId, Map<String, Object> cancellationRequest, EntityOutPolicyCancellationDTO out) {
 
         List<ValueDTO> values = new ArrayList<>();
 
@@ -198,13 +202,12 @@ public class NotificationMapper {
 
         ValueDTO value5 = new ValueDTO();
         value5.setId(DOMICILIE_ACCOUNT_EMAIL);
-        if(input.getInsurerRefund() != null 
-        && input.getInsurerRefund().getPaymentMethod() != null 
-        && input.getInsurerRefund().getPaymentMethod().getContract() != null){
-                value5.setName(input.getInsurerRefund().getPaymentMethod().getContract().getId()); // 00110130000210499196
+        String RefundAccountOrCard = obtainInsurerRefundAccountOrCard(input);
+        if(RefundAccountOrCard != null){
+                value5.setName(RefundAccountOrCard); // 00110130000210499196
         }
         else {
-                value5.setName("null");
+                value5.setName(Objects.toString(out.getInsurerRefund().getPaymentMethod().getContract().getId(), ""));
         }
         
 
