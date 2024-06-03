@@ -99,17 +99,17 @@ public class CancellationBean {
         if (input.getNotifications() != null && !input.getNotifications().getContactDetails().isEmpty()
                 && input.getNotifications().getContactDetails().get(0).getContact() != null
                 && !StringUtils.isEmpty(input.getNotifications().getContactDetails().get(0).getContact().getAddress())) {
-            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email1");
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - si se envia correo en el input de la cancelacion");
             email = input.getNotifications().getContactDetails().get(0).getContact().getAddress();
         } else if(policyCancellationDTO != null && policyCancellationDTO.getNotifications() != null) {
-            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email2");
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - si no se saca de la icf3");
             email = policyCancellationDTO.getNotifications().getContactDetails().get(0).getContact().getAddress();
         } else if (icf2Response != null && icf2Response.getIcmf1S2() != null && icf2Response.getIcmf1S2().getTIPCONT() != null && icf2Response.getIcmf1S2().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3) && icf2Response.getIcmf1S2().getDESCONT() != null) {
-            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email3");
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - si no se saca de la icf2");
             email = icf2Response.getIcmf1S2().getDESCONT();
         } else {
-            LOGGER.info("RBVDR011Impl - getEmailFromInput() - email4");
-            email = this.applicationConfigurationService.getProperty("default.cancellation.email");
+            LOGGER.info("RBVDR011Impl - getEmailFromInput() - si no se coloca por defecto el correo de relability");
+            email = this.applicationConfigurationService.getDefaultProperty("active.email.default", "");
         }
 
         return email;

@@ -152,7 +152,7 @@ public class ICF3Connection extends AbstractLibrary {
         exchangeRateDTO.setBaseCurrency(icf3Response.getIcmf3s0().getDIVORIG());
         output.setExchangeRate(exchangeRateDTO);
 
-        if(icf3Response.getIcmf3s0().getTIPCONT() != null &&
+        if(icf3Response.getIcmf3s0().getTIPCONT() != null && icf3Response.getIcmf3s0().getDESCONT() != null &&
                 icf3Response.getIcmf3s0().getTIPCONT().equals(RBVDConstants.EMAIL_CONTACT_TYPE_ICF3)) {
             output.setNotifications(new NotificationsDTO());
             output.getNotifications().setContactDetails(new ArrayList<>());
