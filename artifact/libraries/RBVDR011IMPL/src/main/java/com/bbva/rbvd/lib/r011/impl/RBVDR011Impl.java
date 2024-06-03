@@ -30,8 +30,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 	@Override
 	public EntityOutPolicyCancellationDTO executePolicyCancellation(InputParametersPolicyCancellationDTO input) {
 		LOGGER.info("RBVDR011Impl - executePolicyCancellation() - START || input: {}", input);
-		if (input.getCancellationDate() == null) input.setCancellationDate(Calendar.getInstance());
-		if (input.getCancellationType() == null) input.setCancellationType(APPLICATION_DATE.name());
+		setValuesInit(input);
 
 		// Flag que ejecuta el flujo anterior de la cancelación
 		boolean isCancellationLegacyFlow = BooleanUtils.toBoolean(this.applicationConfigurationService.getProperty("cancellation.legacy.flow"));
@@ -100,12 +99,7 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 
 			String statusContractNoRoyal = Objects.toString(icf2Response.getIcmf1S2().getIDSTCON(), "");
 
-			// TAG_ANU = "04" && TAG_BAJ = "03" o "07"
-			HashSet<String> canceledStatus = new HashSet<>(Arrays.asList("04", "03", "07"));
-			if (canceledStatus.contains(statusContractNoRoyal)) {
-				this.addAdvice(RBVDErrors.ERROR_POLICY_CANCELED.getAdviceCode());
-				return null;
-			}
+
 
 		} else {
 			RimacApi rimacApi = new RimacApi(this.rbvdR311, this.applicationConfigurationService);
@@ -139,6 +133,11 @@ public class RBVDR011Impl extends RBVDR011Abstract {
 		return cancellationBusiness.executeFirstCancellationOrCancellationOrRetention(isRoyal, policy, input, policyId,
 				icf2Response, productCodeForRimac, isNewCancellation, insuranceProductId,
 				massiveProductsParameter, email, cancellationBusiness, cancellationBean);
+	}
+
+	private void setValuesInit(InputParametersPolicyCancellationDTO input){
+		if (input.getCancellationDate() == null) input.setCancellationDate(Calendar.getInstance());
+		if (input.getCancellationType() == null) input.setCancellationType(APPLICATION_DATE.name());
 	}
 
 }
