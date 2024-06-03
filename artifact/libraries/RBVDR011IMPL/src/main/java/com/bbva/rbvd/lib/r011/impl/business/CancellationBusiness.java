@@ -183,7 +183,7 @@ public class CancellationBusiness extends AbstractLibrary {
         boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
 
         int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, isRoyal, icf2Response, email,
-                requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest));
+                requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
         LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
 
@@ -276,7 +276,7 @@ public class CancellationBusiness extends AbstractLibrary {
 
             // Enviar correo por solicitud de cancelación
             int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, false, icf2Response, email,
-                    requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest));
+                    requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
             LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
             return out;

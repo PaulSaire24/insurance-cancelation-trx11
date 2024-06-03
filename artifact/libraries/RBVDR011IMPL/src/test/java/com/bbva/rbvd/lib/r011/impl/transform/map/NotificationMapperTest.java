@@ -2,10 +2,7 @@ package com.bbva.rbvd.lib.r011.impl.transform.map;
 
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICF2Response;
 import com.bbva.rbvd.dto.cicsconnection.icf2.ICMF1S2;
-import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.GenericIndicatorDTO;
-import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
+import com.bbva.rbvd.dto.insurancecancelation.commons.*;
 import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
@@ -14,10 +11,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
@@ -28,7 +22,7 @@ public class NotificationMapperTest {
     public void buildEmail() {
 
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION", input(), policy(), true, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false, null);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -37,7 +31,7 @@ public class NotificationMapperTest {
     public void buildEmailNoRoyal() {
 
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION", input(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false, null);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -46,7 +40,7 @@ public class NotificationMapperTest {
     public void buildEmailNot() {
 
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("REQUEST_CANCELLATION",input2(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false, null);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -54,8 +48,10 @@ public class NotificationMapperTest {
     @Test
     public void buildEmailNoRoyalCancellationInmediateOK() {
 
+        EntityOutPolicyCancellationDTO out = buildInsuranceCancellationResponseOk();
+
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input2(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false, out);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -64,8 +60,10 @@ public class NotificationMapperTest {
     @Test
     public void buildEmailNoRoyalCancellationInmediateNullInsurerRefund() {
 
+        EntityOutPolicyCancellationDTO out = buildInsuranceCancellationResponseOk();
+
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input3(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false, out);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -73,8 +71,10 @@ public class NotificationMapperTest {
     @Test
     public void buildEmailNoRoyalCancellationInmediateNullPaymentMethod() {
 
+        EntityOutPolicyCancellationDTO out = buildInsuranceCancellationResponseOk();
+
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input4(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false, out);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -82,8 +82,10 @@ public class NotificationMapperTest {
     @Test
     public void buildEmailNoRoyalCancellationInmediateNullContract() {
 
+        EntityOutPolicyCancellationDTO out = buildInsuranceCancellationResponseOk();
+
         SendNotificationsDTO sendNotificationsDTO = NotificationMapper.buildEmail("CANCELLATION_IMMEDIATE",input5(), policy(), false, buildICF2Response(),
-                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false);
+                "SACARBAJAL@GMAIL.COM", "563764", emailProperties(), new HashMap<>(), false, out);
 
         Assert.assertNotNull(sendNotificationsDTO);
     }
@@ -278,10 +280,55 @@ public class NotificationMapperTest {
         input.getNotifications().getContactDetails().get(1).getContact().setContactDetailType(RBVDProperties.CONTACT_MOBILE_ID.getValue());
         input.getNotifications().getContactDetails().get(1).getContact().setNumber("999888777");
         input.setIsRefund(true);
-        input.setInsurerRefund(new InsurerRefundCancellationDTO());
-        input.getInsurerRefund().setPaymentMethod(new PaymentMethodCancellationDTO());
-        input.getInsurerRefund().getPaymentMethod().setContract(null);
+        input.setInsurerRefund(null);
         return input;
+    }
+
+    private EntityOutPolicyCancellationDTO buildInsuranceCancellationResponseOk(){
+        EntityOutPolicyCancellationDTO out = new EntityOutPolicyCancellationDTO();
+        out.setId("00110172444000017959202311071631");
+
+        ContractCancellationDTO contractCancellation = new ContractCancellationDTO();
+        contractCancellation.setId("00110130000210499196");
+
+        PaymentMethodCancellationDTO paymentMethod = new PaymentMethodCancellationDTO();
+        paymentMethod.setContract(contractCancellation);
+
+        InsurerRefundCancellationDTO insurerRefund = new InsurerRefundCancellationDTO();
+        insurerRefund.setCurrency("PEN");
+        insurerRefund.setAmount(15.00);
+        insurerRefund.setPaymentMethod(paymentMethod);
+
+        out.setInsurerRefund(insurerRefund);
+
+
+        out.setCustomerRefund(insurerRefund);
+        GenericStatusDTO status = new GenericStatusDTO();
+        status.setDescription("COMPLETED");
+        status.setId("COMPLETED");
+        out.setStatus(status);
+        out.setCancellationDate(Calendar.getInstance());
+        GenericIndicatorDTO reason = new GenericIndicatorDTO();
+        reason.setId("01");
+        reason.setDescription("PETICION DEL ASEGURADO");
+        out.setReason(reason);
+        ExchangeRateDTO exchangeRate = new ExchangeRateDTO();
+        exchangeRate.setBaseCurrency("PEN");
+        exchangeRate.setTargetCurrency("PEN");
+        exchangeRate.setCalculationDate(new Date());
+        exchangeRate.setValue(0.0);
+        out.setExchangeRate(exchangeRate);
+        NotificationsDTO notifications = new NotificationsDTO();
+        List<ContactDetailDTO> contactDetails = new ArrayList<>();
+        ContactDetailDTO contactDetail = new ContactDetailDTO();
+        GenericContactDTO contact = new GenericContactDTO();
+        contact.setAddress("CARLOS.CARRILLO.DELGADO@BBVA.COM");
+        contact.setContactDetailType("EMAIL");
+        contactDetail.setContact(contact);
+        contactDetails.add(contactDetail);
+        notifications.setContactDetails(contactDetails);
+        out.setNotifications(notifications);
+        return out;
     }
 
 }
