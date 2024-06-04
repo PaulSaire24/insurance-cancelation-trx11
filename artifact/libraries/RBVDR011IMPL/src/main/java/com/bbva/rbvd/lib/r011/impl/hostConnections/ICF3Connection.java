@@ -13,11 +13,7 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO;
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
@@ -140,8 +136,15 @@ public class ICF3Connection extends AbstractLibrary {
         reason.setDescription(icf3Response.getIcmf3s0().getDESMOCA());
         output.setReason(reason);
 
+        CommonCancellationDTO commonCancellationDTO = new CommonCancellationDTO();
+        commonCancellationDTO.setId("");
+
         ContractCancellationDTO contractCancellation = new ContractCancellationDTO();
         contractCancellation.setId(icf3Response.getIcmf3s0().getCTAADEV());
+        contractCancellation.setContractType("");
+        contractCancellation.setNumberType(commonCancellationDTO);
+        contractCancellation.setProductType(commonCancellationDTO);
+        contractCancellation.setNumber("");
 
         PaymentMethodCancellationDTO paymentMethod = new PaymentMethodCancellationDTO();
         paymentMethod.setContract(contractCancellation);
