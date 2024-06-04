@@ -4,12 +4,12 @@
 	<parent>
 		<artifactId>insurance-cancelation-trx11</artifactId>
 		<groupId>com.bbva.rbvd</groupId>
-		<version>0.11.11</version>
+		<version>0.11.12</version>
 		<relativePath>../../</relativePath>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>TRANSACTIONS-insurance-cancelation-trx11</artifactId>
-	<version>0.11.11</version>
+	<version>0.11.12</version>
 	<packaging>pom</packaging>
 	<name>TRANSACTIONS-insurance-cancelation-trx11</name>
 	<modules>
