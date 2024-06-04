@@ -13,7 +13,12 @@ import com.bbva.rbvd.dto.insurancecancelation.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.NotificationsDTO;
 import com.bbva.rbvd.dto.insurancecancelation.commons.GenericContactDTO;
 
-import com.bbva.rbvd.dto.insurancecancelation.policycancellation.*;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.CommonCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.ContractCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.EntityOutPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InputParametersPolicyCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.InsurerRefundCancellationDTO;
+import com.bbva.rbvd.dto.insurancecancelation.policycancellation.PaymentMethodCancellationDTO;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDConstants;
 import com.bbva.rbvd.dto.insurancecancelation.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r011.impl.utils.ConstantsUtil;
