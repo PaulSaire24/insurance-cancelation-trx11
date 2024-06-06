@@ -185,7 +185,8 @@ public class CancellationBusiness extends AbstractLibrary {
         int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, isRoyal, icf2Response, email,
                 requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
         LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
-        out.setInsurerRefund(null);
+
+        out.getInsurerRefund().setPaymentMethod(null);
 
         LOGGER.info("***** CancellationBusiness - cancellationPolicy END *****");
         return out;
