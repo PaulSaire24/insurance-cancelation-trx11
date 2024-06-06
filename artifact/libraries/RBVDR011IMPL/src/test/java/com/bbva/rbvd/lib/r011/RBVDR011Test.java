@@ -288,6 +288,7 @@ public class RBVDR011Test {
 		List<Map<String, Object>> requestCancellationMovLast = buildOpenRequestCancellationMovLastOpen();
 		Map<String, Object> responseGetRequestCancellation = buildResponseGetRequestCancellation();
 		EntityOutPolicyCancellationDTO icf3Response = new EntityOutPolicyCancellationDTO();
+		icf3Response.setInsurerRefund(new InsurerRefundCancellationDTO());
 
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(pisdR401.executeGetProductById(anyString(), any())).thenReturn(product);
@@ -924,12 +925,15 @@ public class RBVDR011Test {
 		mappp.put(RBVDProperties.FIELD_CONTRACT_STATUS_ID.getValue(), "01");
 		ICF2Response icf2Response = buildICF2Response();
 
+		EntityOutPolicyCancellationDTO icf3Response = new EntityOutPolicyCancellationDTO();
+		icf3Response.setInsurerRefund(new InsurerRefundCancellationDTO());
+
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
 		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject(), anyString(), anyString())).thenReturn(true);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
-		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(icf3Response);
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(buildOpenRequestCancellationMovLastOpen());
 		//hen(CancellationMapper.mapInRequestCancellationMov(anyObject(), anyObject(), anyString(), anyInt())).thenReturn(mappp);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);
@@ -961,12 +965,15 @@ public class RBVDR011Test {
 		ICF2Response icf2Response = buildICF2Response();
 		//icf2Response.setIcmf1S2(null);
 
+		EntityOutPolicyCancellationDTO icf3Response = new EntityOutPolicyCancellationDTO();
+		icf3Response.setInsurerRefund(new InsurerRefundCancellationDTO());
+
 		executeCancellationBDoperationsOk(requestCancellationMovLast, policy, responseGetRequestCancellation);
 		when(icf2Connection.executeICF2Transaction(anyObject())).thenReturn(icf2Response);
 		when(cancellationRequestImpl.validateNewCancellationRequest(input, policy, true)).thenReturn(true);
 		when(cancellationRequestImpl.executeFirstCancellationRequest(anyObject(), anyMap(), anyBoolean(), anyObject(), anyObject(), anyString(), anyString())).thenReturn(true);
 		when(applicationConfigurationService.getProperty(anyString())).thenReturn("true");
-		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(new EntityOutPolicyCancellationDTO());
+		when(icf3Connection.executeICF3Transaction(anyObject(), anyMap(), anyMap(), anyObject(), anyString(), anyString())).thenReturn(icf3Response);
 		when(pisdr103.executeGetRequestCancellationMovLast(anyMap())).thenReturn(buildOpenRequestCancellationMovLastOpen());
 		//when(CancellationMapper.mapInRequestCancellationMov(anyObject(), anyObject(), anyString(), anyInt())).thenReturn(mappp);
 		when(pisdr103.executeSaveInsuranceRequestCancellationMov(anyMap())).thenReturn(1);

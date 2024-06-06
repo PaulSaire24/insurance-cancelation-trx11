@@ -186,7 +186,6 @@ public class CancellationBusiness extends AbstractLibrary {
                 requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
         LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
 
-        // para cc
         out.getInsurerRefund().setPaymentMethod(null);
 
         LOGGER.info("***** CancellationBusiness - cancellationPolicy END *****");
