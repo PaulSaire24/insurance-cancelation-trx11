@@ -125,7 +125,7 @@ public class CancellationBusiness extends AbstractLibrary {
         // CANCELACIÓN EN RIMAC Y LA ICF3 Y YA INSERTO EN LA TABLA DE MOV CANCELACIÓN
         if (!isRoyal) {
             LOGGER.info("***** CancellationBusiness - executePolicyCancellation validatePolicy ");
-            return validatePolicy(out, requestCancellationId, input, policy, icf2Response, email, propertiesEmail, cancellationRequest);
+            return validatePolicy(out, requestCancellationId, input, policy, icf2Response, email, propertiesEmail, cancellationRequest, productCode);
         }
 
         Double totalDebt = NumberUtils.toDouble(Objects.toString(policy.get(RBVDProperties.KEY_RESPONSE_TOTAL_DEBT_AMOUNT.getValue()), "0"));
@@ -177,14 +177,17 @@ public class CancellationBusiness extends AbstractLibrary {
         validateResponse(out, policyId);
         LOGGER.info("***** CancellationBusiness - cancellationPolicy - PRODUCTO ROYAL ***** Response: {}", out);
 
-        // Enviar correo por solicitud de cancelación
-        String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
-        // Contact email test
-        boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
+        if(!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
+            // Enviar correo por solicitud de cancelación
+            String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
+            // Contact email test
+            boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
 
-        int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, isRoyal, icf2Response, email,
-                requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
-        LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
+            int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, isRoyal, icf2Response, email,
+                    requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
+            LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
+
+        }
 
         out.getInsurerRefund().setPaymentMethod(null);
 
@@ -266,19 +269,23 @@ public class CancellationBusiness extends AbstractLibrary {
     }
 
     private EntityOutPolicyCancellationDTO validatePolicy(EntityOutPolicyCancellationDTO out, String requestCancellationId, InputParametersPolicyCancellationDTO input,
-                                                          Map<String, Object> policy, ICF2Response icf2Response, String email, Map<Object, String> propertiesEmail, Map<String, Object> cancellationRequest) {
+                                                          Map<String, Object> policy, ICF2Response icf2Response, String email, Map<Object, String> propertiesEmail,
+                                                          Map<String, Object> cancellationRequest, String productCode) {
         if (CollectionUtils.isEmpty(this.getAdviceList()) || this.getAdviceList().get(0).getCode().equals(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode())) {
             LOGGER.info("***** CancellationBusiness - validatePolicy - PRODUCTO NO ROYAL - Response = {} *****", out);
             this.getAdviceList().clear();
 
-            String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
-            // Contact email test
-            boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
+            if(!ConstantsUtil.BUSINESS_NAME_FAKE_INVESTMENT.equals(productCode)) {
 
-            // Enviar correo por solicitud de cancelación
-            int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, false, icf2Response, email,
-                    requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
-            LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
+                String typeCancellation = END_OF_VALIDATY.name().equals(input.getCancellationType()) ? "CANCELLATION_END_OF_VALIDITY" : "CANCELLATION_IMMEDIATE";
+                // Contact email test
+                boolean contactEmailTest = BooleanUtils.toBoolean(applicationConfigurationService.getProperty("notification.config.email.test"));
+
+                // Enviar correo por solicitud de cancelación
+                int resultEvent = this.rbvdR305.executeSendingEmail(NotificationMapper.buildEmail(typeCancellation, input, policy, false, icf2Response, email,
+                        requestCancellationId, propertiesEmail, cancellationRequest, contactEmailTest, out));
+                LOGGER.info("***** CancellationBusiness - executePolicyCancellation resultEvent: {} *****", resultEvent);
+            }
 
             return out;
         }
