@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>com.bbva.rbvd</groupId>
 		<artifactId>LIBRARIES-insurance-cancelation-trx11</artifactId>
-		<version>0.11.14</version>
+		<version>0.11.15</version>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>RBVDR011</artifactId>
 	<name>RBVDR011</name>
-	<version>0.11.14</version>
+	<version>0.11.15</version>
 	<packaging>bundle</packaging>
 	<description>Business logic of policy cancellation</description>
 	<properties>
